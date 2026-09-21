@@ -1394,7 +1394,7 @@ function installTransitionGuard(container) {
   const swallow = (e) => {
     if (performance.now() < _guardUntil) { e.stopPropagation(); e.preventDefault(); }
   };
-  ['pointerdown', 'click', 'touchstart'].forEach((t) => container.addEventListener(t, swallow, true));
+  ['pointerdown', 'click'].forEach((t) => container.addEventListener(t, swallow, true));
   const fresh = (n) => n.nodeType === 1 && (n.matches('.ke-quiz-card, .ke-category-card, .ke-profile-screen, .ke-landing-header, .ke-shell-inner') || n.querySelector('.ke-quiz-card, .ke-category-card, .ke-profile-screen, .ke-landing-header'));
   if (_guardObserver) _guardObserver.disconnect();
   _guardObserver = new MutationObserver((muts) => {
