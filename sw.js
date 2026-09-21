@@ -6,7 +6,7 @@ self.addEventListener('install', (e) => {
     const c = await caches.open(V);
     await Promise.all(CORE.map((u) => c.add(u).catch(() => {})));
     self.skipWaiting();
-    fillLazy(c);
+    await fillLazy(c);
   })());
 });
 async function fillLazy(c) {
