@@ -1125,7 +1125,7 @@ ${FONT_FACES}
   }
   .ke-category-text{ min-width:0; flex:1; position:relative; z-index:1; }
   .ke-category-title{
-    font-family:'Fredoka','Baloo 2',sans-serif; font-weight:700; font-size:19px; color:#1b1b2b;
+    font-family:'Fredoka','Baloo 2',sans-serif; font-weight:700; font-size:19px; color:#fff;
     margin-bottom:3px; white-space:normal; overflow-wrap:break-word; line-height:1.2;
   }
   /* Açık kategori tonlarında (ör. daily_life'ın sarı tint'i) beyaz metin
@@ -1135,8 +1135,8 @@ ${FONT_FACES}
      tarayıcının varsayılan buton stili beyaz-boşluğu nowrap yapıyor;
      override edilmezse dar kartlarda (mobil/APK) metin sarmıyor,
      konteynerden taşıp sağdan kırpılıyor (bkz. .ke-shell overflow-x). */
-  .ke-category-meta{ font-size:14.5px; color:#1b1b2b; font-weight:700; white-space:normal; }
-  .ke-cat-next-ep{ font-size:13.5px; color:#1b1b2b; font-weight:700; margin-top:2px; white-space:normal; }
+  .ke-category-meta{ font-size:14.5px; color:#fff; font-weight:700; white-space:normal; }
+  .ke-cat-next-ep{ font-size:13.5px; color:#fff; font-weight:700; margin-top:2px; white-space:normal; }
   /* Kategori ikonu (baş harf) köşesine iliştirilmiş küçük konu rozeti —
      kartın kendisine değil ikona bağlı, böylece sağ üstteki tekrar
      çipiyle veya köşedeki dev baş harf deseniyle çakışmıyor. */
