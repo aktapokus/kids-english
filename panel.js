@@ -1562,7 +1562,7 @@ function showProfileScreen(container, api, toolId, categories, opts) {
         <div class="ke-pl-label">${L('Renk', 'Color')}</div><div class="ke-pick-row">${colorBtns}</div>
         <div class="ke-pl-label">${L('Şapka', 'Hat')}</div><div class="ke-pick-row">${hatBtns}</div>
         <div class="ke-pl-label" id="keProfileMsg">${msg || L(`Kazandığın yıldız: ${stars} ⭐ — bölüm bitirdikçe yeni renk ve şapkalar açılır!`, `Stars earned: ${stars} ⭐ — finish episodes to unlock new colors and hats!`)}</div>
-        <div style="margin-top:8px;"><button type="button" id="keProfileSave">${first ? L('Başla! 🚀', "Let's go! 🚀") : L('Kaydet ✓', 'Save ✓')}</button></div>
+        <div style="margin-top:8px;"><button type="button" class="ke-btn-primary" id="keProfileSave" style="font-size:17px !important;padding:14px 26px !important;">${first ? L('Başla! 🚀', "Let's go! 🚀") : L('Kaydet ✓', 'Save ✓')}</button></div>
         ${switcher}
       </div>`;
     const nameEl = host.querySelector('#keProfileName');
