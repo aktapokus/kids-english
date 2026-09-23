@@ -954,18 +954,9 @@ ${FONT_FACES}
      Çözüm: TÜM hareket animasyonları içerideki <img class="ke-mascot-img">
      üzerinde çalışıyor; wrapper'ın transform'u hiç değişmiyor. */
   .ke-mascot-wrap{ position:absolute; left:auto; right:5%; top:50%; bottom:auto; transform:translateY(-50%); width:170px; z-index:4; }
-  /* TAM TEBEŞİR (v2): sert siyah drop-shadow yumuşatıldı — maskot artık
-     "tahtaya yapıştırılmış bir sticker" gibi, ana tebeşir yazı alanıyla
-     kontrast için yarışmıyor. Altına küçük, soluk bir elips gölge
-     (::after, tebeşir tozu/raf hissi) eklendi — yeni görsel dosya yok. */
+  /* Maskotun altinda/arkasinda hicbir eklenti golge/oval yok - PNG'nin
+     kendi seffafligi dogrudan gosteriliyor ("golgeleme olmasin" kurali). */
   .ke-mascot-img{ display:block; width:100%; height:auto; user-select:none; -webkit-user-drag:none; animation:ke-bob 2.6s ease-in-out infinite; position:relative; z-index:1; }
-  .ke-mascot-wrap::after{
-    content:''; position:absolute; left:50%; bottom:-4px; transform:translateX(-50%);
-    width:60%; height:10px; border-radius:50%;
-    background:radial-gradient(ellipse, rgba(245,240,223,.28), transparent 72%);
-    z-index:0;
-  }
-  .ke-mascot-wrap.ke-mascot-compact::after, .ke-mascot-wrap.ke-mascot-narrow::after{ display:none; }
   /* Quiz/konuşma/cümle modlarında balon üstte, maskot sahnenin dibinde
      kalıyordu — "konuşma balonu şimdi Aktapokus'tan çok uzakta" geri
      bildirimi. Bu modlarda maskotu küçültüp balonun yanına, üste
@@ -1254,17 +1245,9 @@ ${FONT_FACES}
   .ke-profile-name{ font-family:inherit; font-size:18px; font-weight:800; text-align:center; padding:8px 12px; border-radius:12px; border:2px dashed var(--kb-chalk-dim, #ccc); background:rgba(255,255,255,.08); color:var(--kb-chalk, #fff); width:min(240px,80%); }
   .ke-pl-label{ font-size:12px; font-weight:800; color:var(--kb-chalk-dim, #ccc); margin-top:6px; }
 .ke-shell .ke-landing-header .ke-subtitle{ font-size:16px !important; margin-bottom:12px; }
-  .ke-avatar-stage::before, .ke-landing-mascot::before, .ke-mascot-wrap::before{
-    /* Yuvarlak degil OVAL: yeni maskot gorseli uzun boylu bir portre
-       (ayaklar tuvalin en altina kadar iniyor) - sabit bir daire eski,
-       daha kisa gorsele gore olculuydu ve ayaklar disina tasiyordu
-       ("goruntu altta kalmis" geri bildirimi). Oval, konteynerin kendi
-       yuksekligine (resmin dogal yuksekligine) oranli oldugu icin
-       karakterin tamamini kapsiyor. */
-    content:''; position:absolute; left:50%; top:50%; width:112%; height:108%; transform:translate(-50%,-50%);
-    border-radius:50%; z-index:0; pointer-events:none;
-    background:radial-gradient(circle, rgba(255,248,226,.97) 0%, rgba(255,240,200,.9) 55%, rgba(255,235,190,.55) 68%, rgba(255,235,190,0) 74%);
-  }
+  /* Maskotun arkasinda hicbir eklenti arka plan/oval/spot isigi yok -
+     PNG'nin kendi seffafligi dogrudan sahnenin (tahta) zeminini
+     gosteriyor ("neden oval arka plan kullaniyorsun" geri bildirimi). */
   .ke-landing-mascot{ isolation:isolate; }
   .ke-landing-mascot img, .ke-avatar-stage img.ke-av-body{ position:relative; z-index:1; }
   .ke-landing-header{ padding-right:80px; }
