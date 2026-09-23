@@ -1366,6 +1366,18 @@ ${FONT_FACES}
   .ke-river-msg-card h2{ margin:0 0 8px; font-family:'Fredoka','Baloo 2',sans-serif; font-size:24px; }
   .ke-river-msg-card p{ margin:0 0 16px; font-size:14.5px; font-weight:600; }
   .ke-quiz-toast{ cursor:pointer; }
+  .ke-picker-card{ max-width:380px; }
+  .ke-picker-row{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .ke-picker-btn{ display:flex; flex-direction:column; align-items:center; gap:8px; width:140px; padding:18px 10px !important; border-radius:18px !important; background:#fff !important; border:2px solid var(--ke-border) !important; box-shadow:none !important; top:0 !important; font-size:13.5px !important; font-weight:800 !important; color:var(--ke-ink) !important; }
+  .ke-picker-btn:active{ background:#F5F0DF !important; }
+  .ke-picker-emoji{ font-size:40px; }
+  .ke-puzzle-game{ position:absolute; inset:0; z-index:100; background:#243b55; border-radius:inherit; overflow:hidden; display:flex; flex-direction:column; }
+  .ke-puzzle-hud{ display:flex; align-items:center; justify-content:space-between; padding:10px 14px; z-index:2; }
+  .ke-puzzle-moves{ background:rgba(0,0,0,.35); color:#FFD75A; font-weight:800; padding:6px 14px; border-radius:999px; font-size:14px; }
+  .ke-puzzle-board-wrap{ flex:1; display:flex; align-items:center; justify-content:center; padding:16px; min-height:0; }
+  .ke-puzzle-board{ position:relative; border-radius:12px; overflow:hidden; box-shadow:none; border:3px solid rgba(255,255,255,.4); background:rgba(0,0,0,.25); }
+  .ke-puzzle-tile{ position:absolute !important; display:block !important; top:0 !important; left:0 !important; margin:0; background-repeat:no-repeat; border:1px solid rgba(0,0,0,.35); box-shadow:none !important; padding:0 !important; border-radius:0 !important; transition:transform .16s ease; cursor:pointer; }
+  .ke-puzzle-tile:active{ filter:brightness(1.08); }
   @keyframes ke-chip-pulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
   .ke-game-chip-pulse{ animation:ke-chip-pulse 1.1s ease-in-out infinite; background:rgba(255,215,90,.22) !important; border-color:var(--kb-discover) !important; }
   .ke-bonus-quiz{ position:absolute; inset:0; z-index:150; background:rgba(10,20,30,.78); display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; transition:opacity .25s ease; border-radius:inherit; }
@@ -1996,7 +2008,7 @@ function showSectionMenu(container, api, toolId, categories) {
     if (PendingQuiz.get() > 0) {
       showBonusQuiz(container, api, toolId, categories, () => refreshGameBadge(container));
     } else if (GameTokens.get() > 0) {
-      startRiverGame(container, () => showSectionMenu(container, api, toolId, categories));
+      showGamePicker(container, () => showSectionMenu(container, api, toolId, categories));
     }
   });
   // Gecici test kisayolu: sifre girince kuyruk/sinav beklemeden 1 oyun
@@ -4199,6 +4211,218 @@ async function showBonusQuiz(container, api, toolId, categories, onPass) {
   }
 
   runRound();
+}
+
+// Oyun hakki varsa, dogrudan Nehir Macerasi'na atlamak yerine kucuk bir
+// secim ekrani gosteriyoruz - "cinsiyete gore ayri oyun" yerine HERKESE
+// acik iki farkli TEMPO (aksiyon vs sakin/yapboz) sunuyoruz, hangisini
+// oynayacagini cocuk kendi seciyor.
+function showGamePicker(container, onExit) {
+  const shell = container.querySelector('.ke-shell');
+  const overlay = document.createElement('div');
+  overlay.className = 'ke-river-overlay-msg ke-game-picker';
+  overlay.style.position = 'absolute'; overlay.style.zIndex = '90';
+  overlay.innerHTML = `
+    <div class="ke-river-msg-card ke-picker-card">
+      <h2>${L('Hangi Oyun?', 'Which Game?')}</h2>
+      <div class="ke-picker-row">
+        <button type="button" class="ke-picker-btn" id="kePickRiver">
+          <span class="ke-picker-emoji">🚤</span>
+          <span>${L('Nehir Macerası', 'River Adventure')}</span>
+        </button>
+        <button type="button" class="ke-picker-btn" id="kePickPuzzle">
+          <span class="ke-picker-emoji">🧩</span>
+          <span>${L('Resimli Yap-Boz', 'Picture Puzzle')}</span>
+        </button>
+      </div>
+      <button type="button" class="ke-btn-secondary" id="kePickCancel" style="margin-top:14px;">${L('Vazgeç', 'Cancel')}</button>
+    </div>
+  `;
+  shell.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('ke-show'));
+  const close = () => { overlay.classList.remove('ke-show'); setTimeout(() => overlay.remove(), 250); };
+  overlay.querySelector('#kePickRiver').addEventListener('click', () => { close(); startRiverGame(container, onExit); });
+  overlay.querySelector('#kePickPuzzle').addEventListener('click', () => { close(); startSlidePuzzle(container, onExit); });
+  overlay.querySelector('#kePickCancel').addEventListener('click', close);
+}
+
+// Resimli kayan yap-boz (klasik "15 puzzle"): 3x3, bir hucre bos, bosluga
+// komsu bir parcaya dokunarak kaydiriyorsun. Resimler uygulamanin kendi
+// (bugun tek tek gorsel olarak dogrulanmis) varliklarindan - Aktapokus'un
+// kendisi + birkac sevimli hayvan fotografi - boylece "eglenceli resim"
+// hissi garanti, rastgele/dusuk kaliteli bir gorsele bagli degil.
+const SLIDE_PUZZLE_IMAGES = [
+  'mascot/mascot_idle.png',
+  'photos/dog__animals_pixabay7.jpg',
+  'photos/cat__animals_pixabay7.jpg',
+  'photos/lion__animals_manual.jpg',
+  'photos/butterfly__animals_pixabay7.jpg',
+];
+function startSlidePuzzle(container, onExit) {
+  if (!GameTokens.spend()) { onExit(); return; }
+  refreshGameBadge(container);
+
+  const shell = container.querySelector('.ke-shell');
+  const overlay = document.createElement('div');
+  overlay.className = 'ke-puzzle-game';
+  overlay.innerHTML = `
+    <div class="ke-puzzle-hud">
+      <div class="ke-puzzle-moves">🔢 <span id="kePuzzleMoves">0</span></div>
+      <button type="button" class="ke-river-close" id="kePuzzleClose" aria-label="${L('Kapat', 'Close')}">✕</button>
+    </div>
+    <div class="ke-puzzle-board-wrap"><div class="ke-puzzle-board" id="kePuzzleBoard"></div></div>
+    <div class="ke-river-overlay-msg" id="kePuzzleStartMsg">
+      <div class="ke-river-msg-card">
+        <h2>${L('Resimli Yap-Boz', 'Picture Puzzle')}</h2>
+        <p>${L('Boşluğun yanındaki bir parçaya dokun, kaydır! Resmi tamamla 🧩', "Tap a piece next to the empty space to slide it! Complete the picture 🧩")}</p>
+        <button type="button" class="ke-btn-primary" id="kePuzzleStartBtn">${L('Başla', 'Start')} ▶</button>
+      </div>
+    </div>
+    <div class="ke-river-overlay-msg" id="kePuzzleWinMsg" style="display:none;">
+      <div id="keConfettiHost"></div>
+      <div class="ke-river-msg-card">
+        <h2>🎉 ${L('Tamamladın!', 'Solved it!')}</h2>
+        <p id="kePuzzleFinalMoves"></p>
+        <div class="ke-btn-row">
+          <button type="button" class="ke-btn-secondary" id="kePuzzleExitBtn">${L('Çık', 'Exit')}</button>
+          <button type="button" class="ke-btn-primary" id="kePuzzleAgainBtn" style="display:none;">${L('Yeni Resim', 'New Picture')} 🧩</button>
+        </div>
+      </div>
+    </div>
+  `;
+  shell.appendChild(overlay);
+
+  const boardWrap = overlay.querySelector('.ke-puzzle-board-wrap');
+  const boardEl = overlay.querySelector('#kePuzzleBoard');
+  const N = 3; // 3x3 - 10 yas grubu icin makul zorluk
+  let boardSize = 0, tileSize = 0;
+  let moves = 0;
+  let solved = false;
+  let cells = []; // cells[row*N+col] = orijinal parca indexi (0..7), 8 = bos
+  let tileEls = []; // tileEls[origIndex] = DOM elementi (bos icin null)
+  let blankIndex = N * N - 1;
+
+  function resize() {
+    const r = boardWrap.getBoundingClientRect();
+    boardSize = Math.floor(Math.min(r.width, r.height) - 4);
+    tileSize = Math.floor(boardSize / N);
+    boardEl.style.width = boardSize + 'px';
+    boardEl.style.height = boardSize + 'px';
+    tileEls.forEach((el, orig) => { if (el) layoutTile(orig); });
+  }
+  window.addEventListener('resize', resize);
+
+  function origRowCol(orig) { return { r: Math.floor(orig / N), c: orig % N }; }
+  function cellIndexOf(orig) { return cells.indexOf(orig); }
+  function layoutTile(orig) {
+    const el = tileEls[orig];
+    if (!el) return;
+    const idx = cellIndexOf(orig);
+    const row = Math.floor(idx / N), col = idx % N;
+    el.style.transform = `translate(${col * tileSize}px, ${row * tileSize}px)`;
+  }
+
+  function buildBoard(imgSrc) {
+    boardEl.innerHTML = '';
+    cells = Array.from({ length: N * N }, (_, i) => i);
+    blankIndex = N * N - 1;
+    tileEls = [];
+    const src = new URL(imgSrc, ASSET_BASE_URL).href;
+    for (let orig = 0; orig < N * N - 1; orig++) {
+      const { r, c } = origRowCol(orig);
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'ke-puzzle-tile';
+      el.style.backgroundImage = `url(${src})`;
+      el.addEventListener('click', () => tryMove(orig));
+      boardEl.appendChild(el);
+      tileEls.push(el);
+    }
+    tileEls.push(null); // bosluk icin yer tutucu (orig index N*N-1)
+    resize();
+    sizeTiles();
+    tileEls.forEach((el, orig) => { if (el) layoutTile(orig); });
+    shuffleBoard();
+  }
+
+  function sizeTiles() {
+    tileEls.forEach((el, orig) => {
+      if (!el) return;
+      const { r, c } = origRowCol(orig);
+      el.style.width = tileSize + 'px';
+      el.style.height = tileSize + 'px';
+      el.style.backgroundSize = `${boardSize}px ${boardSize}px`;
+      el.style.backgroundPosition = `-${c * tileSize}px -${r * tileSize}px`;
+    });
+  }
+
+  function neighborsOfBlank() {
+    const br = Math.floor(blankIndex / N), bc = blankIndex % N;
+    const out = [];
+    if (br > 0) out.push(blankIndex - N);
+    if (br < N - 1) out.push(blankIndex + N);
+    if (bc > 0) out.push(blankIndex - 1);
+    if (bc < N - 1) out.push(blankIndex + 1);
+    return out;
+  }
+  function swapCells(idxA, idxB) {
+    const t = cells[idxA]; cells[idxA] = cells[idxB]; cells[idxB] = t;
+  }
+  function shuffleBoard() {
+    for (let i = 0; i < 140; i++) {
+      const opts = neighborsOfBlank();
+      const pick = opts[Math.floor(Math.random() * opts.length)];
+      swapCells(pick, blankIndex);
+      blankIndex = pick;
+    }
+    tileEls.forEach((el, orig) => { if (el) layoutTile(orig); });
+    moves = 0;
+    solved = false;
+    overlay.querySelector('#kePuzzleMoves').textContent = moves;
+  }
+
+  function tryMove(orig) {
+    if (solved) return;
+    const idx = cellIndexOf(orig);
+    if (!neighborsOfBlank().includes(idx)) return;
+    swapCells(idx, blankIndex);
+    blankIndex = idx;
+    moves++;
+    overlay.querySelector('#kePuzzleMoves').textContent = moves;
+    layoutTile(orig);
+    if (cells.every((v, i) => v === i)) { solved = true; setTimeout(onSolved, 260); }
+  }
+
+  function onSolved() {
+    overlay.querySelector('#kePuzzleFinalMoves').textContent = L(`${moves} hamlede tamamladın! 🏆`, `Solved in ${moves} moves! 🏆`);
+    const again = overlay.querySelector('#kePuzzleAgainBtn');
+    again.style.display = GameTokens.get() > 0 ? '' : 'none';
+    overlay.querySelector('#kePuzzleWinMsg').style.display = 'flex';
+    launchConfetti(overlay);
+  }
+
+  function pickImage() {
+    return SLIDE_PUZZLE_IMAGES[Math.floor(Math.random() * SLIDE_PUZZLE_IMAGES.length)];
+  }
+
+  function startRun() {
+    overlay.querySelector('#kePuzzleStartMsg').style.display = 'none';
+    overlay.querySelector('#kePuzzleWinMsg').style.display = 'none';
+    buildBoard(pickImage());
+  }
+
+  function cleanup() {
+    window.removeEventListener('resize', resize);
+    overlay.remove();
+  }
+  overlay.querySelector('#kePuzzleStartBtn').addEventListener('click', startRun);
+  overlay.querySelector('#kePuzzleClose').addEventListener('click', () => { cleanup(); onExit(); });
+  overlay.querySelector('#kePuzzleExitBtn').addEventListener('click', () => { cleanup(); onExit(); });
+  overlay.querySelector('#kePuzzleAgainBtn').addEventListener('click', () => {
+    if (!GameTokens.spend()) return;
+    refreshGameBadge(container);
+    startRun();
+  });
 }
 
 function startRiverGame(container, onExit) {

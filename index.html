@@ -10,6 +10,12 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="pwa/icon-192.png">
 <link rel="apple-touch-icon" href="pwa/icon-192.png">
+<!-- iOS Safari, manifest.webmanifest'teki display:fullscreen'i kendi
+     baslina uygulamiyor - "Ana Ekrana Ekle" sonrasi tam ekran/app-gibi
+     davranmasi icin Apple'a ozel meta etiketleri sart. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Aktapokus">
 <style>
   html,body{margin:0;height:100%;background:#10160f;overscroll-behavior:none}
   .ke-shell.ke-fs{position:fixed;inset:0;height:100dvh;width:100vw;z-index:1}
