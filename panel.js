@@ -319,7 +319,7 @@ ${FONT_FACES}
     overflow-y: auto;
     min-height: 640px;
   }
-  .ke-shell *{ box-sizing: border-box; }
+  .ke-shell, .ke-shell *{ box-sizing: border-box; }
   .ke-fullscreen-btn, .ke-back-btn, .ke-screen-host{ position:relative; z-index:1; }
   .ke-shell.ke-fs{
     width: 100vw; height: 100vh; max-width: none;
