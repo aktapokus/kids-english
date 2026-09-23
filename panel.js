@@ -2639,6 +2639,21 @@ function renderConversationEpisodeScene(container, api, toolId, categories, epis
 
   const mascotEl = host.querySelector('#keMascot');
 
+  // Dar ekranda maskotu (küçük köşe hali - ke-mascot-compact) sorulan
+  // İngilizce soru metniyle çakışmadan gizleyen kural (.ke-scene-narrow)
+  // normal bölüm akışında burada uygulanıyordu ama bu konuşma sahnesi
+  // hiç çağırmıyordu - maskot telefonlarda soru balonunun üzerine
+  // biniyordu ("yazıyı kapatıyor maskot" geri bildirimi). Aynı sınıf
+  // burada da uygulanmalı.
+  const sceneEl = host.querySelector('#keScene');
+  sceneEl.classList.toggle('ke-scene-narrow', isNarrowLayout());
+  if (_narrowMQ && _narrowChangeHandler) {
+    try { _narrowMQ.removeEventListener('change', _narrowChangeHandler); } catch (e) { /* eski tarayıcı API farkı */ }
+  }
+  _narrowMQ = window.matchMedia('(max-width: 640px)');
+  _narrowChangeHandler = (e) => sceneEl.classList.toggle('ke-scene-narrow', e.matches);
+  try { _narrowMQ.addEventListener('change', _narrowChangeHandler); } catch (e) { _narrowMQ.addListener(_narrowChangeHandler); }
+
   function goToNextEpisode() {
     const nextIndex = episode.episode_index + 1;
     if (nextIndex < episode.episode_count) {
