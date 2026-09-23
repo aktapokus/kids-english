@@ -910,6 +910,10 @@ ${FONT_FACES}
   .ke-slot.ke-filled{ cursor:pointer; border-bottom-style:solid; }
   .ke-slot.ke-reveal{ color:var(--kb-correct); border-bottom-style:solid; }
   .ke-tile, .ke-slot{ touch-action:none; user-select:none; -webkit-user-select:none; }
+  .ke-letter-slot{ min-width:34px; width:34px; }
+  .ke-slot-gap{ min-width:14px; width:14px; border-bottom:none; }
+  .ke-letter-slot.ke-fixed, .ke-letter-slot.ke-hint{ color:var(--kb-discover); border-bottom-style:solid; }
+  .ke-letter-tile{ min-width:44px; padding:10px 14px !important; font-size:20px !important; }
   .ke-drag-ghost{ position:fixed !important; z-index:99999; transform:translate(-50%,-60%); pointer-events:none; opacity:.92; box-shadow:0 8px 18px rgba(0,0,0,.45); }
   .ke-slot.ke-shake{ border-bottom-color:var(--kb-wrong); animation:ke-shake-x .35s ease; }
   .ke-sentence-bank{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; max-width:560px; }
@@ -1847,6 +1851,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
         <button class="ke-jump-btn" id="keJumpQuiz">2. ${L('Sorular', 'Quiz')}</button>
         <button class="ke-jump-btn" id="keJumpSpeak">3. ${L('Konuşma', 'Speak')}</button>
         <button class="ke-jump-btn" id="keJumpSentence">4. ${L('Cümle', 'Sentence')}</button>
+        <button class="ke-jump-btn" id="keJumpLetters">5. ${L('Harfler', 'Letters')}</button>
       </div>
     </details>
   `;
@@ -2095,6 +2100,11 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
     hideAllOverlays();
     markAllFound();
     startSentenceRound(host, container, episode, episode.objects, mascotEl, null, goToNextEpisode);
+  });
+  host.querySelector('#keJumpLetters').addEventListener('click', () => {
+    hideAllOverlays();
+    markAllFound();
+    startLetterRound(host, container, episode, episode.objects, mascotEl, null, goToNextEpisode);
   });
   pushBackState(leaveEpisode);
 }
@@ -2632,6 +2642,169 @@ function pickDistractorWord(tokens, wordList, currentWord) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
+// Harf-kutucuklu kelime tamamlama: her kelimenin/kalibin ILK harfi ipucu
+// olarak acik geliyor, geri kalan harfler karisik bir bankadan (dogru
+// harfler + birkac yanilti harf) sirayla doldurulacak. "Kelime bankasindan
+// tahmin etme" degil "hatirlama" testi - boslugu/noktalamayi tahmin
+// ettirmiyoruz, sadece gercek harfleri. #keSentence overlay'ini
+// (startSentenceRound ile AYNI DOM/CSS) yeniden kullanir.
+function startLetterRound(host, container, episode, wordList, mascotEl, score, onDone) {
+  const sEl = host.querySelector('#keSentence');
+  const progressChip = host.querySelector('#keProgress');
+  const mainBubbleEl = host.querySelector('#keBubble');
+  const bubbleEl = host.querySelector('#keSentenceBubble');
+  const progressEl = host.querySelector('#keSentenceProgress');
+  const slotsEl = host.querySelector('#keSentenceSlots');
+  const bankEl = host.querySelector('#keSentenceBank');
+  const actionsEl = host.querySelector('#keSentenceActions');
+  const checkBtn = host.querySelector('#keSentenceCheck');
+  const resetBtn = host.querySelector('#keSentenceReset');
+  const askText = L('İlk harfler hazır! Kalan harflere dokunup kelimeyi tamamla. ✏️', 'The first letters are ready! Tap the letters to finish the word. ✏️');
+
+  progressChip.style.display = 'none';
+  mainBubbleEl.style.display = 'none';
+  bubbleEl.textContent = askText;
+  sEl.classList.add('ke-show');
+  mascotEl.classList.add('ke-mascot-compact');
+  setMascotPose(host, 'think');
+
+  const order = wordList.map((_, i) => i);
+  let idx = 0;
+
+  function endLetterRound() {
+    sEl.classList.remove('ke-show');
+    mascotEl.classList.remove('ke-mascot-compact');
+    setMascotPose(host, 'idle');
+    progressChip.style.display = '';
+    mainBubbleEl.style.display = '';
+  }
+
+  function renderItem() {
+    if (idx >= order.length) {
+      endLetterRound();
+      showCelebration(host, container, episode, wordList, score, onDone);
+      return;
+    }
+    const obj = wordList[order[idx]];
+    const target = obj.word;
+    const isLetter = (c) => /[a-zA-Z]/.test(c);
+    let firstOfWord = true;
+    const plan = [...target].map((c) => {
+      if (c === ' ') { firstOfWord = true; return { c, fixed: true, hint: false }; }
+      if (!isLetter(c)) return { c, fixed: true, hint: false };
+      const hint = firstOfWord; firstOfWord = false;
+      return { c, fixed: false, hint };
+    });
+
+    progressEl.textContent = `${L('Kelime', 'Word')} ${idx + 1} / ${order.length}`;
+    bubbleEl.textContent = askText;
+    const iconEl = host.querySelector('#keSentenceIcon');
+    if (iconEl) iconEl.innerHTML = renderObjectIcon(obj);
+    speakWord(target, mascotEl);
+
+    slotsEl.innerHTML = '';
+    plan.forEach((p) => {
+      const slot = document.createElement('div');
+      slot.className = 'ke-slot ke-letter-slot';
+      if (p.c === ' ') {
+        slot.classList.add('ke-slot-gap');
+      } else if (p.fixed) {
+        slot.textContent = p.c; slot.classList.add('ke-filled', 'ke-fixed');
+      } else if (p.hint) {
+        slot.textContent = p.c.toUpperCase(); slot.classList.add('ke-filled', 'ke-hint');
+      }
+      slotsEl.appendChild(slot);
+    });
+
+    const blanks = plan.map((p, i) => ({ ...p, i })).filter((p) => !p.fixed && !p.hint);
+    actionsEl.style.display = 'none';
+    checkBtn.disabled = true;
+
+    let wrongAttempts = 0;
+    const filled = new Array(blanks.length).fill(null);
+
+    function renderSlots() {
+      blanks.forEach((b, bi) => {
+        const slot = slotsEl.children[b.i];
+        const it = filled[bi];
+        if (it) { slot.textContent = it.ch.toUpperCase(); slot.classList.add('ke-filled'); }
+        else { slot.textContent = ''; slot.classList.remove('ke-filled'); }
+      });
+      const cnt = filled.filter(Boolean).length;
+      const full = cnt === blanks.length;
+      actionsEl.style.display = cnt ? 'flex' : 'none';
+      checkBtn.disabled = !full;
+      checkBtn.style.display = full ? '' : 'none';
+    }
+    function freeAt(bi) {
+      const it = filled[bi];
+      if (it) { it.tile.classList.remove('ke-used'); filled[bi] = null; }
+    }
+    function resetSlots() { filled.forEach((_, bi) => freeAt(bi)); renderSlots(); }
+
+    slotsEl.querySelectorAll('.ke-letter-slot:not(.ke-fixed):not(.ke-hint)').forEach((slot, bi) => {
+      slot.addEventListener('click', () => { freeAt(bi); renderSlots(); });
+    });
+
+    const correctLetters = blanks.map((b) => b.c.toLowerCase());
+    const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('').filter((c) => !correctLetters.includes(c));
+    const decoyCount = Math.min(4, Math.max(2, Math.ceil(correctLetters.length * 0.4)));
+    const decoys = shuffle(alphabet).slice(0, decoyCount);
+    const bankItems = shuffle([...correctLetters, ...decoys]);
+
+    bankEl.innerHTML = '';
+    bankItems.forEach((ch) => {
+      const tile = document.createElement('button');
+      tile.className = 'ke-tile ke-letter-tile';
+      tile.textContent = ch.toUpperCase();
+      tile.addEventListener('click', () => {
+        if (tile.classList.contains('ke-used')) return;
+        const emptyMatch = filled.findIndex((f, i) => !f && blanks[i].c.toLowerCase() === ch);
+        const target_i = emptyMatch >= 0 ? emptyMatch : filled.findIndex((f) => !f);
+        if (target_i < 0) return;
+        filled[target_i] = { tile, ch };
+        tile.classList.add('ke-used');
+        renderSlots();
+      });
+      bankEl.appendChild(tile);
+    });
+
+    resetBtn.onclick = resetSlots;
+
+    checkBtn.onclick = () => {
+      const isCorrect = filled.every((f, bi) => f && f.ch.toLowerCase() === blanks[bi].c.toLowerCase());
+      if (isCorrect) {
+        checkBtn.disabled = true;
+        bubbleEl.textContent = L('Harika, doğru kelime! 🎉', 'Great, correct word! 🎉');
+        celebrateBounce(mascotEl);
+        speakWord(target, mascotEl);
+        setTimeout(() => { idx++; renderItem(); }, 1300);
+      } else if (++wrongAttempts >= 2) {
+        checkBtn.disabled = true;
+        blanks.forEach((b) => {
+          const slot = slotsEl.children[b.i];
+          slot.textContent = b.c.toUpperCase(); slot.classList.add('ke-reveal');
+        });
+        bubbleEl.textContent = L(`Doğru kelime: ${target} 💡`, `The correct word: ${target} 💡`);
+        try { Progress.recordMistake(episode.category_id, obj); } catch (e) { /* yok say */ }
+        speakWord(target, mascotEl);
+        setTimeout(() => { idx++; renderItem(); }, 3200);
+      } else {
+        bubbleEl.textContent = L('Bu değil, tekrar dene! 🔄', 'Not quite — try again! 🔄');
+        checkBtn.disabled = true;
+        [...slotsEl.children].forEach((s) => s.classList.add('ke-shake'));
+        setTimeout(() => {
+          [...slotsEl.children].forEach((s) => s.classList.remove('ke-shake'));
+          bubbleEl.textContent = askText;
+          resetSlots();
+        }, 800);
+      }
+    };
+  }
+
+  renderItem();
+}
+
 function startSentenceRound(host, container, episode, wordList, mascotEl, score, onDone) {
   const sEl = host.querySelector('#keSentence');
   const progressChip = host.querySelector('#keProgress');
@@ -2669,7 +2842,7 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
     function showDialogue() {
       if (di >= dl.length) {
         endSentenceRound();
-        showCelebration(host, container, episode, wordList, score, onDone);
+        startLetterRound(host, container, episode, wordList, mascotEl, score, onDone);
         return;
       }
       const dlg = dl[di];
@@ -2725,7 +2898,7 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
     if (idx >= order.length) {
       if (episode.dialogues && episode.dialogues.length) { startDialogueRound(); return; }
       endSentenceRound();
-      showCelebration(host, container, episode, wordList, score, onDone);
+      startLetterRound(host, container, episode, wordList, mascotEl, score, onDone);
       return;
     }
     const obj = wordList[order[idx]];
