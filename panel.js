@@ -1975,6 +1975,7 @@ function showSectionMenu(container, api, toolId, categories) {
       <div class="ke-daily-goal">${L('Bugünün hedefi', "Today's goal")}: ${Math.min(DailyGoal.today(), DailyGoal.TARGET)} / ${DailyGoal.TARGET} ${L('kelime', 'words')} ${DailyGoal.today() >= DailyGoal.TARGET ? '🎉' : '🎯'}</div>
       <button type="button" class="ke-profile-chip" id="keStatsBtn" style="margin-left:8px;">📊 ${L('İlerleme', 'Progress')}</button>
       <button type="button" class="ke-profile-chip ke-game-chip" id="keGameBtn" style="margin-left:8px;" ${(GameTokens.get() > 0 || PendingQuiz.get() > 0) ? '' : 'disabled'}><span id="keGameTokenBadge">🎮 ${GameTokens.get()}</span></button>
+      <button type="button" class="ke-profile-chip" id="keGameTestBtn" style="margin-left:8px;padding:4px 10px !important;font-size:11px !important;opacity:.55;" title="test">🔑</button>
       <h1 class="ke-title">${bubbleTitleHTML(L("Aktapokus'un Kelime Safarisi", "Aktapokus Word Safari"))}</h1>
       <p class="ke-subtitle">${L('Ne öğrenmek istiyorsun? Bir bölüm seç!', 'What do you want to learn? Pick a section!')}</p>
     </div>
@@ -1996,6 +1997,16 @@ function showSectionMenu(container, api, toolId, categories) {
       showBonusQuiz(container, api, toolId, categories, () => refreshGameBadge(container));
     } else if (GameTokens.get() > 0) {
       startRiverGame(container, () => showSectionMenu(container, api, toolId, categories));
+    }
+  });
+  // Gecici test kisayolu: sifre girince kuyruk/sinav beklemeden 1 oyun
+  // hakki verir - "benim test edebilmem icin" istegi, kalici bir ozellik
+  // degil.
+  host.querySelector('#keGameTestBtn').addEventListener('click', () => {
+    const code = window.prompt(L('Test şifresi', 'Test code'));
+    if (code === '181078') {
+      GameTokens.add(1);
+      refreshGameBadge(container);
     }
   });
   const grid = host.querySelector('#keSectionGrid');
