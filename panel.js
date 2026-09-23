@@ -3077,12 +3077,27 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
 // "Baştan Başla" her an kutuları sıfırlar. Ceza/restart yok (bu, quiz'in
 // mastery-gate'inden farklı, daha düşük riskli bir alıştırma). Cümle
 // tamamlanınca Aktapokus tüm cümleyi sesli okur.
+// Baslarda bu fonksiyon baska bir kartin TUM "word" alanini tek bir
+// yanilti karo olarak donduruyordu - GET/Travel Talk gibi "word" alani
+// TAM CUMLE olan kategorilerde (ornek: "I get a new bike") bu, diger
+// tum karolardan kat kat buyuk, garip gorunen tek bir dev karo
+// yaratiyordu ("aşırı büyük yanıltıcı kutucuk" geri bildirimi). Duzeltme:
+// diger kartlarin cumlelerini de KELIME KELIME boluyoruz ve havuzdan TEK
+// bir kelime seciyoruz - boylece yanilti karo her zaman diger karolarla
+// ayni boyut sinifinda kaliyor (tek-kelimelik kategorilerde davranis
+// zaten aynen once oldugu gibi kaliyor, cunku "word" zaten tek kelime).
 function pickDistractorWord(tokens, wordList, currentWord) {
   const clean = (s) => s.toLowerCase().replace(/[.,!?]/g, '');
   const tokenSet = new Set(tokens.map(clean));
-  const pool = wordList
-    .map((o) => o.word)
-    .filter((w) => clean(w) !== clean(currentWord) && !tokenSet.has(clean(w)));
+  const pool = [];
+  const seen = new Set();
+  wordList.forEach((o) => {
+    if (clean(o.word) === clean(currentWord)) return;
+    String(o.word || '').split(' ').forEach((w) => {
+      const c = clean(w);
+      if (c && !tokenSet.has(c) && !seen.has(c)) { seen.add(c); pool.push(w); }
+    });
+  });
   if (!pool.length) return null;
   return pool[Math.floor(Math.random() * pool.length)];
 }
