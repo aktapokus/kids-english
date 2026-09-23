@@ -1210,6 +1210,28 @@ ${FONT_FACES}
   .ke-landing-mascot .ke-mascot-hat{ animation:none; }
   .ke-profile-chip{ display:inline-flex; align-items:center; gap:8px; margin:0 0 10px; padding:4px 14px 4px 6px !important; border-radius:999px !important; font-size:13px !important; }
   .ke-stat-row{ font-size:16px; font-weight:700; margin:10px auto; text-align:left; max-width:340px; color:var(--kb-chalk); }
+  .ke-week-card{ background:linear-gradient(155deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:2px solid rgba(245,240,223,.18); border-radius:18px; padding:16px 18px; text-align:left; margin-top:8px; }
+  .ke-week-top{ display:flex; align-items:flex-end; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .ke-week-time{ font-size:13px; font-weight:800; color:var(--kb-chalk-dim); }
+  .ke-spark-row{ display:flex; justify-content:space-between; align-items:flex-end; gap:6px; height:60px; margin-top:14px; }
+  .ke-spark-col{ display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; }
+  .ke-spark-bar{ width:100%; max-width:28px; border-radius:6px 6px 3px 3px; background:var(--kb-action); opacity:.55; }
+  .ke-spark-today{ background:var(--kb-discover); opacity:1; }
+  .ke-spark-day{ font-size:10.5px; font-weight:800; color:var(--kb-chalk-dim); }
+  .ke-kpi-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:14px; }
+  .ke-kpi-card{ border-radius:16px; padding:16px; text-align:left; }
+  .ke-kpi-val{ font-size:28px; font-weight:800; color:var(--kb-chalk); line-height:1.1; }
+  .ke-kpi-lbl{ font-size:12.5px; font-weight:800; color:var(--kb-chalk-dim); text-transform:uppercase; letter-spacing:.03em; margin-top:4px; }
+  .ke-kpi-gold{ background:rgba(255,215,90,.14); border:2px solid rgba(255,215,90,.4); }
+  .ke-kpi-wood{ background:rgba(216,158,94,.14); border:2px solid rgba(216,158,94,.4); }
+  .ke-kpi-teal{ background:rgba(110,200,255,.14); border:2px solid rgba(110,200,255,.4); }
+  .ke-kpi-good{ background:rgba(133,217,138,.14); border:2px solid rgba(133,217,138,.4); }
+  .ke-trophy-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:12px; margin-top:10px; }
+  .ke-trophy{ border-radius:14px; padding:12px 8px; text-align:center; background:rgba(245,240,223,.05); border:2px dashed rgba(245,240,223,.25); opacity:.55; }
+  .ke-trophy-got{ opacity:1; background:rgba(255,215,90,.1); border-style:solid; border-color:var(--kb-discover); }
+  .ke-trophy-badge{ width:40px; height:40px; border-radius:50%; margin:0 auto 8px; display:flex; align-items:center; justify-content:center; font-size:20px; background:rgba(245,240,223,.12); }
+  .ke-trophy-name{ font-size:11.5px; font-weight:800; color:var(--kb-chalk); }
+  .ke-trophy-need{ font-size:10px; font-weight:700; color:var(--kb-chalk-dim); margin-top:3px; }
   .ke-daily-goal{ display:inline-block; margin:0 0 10px 8px; padding:4px 12px; border-radius:999px; background:rgba(255,215,90,.12); border:1.5px dashed var(--kb-discover); color:var(--kb-discover); font-size:12px; font-weight:800; }
   .ke-profile-chip .ke-avatar-mini{ position:relative; width:34px; height:34px; flex:none; }
   .ke-avatar-mini img.ke-av-body{ width:100%; height:100%; object-fit:cover; object-position:50% 12%; border-radius:50%; background:rgba(255,255,255,.15); }
@@ -1815,8 +1837,13 @@ async function computeKPIs(profileId) {
   const correct = events.filter((e) => e.isCorrect).length;
   const accuracy = total ? Math.round((correct / total) * 100) : null;
   const learnedWords = new Set(events.filter((e) => e.isCorrect).map((e) => e.word)).size;
+  // Son 7 gun icin gunluk cevap sayisi - GERCEK veri, uydurma sparkline degil.
+  const days = [];
+  for (let i = 6; i >= 0; i--) days.push(dayStr(Date.now() - i * 86400000));
+  const last7 = days.map((d) => events.filter((e) => dayStr(e.timestamp) === d).length);
+  const thisWeek = last7.reduce((a, b) => a + b, 0);
   return {
-    total, correct, accuracy, learnedWords,
+    total, correct, accuracy, learnedWords, last7, thisWeek,
     puzzlesCompleted: Progress.totalStars(),
     streak: Streak.get(),
     timeSeconds: TimeTrack.total(),
@@ -1880,34 +1907,87 @@ async function showStatsScreen(container, api, toolId, categories) {
   const host = container.querySelector('#keScreenHost');
   host.innerHTML = `
     <button class="ke-back-btn" id="keStatsBack">${ICON_BACK} ${L('Bölümler', 'Sections')}</button>
-    <div class="ke-profile-screen">
-      <h1 class="ke-title">${bubbleTitleHTML(L('İlerleme Raporu', 'Progress Report'))}</h1>
-      <div id="keStatsBody" style="margin-top:18px;">${L('Yükleniyor…', 'Loading…')}</div>
-      <div class="ke-pl-label" style="margin-top:18px;">${L('Yedekleme', 'Backup')}</div>
-      <div class="ke-pick-row">
-        <button type="button" class="ke-pick" id="keExportBtn">⬇️ ${L('Yedek indir', 'Download')}</button>
-        <label class="ke-pick" for="keImportInput" style="cursor:pointer;">⬆️ ${L('Yedek yükle', 'Restore')}</label>
-        <input type="file" id="keImportInput" accept="application/json" style="display:none;" />
-      </div>
-      <div class="ke-pl-label">${L('Veri, hiçbir sunucuya gönderilmez — sadece bu cihazda tutulur.', 'Your data is never sent to a server — it stays on this device only.')}</div>
+    <div class="ke-profile-screen" style="max-width:640px;">
+      <h1 class="ke-title">${bubbleTitleHTML(L('Başarı Panom', 'My Achievements'))}</h1>
+      <div id="keStatsBody">${L('Yükleniyor…', 'Loading…')}</div>
     </div>
   `;
   host.querySelector('#keStatsBack').addEventListener('click', () => showSectionMenu(container, api, toolId, categories));
   pushBackState(() => showSectionMenu(container, api, toolId, categories));
-  host.querySelector('#keExportBtn').addEventListener('click', exportBackup);
-  host.querySelector('#keImportInput').addEventListener('change', (e) => importBackup(e.target.files[0]));
 
-  const kpi = await computeKPIs(Profiles.active().id);
+  const p = Profiles.active();
+  const kpi = await computeKPIs(p.id);
   const mins = Math.floor(kpi.timeSeconds / 60);
+  const maxBar = Math.max(1, ...kpi.last7);
+  const dayLetters = L('PSÇPCCP', 'MTWTFSS').split('');
+  const todayIdx = 6;
+  const spark = kpi.last7.map((n, i) => `
+    <div class="ke-spark-col">
+      <div class="ke-spark-bar${i === todayIdx ? ' ke-spark-today' : ''}" style="height:${Math.max(6, Math.round((n / maxBar) * 44))}px" title="${n}"></div>
+      <div class="ke-spark-day">${dayLetters[i]}</div>
+    </div>`).join('');
+
+  const cards = [
+    { v: kpi.puzzlesCompleted, l: L('Tamamlanan Bölüm', 'Episodes Done'), c: 'gold' },
+    { v: `${kpi.streak}`, l: L('Günlük Seri', 'Day Streak'), c: 'wood', suffix: L(' gün', ' days') },
+    { v: kpi.learnedWords, l: L('Öğrenilen Kelime', 'Words Learned'), c: 'teal' },
+    { v: kpi.accuracy === null ? '—' : `${kpi.accuracy}%`, l: L('Doğruluk', 'Accuracy'), c: 'good' },
+  ].map((c) => `
+    <div class="ke-kpi-card ke-kpi-${c.c}">
+      <div class="ke-kpi-val">${c.v}${c.suffix || ''}</div>
+      <div class="ke-kpi-lbl">${c.l}</div>
+    </div>`).join('');
+
+  const stars = kpi.puzzlesCompleted;
+  const streakDays = kpi.streak;
+  const trophies = [
+    ...avatarColors().filter((c) => c.id !== 'yellow').map((c) => ({
+      name: L(`${c.label} Aktapokus`, `${c.label} Aktapokus`),
+      swatch: c.swatch,
+      got: c.needStreak ? streakDays >= c.needStreak : stars >= c.need,
+      need: c.needStreak ? L(`${c.needStreak} gün seri`, `${c.needStreak}-day streak`) : L(`${c.need} bölüm`, `${c.need} episode${c.need === 1 ? '' : 's'}`),
+    })),
+    ...avatarHats().filter((h) => h.id !== 'none').map((h) => ({
+      name: h.label, emoji: h.emoji,
+      got: h.needStreak ? streakDays >= h.needStreak : stars >= h.need,
+      need: h.needStreak ? L(`${h.needStreak} gün seri`, `${h.needStreak}-day streak`) : L(`${h.need} bölüm`, `${h.need} episode${h.need === 1 ? '' : 's'}`),
+    })),
+  ];
+  const trophyGrid = trophies.map((t) => `
+    <div class="ke-trophy${t.got ? ' ke-trophy-got' : ''}">
+      <div class="ke-trophy-badge" style="${t.swatch ? `background:${t.swatch}` : ''}">${t.emoji || ''}</div>
+      <div class="ke-trophy-name">${t.name}</div>
+      <div class="ke-trophy-need">${t.got ? L('Kazanıldı!', 'Earned!') : t.need}</div>
+    </div>`).join('');
+
   const body = host.querySelector('#keStatsBody');
   if (body) {
     body.innerHTML = `
-      <div class="ke-stat-row">🌟 ${L('Tamamlanan bölüm', 'Episodes completed')}: <b>${kpi.puzzlesCompleted}</b></div>
-      <div class="ke-stat-row">🔥 ${L('Seri', 'Streak')}: <b>${kpi.streak} ${L('gün', 'days')}</b></div>
-      <div class="ke-stat-row">📚 ${L('Öğrenilen kelime', 'Words learned')}: <b>${kpi.learnedWords}</b></div>
-      <div class="ke-stat-row">🎯 ${L('Doğruluk oranı', 'Accuracy')}: <b>${kpi.accuracy === null ? '—' : kpi.accuracy + '%'}</b> ${kpi.total ? `(${kpi.correct}/${kpi.total})` : ''}</div>
-      <div class="ke-stat-row">⏱️ ${L('Uygulamada geçirilen süre', 'Time in app')}: <b>${mins} ${L('dk', 'min')}</b></div>
+      <div class="ke-week-card">
+        <div class="ke-week-top">
+          <div>
+            <div class="ke-kpi-lbl">${L('Bu hafta', 'This week')}</div>
+            <div class="ke-kpi-val">${kpi.thisWeek} <span style="font-size:15px;font-weight:700;">${L('cevap', 'answers')}</span></div>
+          </div>
+          <div class="ke-week-time">⏱ ${mins} ${L('dk toplam', 'min total')}</div>
+        </div>
+        <div class="ke-spark-row">${spark}</div>
+      </div>
+      <div class="ke-kpi-grid">${cards}</div>
+      <div class="ke-pl-label" style="margin-top:26px;">${L('Kupalar — Aktapokus’a kostüm', 'Trophies — costumes for Aktapokus')}</div>
+      <div class="ke-trophy-grid">${trophyGrid}</div>
+      <button type="button" class="ke-btn-primary" id="keGoCustomize" style="margin-top:14px;">${L('Aktapokus’u Özelleştir', 'Customize Aktapokus')} →</button>
+      <div class="ke-pl-label" style="margin-top:26px;">${L('Yedekleme', 'Backup')}</div>
+      <div class="ke-pick-row">
+        <button type="button" class="ke-pick" id="keExportBtn">${L('Yedek indir', 'Download backup')}</button>
+        <label class="ke-pick" for="keImportInput" style="cursor:pointer;">${L('Yedek yükle', 'Restore backup')}</label>
+        <input type="file" id="keImportInput" accept="application/json" style="display:none;" />
+      </div>
+      <div class="ke-pl-label">${L('Veri hiçbir sunucuya gönderilmez — sadece bu cihazda tutulur.', 'Your data is never sent to a server — it stays on this device only.')}</div>
     `;
+    host.querySelector('#keExportBtn').addEventListener('click', exportBackup);
+    host.querySelector('#keImportInput').addEventListener('change', (e) => importBackup(e.target.files[0]));
+    host.querySelector('#keGoCustomize').addEventListener('click', () => showProfileScreen(container, api, toolId, categories, {}));
   }
 }
 
