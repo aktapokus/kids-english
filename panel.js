@@ -100,6 +100,69 @@ function progressKey() {
   return id === 'p1' ? PROGRESS_KEY : PROGRESS_KEY + '_' + id;
 }
 
+function dayStr(t) { return new Date(t).toISOString().slice(0, 10); }
+
+const STREAK_KEY = 'ke_streak_v1';
+function streakKey() {
+  const id = Profiles.active().id;
+  return id === 'p1' ? STREAK_KEY : STREAK_KEY + '_' + id;
+}
+// Art arda gun serisi: bir gunde EN AZ bir bolum tamamlanirsa sayilir
+// (Progress.markComplete cagirir) - sadece uygulamayi acmak degil.
+const Streak = {
+  _load() {
+    try {
+      const raw = JSON.parse(window.localStorage.getItem(streakKey()));
+      if (raw && typeof raw.days === 'number') return raw;
+    } catch (e) { /* yok say */ }
+    return { days: 0, last: null };
+  },
+  _save(d) { try { window.localStorage.setItem(streakKey(), JSON.stringify(d)); } catch (e) { /* yok say */ } },
+  get() { return this._load().days; },
+  touch() {
+    const s = this._load();
+    const today = dayStr(Date.now());
+    if (s.last === today) return s.days;
+    const yesterday = dayStr(Date.now() - 86400000);
+    s.days = (s.last === yesterday) ? s.days + 1 : 1;
+    s.last = today;
+    this._save(s);
+    return s.days;
+  },
+};
+
+const DAILY_KEY = 'ke_daily_v1';
+function dailyKey() {
+  const id = Profiles.active().id;
+  return id === 'p1' ? DAILY_KEY : DAILY_KEY + '_' + id;
+}
+// "Bugunun hedefi": her tamamlanan bolum/tur, kendi kelime sayisi kadar
+// bu sayaca ekleniyor (showCelebration'dan cagrilir). Gun degisince
+// otomatik sifirlanir.
+const DailyGoal = {
+  TARGET: 5,
+  _load() {
+    try {
+      const raw = JSON.parse(window.localStorage.getItem(dailyKey()));
+      if (raw && raw.day) return raw;
+    } catch (e) { /* yok say */ }
+    return { day: null, count: 0 };
+  },
+  _save(d) { try { window.localStorage.setItem(dailyKey(), JSON.stringify(d)); } catch (e) { /* yok say */ } },
+  add(n) {
+    const d = this._load();
+    const today = dayStr(Date.now());
+    if (d.day !== today) { d.day = today; d.count = 0; }
+    d.count += n;
+    this._save(d);
+    return d.count;
+  },
+  today() {
+    const d = this._load();
+    return d.day === dayStr(Date.now()) ? d.count : 0;
+  },
+};
+
 const Progress = {
   _load() {
     try {
@@ -123,6 +186,7 @@ const Progress = {
     const cat = this._cat(data, categoryId);
     if (!cat.completed.includes(episodeIndex)) cat.completed.push(episodeIndex);
     this._save(data);
+    try { Streak.touch(); } catch (e) { /* yok say */ }
   },
   // Bir bölümü tamamlamadan önce hangi bölüme devam edileceği — ilk
   // tamamlanmamış bölüm, hepsi bittiyse son bölüm (tekrar oynanabilir).
@@ -137,26 +201,43 @@ const Progress = {
     const data = this._load();
     const cat = this._cat(data, categoryId);
     const entry = cat.missed[obj.word];
-    if (entry) entry.count++;
-    else cat.missed[obj.word] = { count: 1, obj };
+    // Leitner: her yanlis kutu 0'a (hemen tekrar) dusurur.
+    if (entry) { entry.count++; entry.box = 0; entry.due = Date.now(); }
+    else cat.missed[obj.word] = { count: 1, obj, box: 0, due: Date.now() };
     this._save(data);
   },
-  // Kelime ilk denemede doğru bilinince — "artık biliyor" kabul edip
-  // tekrar kuyruğundan çıkarıyoruz.
+  // Kelime dogru bilinince tamamen SILMEK yerine (eski davranis) bir
+  // sonraki kutuya terfi ettirip erteliyoruz - gercek aralikli tekrar:
+  // 1 gun -> 3 gun -> 7 gun sonra tekrar sorulur, 4. dogru cevapta
+  // "ustalasildi" sayilip kuyruktan tamamen cikiyor.
   clearMistakes(categoryId, words) {
     const data = this._load();
     const cat = this._cat(data, categoryId);
-    words.forEach((w) => { delete cat.missed[w]; });
+    const intervalsDays = [1, 3, 7];
+    words.forEach((w) => {
+      const entry = cat.missed[w];
+      if (!entry) return;
+      const box = (entry.box || 0) + 1;
+      if (box > intervalsDays.length) { delete cat.missed[w]; return; }
+      entry.box = box;
+      entry.due = Date.now() + intervalsDays[box - 1] * 86400000;
+    });
     this._save(data);
   },
   totalStars() {
     const data = this._load();
     return Object.values(data).reduce((n, c) => n + ((c && c.completed) ? c.completed.length : 0), 0);
   },
-  topMissed(categoryId, limit) {
+  // Sadece VADESI GELMIS (due <= simdi) kelimeler - henuz erteleme
+  // suresi dolmamis kelimeler tekrar listesinde gorunmuyor.
+  dueMissed(categoryId) {
     const cat = this.getCategory(categoryId);
-    return Object.values(cat.missed)
-      .sort((a, b) => b.count - a.count)
+    const now = Date.now();
+    return Object.values(cat.missed).filter((e) => (e.due || 0) <= now);
+  },
+  topMissed(categoryId, limit) {
+    return this.dueMissed(categoryId)
+      .sort((a, b) => (a.due || 0) - (b.due || 0) || b.count - a.count)
       .slice(0, limit || 8)
       .map((e) => e.obj);
   },
@@ -984,6 +1065,7 @@ ${FONT_FACES}
   .ke-landing-mascot img{ display:block; width:100%; height:auto; }
   .ke-landing-mascot .ke-mascot-hat{ animation:none; }
   .ke-profile-chip{ display:inline-flex; align-items:center; gap:8px; margin:0 0 10px; padding:4px 14px 4px 6px !important; border-radius:999px !important; font-size:13px !important; }
+  .ke-daily-goal{ display:inline-block; margin:0 0 10px 8px; padding:4px 12px; border-radius:999px; background:rgba(255,215,90,.12); border:1.5px dashed var(--kb-discover); color:var(--kb-discover); font-size:12px; font-weight:800; }
   .ke-profile-chip .ke-avatar-mini{ position:relative; width:34px; height:34px; flex:none; }
   .ke-avatar-mini img.ke-av-body{ width:100%; height:100%; object-fit:cover; object-position:50% 12%; border-radius:50%; background:rgba(255,255,255,.15); }
   .ke-profile-screen{ max-width:640px; margin:0 auto; text-align:center; position:relative; z-index:1; }
@@ -1247,14 +1329,14 @@ const avatarColors = () => [
   { id: 'yellow', label: L('Sarı', 'Yellow'), need: 0, swatch: '#FFC800' },
   { id: 'blue', label: L('Mavi', 'Blue'), need: 2, swatch: '#3B8BEB' },
   { id: 'green', label: L('Yeşil', 'Green'), need: 4, swatch: '#3ED04A' },
-  { id: 'pink', label: L('Pembe', 'Pink'), need: 8, swatch: '#E63AA0' },
+  { id: 'pink', label: L('Pembe', 'Pink'), need: 0, needStreak: 3, swatch: '#E63AA0' },
   { id: 'purple', label: L('Mor', 'Purple'), need: 12, swatch: '#8A3FE0' },
 ];
 const avatarHats = () => [
   { id: 'none', label: L('Yok', 'None'), need: 0, emoji: '🚫' },
   { id: 'cap', label: L('Kep', 'Cap'), need: 1, emoji: '🧢' },
   { id: 'party', label: L('Parti', 'Party'), need: 3, emoji: '🎉' },
-  { id: 'crown', label: L('Taç', 'Crown'), need: 6, emoji: '👑' },
+  { id: 'crown', label: L('Taç', 'Crown'), need: 0, needStreak: 5, emoji: '👑' },
   { id: 'wizard', label: L('Büyücü', 'Wizard'), need: 10, emoji: '🧙' },
 ];
 
@@ -1525,7 +1607,8 @@ function showSectionMenu(container, api, toolId, categories) {
   host.innerHTML = `
     ${avatarLandingHTML('wave')}
     <div class="ke-landing-header">
-      <button type="button" class="ke-profile-chip" id="keProfileBtn"><span class="ke-avatar-mini"><img class="ke-av-body" src="${avatarBodySrc('wave', Profiles.active().color)}" alt="" draggable="false" /></span>${escapeProfileText(Profiles.active().name || L('Ben', 'Me'))} · ${Progress.totalStars()} ⭐ · ${L("Aktapokus'um", 'My Aktapokus')} ✏️</button>
+      <button type="button" class="ke-profile-chip" id="keProfileBtn"><span class="ke-avatar-mini"><img class="ke-av-body" src="${avatarBodySrc('wave', Profiles.active().color)}" alt="" draggable="false" /></span>${escapeProfileText(Profiles.active().name || L('Ben', 'Me'))} · ${Progress.totalStars()} ⭐${Streak.get() > 0 ? ` · 🔥${Streak.get()}` : ''} · ${L("Aktapokus'um", 'My Aktapokus')} ✏️</button>
+      <div class="ke-daily-goal">${L('Bugünün hedefi', "Today's goal")}: ${Math.min(DailyGoal.today(), DailyGoal.TARGET)} / ${DailyGoal.TARGET} ${L('kelime', 'words')} ${DailyGoal.today() >= DailyGoal.TARGET ? '🎉' : '🎯'}</div>
       <h1 class="ke-title">${bubbleTitleHTML(L("Aktapokus'un Kelime Safarisi", "Aktapokus Word Safari"))}</h1>
       <p class="ke-subtitle">${L('Ne öğrenmek istiyorsun? Bir bölüm seç!', 'What do you want to learn? Pick a section!')}</p>
     </div>
@@ -1586,17 +1669,34 @@ function showProfileScreen(container, api, toolId, categories, opts) {
     ? { id: Profiles.newId(), name: '', color: 'yellow', hat: 'none' }
     : Object.assign({}, Profiles.active());
   const stars = creating ? 0 : Progress.totalStars();
+  const streakDays = creating ? 0 : Streak.get();
   let msg = '';
+
+  // Bazi ust-seviye kilitler yildiza (tamamlanan bolum) degil, art arda
+  // gun seriyene bagli ("her gun biraz oyna" tesvigi) - needStreak varsa
+  // O gecerli, yoksa eski yildiz kurali.
+  function isLocked(item) {
+    if (item.needStreak) return streakDays < item.needStreak;
+    return stars < item.need;
+  }
+  function lockLabel(item) {
+    return item.needStreak ? `🔒${item.needStreak}🔥` : `🔒${item.need}⭐`;
+  }
+  function lockMsg(label, item) {
+    return item.needStreak
+      ? L(`🔒 ${label} için ${item.needStreak} gün art arda oynaman gerekli (şu an ${streakDays})`, `🔒 ${label} needs a ${item.needStreak}-day streak (you have ${streakDays})`)
+      : L(`🔒 ${label} için ${item.need} ⭐ gerekli (şu an ${stars})`, `🔒 ${label} needs ${item.need} ⭐ (you have ${stars})`);
+  }
 
   function draw() {
     const profiles = Profiles.all();
     const colorBtns = avatarColors().map((c) => {
-      const lock = stars < c.need;
-      return `<button type="button" class="ke-pick${draft.color === c.id ? ' ke-sel' : ''}${lock ? ' ke-lock' : ''}" data-color="${c.id}" aria-label="${c.label}"><span class="ke-sw" style="background:${c.swatch}"></span>${lock ? ` 🔒${c.need}⭐` : ''}</button>`;
+      const lock = isLocked(c);
+      return `<button type="button" class="ke-pick${draft.color === c.id ? ' ke-sel' : ''}${lock ? ' ke-lock' : ''}" data-color="${c.id}" aria-label="${c.label}"><span class="ke-sw" style="background:${c.swatch}"></span>${lock ? ` ${lockLabel(c)}` : ''}</button>`;
     }).join('');
     const hatBtns = avatarHats().map((h) => {
-      const lock = stars < h.need;
-      return `<button type="button" class="ke-pick${draft.hat === h.id ? ' ke-sel' : ''}${lock ? ' ke-lock' : ''}" data-hat="${h.id}" aria-label="${h.label}">${h.emoji}${lock ? ` 🔒${h.need}⭐` : ''}</button>`;
+      const lock = isLocked(h);
+      return `<button type="button" class="ke-pick${draft.hat === h.id ? ' ke-sel' : ''}${lock ? ' ke-lock' : ''}" data-hat="${h.id}" aria-label="${h.label}">${h.emoji}${lock ? ` ${lockLabel(h)}` : ''}</button>`;
     }).join('');
     const switcher = first || creating ? '' : `
       <div class="ke-pl-label">${L('Profiller', 'Profiles')}</div>
@@ -1613,7 +1713,7 @@ function showProfileScreen(container, api, toolId, categories, opts) {
         <div><input id="keProfileName" class="ke-profile-name" maxlength="12" placeholder="${L('Adın ne?', 'Your name?')}" value="${escapeProfileText(draft.name)}" autocomplete="off" /></div>
         <div class="ke-pl-label">${L('Renk', 'Color')}</div><div class="ke-pick-row">${colorBtns}</div>
         <div class="ke-pl-label">${L('Şapka', 'Hat')}</div><div class="ke-pick-row">${hatBtns}</div>
-        <div class="ke-pl-label" id="keProfileMsg">${msg || L(`Kazandığın yıldız: ${stars} ⭐ — bölüm bitirdikçe yeni renk ve şapkalar açılır!`, `Stars earned: ${stars} ⭐ — finish episodes to unlock new colors and hats!`)}</div>
+        <div class="ke-pl-label" id="keProfileMsg">${msg || L(`Kazandığın yıldız: ${stars} ⭐ · Seri: ${streakDays} gün 🔥 — bölüm bitirdikçe ve art arda oynadıkça yeni renk/şapkalar açılır!`, `Stars: ${stars} ⭐ · Streak: ${streakDays} days 🔥 — finish episodes and keep your streak to unlock new colors/hats!`)}</div>
         <div style="margin-top:8px;"><button type="button" class="ke-btn-primary" id="keProfileSave" style="font-size:17px !important;padding:14px 26px !important;">${first ? L('Başla! 🚀', "Let's go! 🚀") : L('Kaydet ✓', 'Save ✓')}</button></div>
         ${switcher}
       </div>`;
@@ -1621,12 +1721,12 @@ function showProfileScreen(container, api, toolId, categories, opts) {
     nameEl.addEventListener('input', () => { draft.name = nameEl.value; });
     host.querySelectorAll('[data-color]').forEach((b) => b.addEventListener('click', () => {
       const c = avatarColors().find((x) => x.id === b.dataset.color);
-      if (stars < c.need) { msg = L(`🔒 ${c.label} rengi için ${c.need} ⭐ gerekli (şu an ${stars})`, `🔒 ${c.label} needs ${c.need} ⭐ (you have ${stars})`); draw(); return; }
+      if (isLocked(c)) { msg = lockMsg(c.label, c); draw(); return; }
       draft.color = c.id; msg = ''; draw();
     }));
     host.querySelectorAll('[data-hat]').forEach((b) => b.addEventListener('click', () => {
       const h = avatarHats().find((x) => x.id === b.dataset.hat);
-      if (stars < h.need) { msg = L(`🔒 ${h.label} için ${h.need} ⭐ gerekli (şu an ${stars})`, `🔒 ${h.label} needs ${h.need} ⭐ (you have ${stars})`); draw(); return; }
+      if (isLocked(h)) { msg = lockMsg(h.label, h); draw(); return; }
       draft.hat = h.id; msg = ''; draw();
     }));
     host.querySelector('#keProfileSave').addEventListener('click', () => {
@@ -1685,7 +1785,7 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
 
     const prog = Progress.getCategory(c.id);
     const doneCount = prog.completed.length;
-    const missedCount = Object.keys(prog.missed).length;
+    const missedCount = Progress.dueMissed(c.id).length;
     const inProgress = doneCount > 0 && doneCount < c.episode_count;
     const metaText = doneCount > 0
       ? L(`${doneCount} / ${c.episode_count} bölüm tamamlandı ⭐`, `${doneCount} / ${c.episode_count} episodes done ⭐`)
@@ -1702,7 +1802,7 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
         ${doneCount > 0 ? `<div class="ke-cat-progress-track"><div class="ke-cat-progress-fill" style="width:${pct}%"></div></div>` : ''}
         ${inProgress ? `<div class="ke-cat-next-ep">${L('Sıradaki: Bölüm', 'Next: Episode')} ${nextEp + 1}</div>` : ''}
       </div>
-      ${missedCount >= 3 ? `<div class="ke-review-chip" data-review-cat="${c.id}" role="button" tabindex="0" title="${L('Zorlandığın kelimeleri tekrar et', 'Review the words you missed')}">🔁 ${missedCount}</div>` : ''}
+      ${missedCount >= 1 ? `<div class="ke-review-chip" data-review-cat="${c.id}" role="button" tabindex="0" title="${L('Zorlandığın kelimeleri tekrar et', 'Review the words you missed')}">🔁 ${missedCount}</div>` : ''}
     `;
     card.addEventListener('click', (e) => {
       if (e.target.closest('[data-review-cat]')) return; // ayrı buton kendi handler'ında yönetiliyor
@@ -3068,6 +3168,7 @@ function showCelebration(host, container, episode, wordList, score, onDone) {
   } else {
     Progress.markComplete(episode.category_id, episode.episode_index);
   }
+  try { DailyGoal.add(wordList.length); } catch (e) { /* yok say */ }
   const overlay = host.querySelector('#keCelebration');
   host.querySelector('#keCelebrationText').textContent = episode.isReview
     ? L(`${wordList.length} kelimeyi tekrar ettin — artık daha iyi biliyorsun! 💪`, `You reviewed ${wordList.length} words — you know them better now! 💪`)
