@@ -93,6 +93,105 @@ const CATEGORY_MOTIF = {
 // verisini temizleyerek sıfırlayabilir — ayrı bir "ilerlemeyi sıfırla"
 // UI'ı şimdilik yok, kapsam dışı bırakıldı. Yapı:
 // { [categoryId]: { completed: [episodeIndex,...], missed: { word: {count, obj} } } }
+// --- IndexedDB: localStorage'in arkasinda dayanikli yedek katman + olay
+// gunlugu. Neden SQLite/Room degil: bu bir Trusted Web Activity - yani
+// gercek bir web sitesini saran Chrome kabugu, native Kotlin/Java kodu
+// CALISTIRAMIYOR. IndexedDB, web platformunun kendi yerel/on-device
+// veritabani API'si - ayni "sifir bulut, cihazda kalir" ilkesini web
+// icin doğru sekilde karsiliyor. --- kv deposu = localStorage'daki HER
+// seyin aynasi (profiles, progress_*, streak_*, daily_*) - localStorage
+// temizlenirse/tarayici verisi silinirse acilista buradan geri yuklenir.
+// events deposu = cevap dogru/yanlis gunlugu, SADECE burada tutulur,
+// istatistik ekrani buradan hesaplar.
+const IDB_NAME = 'ke_db_v1';
+const IDB_VERSION = 1;
+let _idbReadyPromise = null;
+function openIDB() {
+  if (_idbReadyPromise) return _idbReadyPromise;
+  _idbReadyPromise = new Promise((resolve) => {
+    if (!('indexedDB' in window)) { resolve(null); return; }
+    try {
+      const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains('kv')) db.createObjectStore('kv', { keyPath: 'k' });
+        if (!db.objectStoreNames.contains('events')) {
+          const es = db.createObjectStore('events', { keyPath: 'id', autoIncrement: true });
+          es.createIndex('by_profile', 'profileId');
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => resolve(null);
+    } catch (e) { resolve(null); }
+  });
+  return _idbReadyPromise;
+}
+// Fire-and-forget yazma - hicbir cagiran await etmek zorunda degil,
+// IndexedDB yoksa/basarisiz olursa sessizce yok sayilir (localStorage
+// zaten birincil, senkron kaynak olmaya devam ediyor).
+function idbPut(key, value) {
+  openIDB().then((db) => {
+    if (!db) return;
+    try { db.transaction('kv', 'readwrite').objectStore('kv').put({ k: key, v: value }); } catch (e) { /* yok say */ }
+  });
+}
+function idbLogEvent(evt) {
+  openIDB().then((db) => {
+    if (!db) return;
+    try { db.transaction('events', 'readwrite').objectStore('events').add(evt); } catch (e) { /* yok say */ }
+  });
+}
+function idbGetAllKV() {
+  return openIDB().then((db) => {
+    if (!db) return {};
+    return new Promise((resolve) => {
+      try {
+        const req = db.transaction('kv', 'readonly').objectStore('kv').getAll();
+        req.onsuccess = () => { const out = {}; (req.result || []).forEach((r) => { out[r.k] = r.v; }); resolve(out); };
+        req.onerror = () => resolve({});
+      } catch (e) { resolve({}); }
+    });
+  });
+}
+function idbGetEvents(profileId) {
+  return openIDB().then((db) => {
+    if (!db) return [];
+    return new Promise((resolve) => {
+      try {
+        const idx = db.transaction('events', 'readonly').objectStore('events').index('by_profile');
+        const req = idx.getAll(IDBKeyRange.only(profileId));
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      } catch (e) { resolve([]); }
+    });
+  });
+}
+// Acilista bir kere: IndexedDB'de olup localStorage'da OLMAYAN her
+// anahtari geri yukler (localStorage temizlenmis/tarayici verisi
+// silinmis ama uygulama hala kurulu senaryosu). Var olan localStorage
+// verisinin USTUNE YAZMAZ - sadece eksikleri tamamlar.
+function logAnswerEvent(categoryId, word, isCorrect) {
+  try {
+    idbLogEvent({
+      profileId: Profiles.active().id,
+      timestamp: Date.now(),
+      categoryId,
+      word,
+      isCorrect: !!isCorrect,
+    });
+  } catch (e) { /* yok say */ }
+}
+async function hydrateFromIDB() {
+  try {
+    const kv = await idbGetAllKV();
+    Object.keys(kv).forEach((k) => {
+      if (window.localStorage.getItem(k) === null) {
+        try { window.localStorage.setItem(k, JSON.stringify(kv[k])); } catch (e) { /* yok say */ }
+      }
+    });
+  } catch (e) { /* yok say */ }
+}
+
 const PROGRESS_KEY = 'ke_progress_v1';
 const PROFILES_KEY = 'ke_profiles_v1';
 function progressKey() {
@@ -117,7 +216,7 @@ const Streak = {
     } catch (e) { /* yok say */ }
     return { days: 0, last: null };
   },
-  _save(d) { try { window.localStorage.setItem(streakKey(), JSON.stringify(d)); } catch (e) { /* yok say */ } },
+  _save(d) { try { window.localStorage.setItem(streakKey(), JSON.stringify(d)); } catch (e) { /* yok say */ } idbPut(streakKey(), d); },
   get() { return this._load().days; },
   touch() {
     const s = this._load();
@@ -148,7 +247,7 @@ const DailyGoal = {
     } catch (e) { /* yok say */ }
     return { day: null, count: 0 };
   },
-  _save(d) { try { window.localStorage.setItem(dailyKey(), JSON.stringify(d)); } catch (e) { /* yok say */ } },
+  _save(d) { try { window.localStorage.setItem(dailyKey(), JSON.stringify(d)); } catch (e) { /* yok say */ } idbPut(dailyKey(), d); },
   add(n) {
     const d = this._load();
     const today = dayStr(Date.now());
@@ -163,6 +262,55 @@ const DailyGoal = {
   },
 };
 
+const TIME_KEY = 'ke_time_v1';
+function timeKey() {
+  const id = Profiles.active().id;
+  return id === 'p1' ? TIME_KEY : TIME_KEY + '_' + id;
+}
+// Uygulamada gecirilen sure: sekme/pencere gorunur oldugu surece sayar,
+// gizlenince (visibilitychange) biriktirdigini kaydedip durur - PWA'da
+// native onResume/onPause karsiligi budur.
+const TimeTrack = {
+  _load() {
+    try {
+      const raw = JSON.parse(window.localStorage.getItem(timeKey()));
+      if (raw && typeof raw.seconds === 'number') return raw;
+    } catch (e) { /* yok say */ }
+    return { seconds: 0 };
+  },
+  _save(d) {
+    try { window.localStorage.setItem(timeKey(), JSON.stringify(d)); } catch (e) { /* yok say */ }
+    idbPut(timeKey(), d);
+  },
+  add(sec) {
+    if (sec <= 0) return this._load().seconds;
+    const d = this._load();
+    d.seconds += sec;
+    this._save(d);
+    return d.seconds;
+  },
+  total() { return this._load().seconds; },
+};
+let _timeTrackStart = null;
+let _timeTrackStarted = false;
+function flushTimeTrack() {
+  if (_timeTrackStart == null) return;
+  const sec = Math.round((Date.now() - _timeTrackStart) / 1000);
+  TimeTrack.add(sec);
+  _timeTrackStart = document.hidden ? null : Date.now();
+}
+function startTimeTracking() {
+  if (_timeTrackStarted) return;
+  _timeTrackStarted = true;
+  _timeTrackStart = Date.now();
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) flushTimeTrack();
+    else _timeTrackStart = Date.now();
+  });
+  window.addEventListener('beforeunload', flushTimeTrack);
+  setInterval(flushTimeTrack, 20000);
+}
+
 const Progress = {
   _load() {
     try {
@@ -172,6 +320,7 @@ const Progress = {
   },
   _save(data) {
     try { window.localStorage.setItem(progressKey(), JSON.stringify(data)); } catch (e) { /* quota/gizli mod — sessizce yok say */ }
+    idbPut(progressKey(), data);
   },
   _cat(data, categoryId) {
     if (!data[categoryId]) data[categoryId] = { completed: [], missed: {} };
@@ -205,6 +354,7 @@ const Progress = {
     if (entry) { entry.count++; entry.box = 0; entry.due = Date.now(); }
     else cat.missed[obj.word] = { count: 1, obj, box: 0, due: Date.now() };
     this._save(data);
+    logAnswerEvent(categoryId, obj.word, false);
   },
   // Kelime dogru bilinince tamamen SILMEK yerine (eski davranis) bir
   // sonraki kutuya terfi ettirip erteliyoruz - gercek aralikli tekrar:
@@ -223,6 +373,7 @@ const Progress = {
       entry.due = Date.now() + intervalsDays[box - 1] * 86400000;
     });
     this._save(data);
+    words.forEach((w) => logAnswerEvent(categoryId, w, true));
   },
   totalStars() {
     const data = this._load();
@@ -1058,6 +1209,7 @@ ${FONT_FACES}
   .ke-landing-mascot img{ display:block; width:100%; height:auto; }
   .ke-landing-mascot .ke-mascot-hat{ animation:none; }
   .ke-profile-chip{ display:inline-flex; align-items:center; gap:8px; margin:0 0 10px; padding:4px 14px 4px 6px !important; border-radius:999px !important; font-size:13px !important; }
+  .ke-stat-row{ font-size:16px; font-weight:700; margin:10px auto; text-align:left; max-width:340px; color:var(--kb-chalk); }
   .ke-daily-goal{ display:inline-block; margin:0 0 10px 8px; padding:4px 12px; border-radius:999px; background:rgba(255,215,90,.12); border:1.5px dashed var(--kb-discover); color:var(--kb-discover); font-size:12px; font-weight:800; }
   .ke-profile-chip .ke-avatar-mini{ position:relative; width:34px; height:34px; flex:none; }
   .ke-avatar-mini img.ke-av-body{ width:100%; height:100%; object-fit:cover; object-position:50% 12%; border-radius:50%; background:rgba(255,255,255,.15); }
@@ -1368,7 +1520,7 @@ const Profiles = {
     } catch (e) { /* yok say */ }
     return null;
   },
-  _save(d) { try { window.localStorage.setItem(PROFILES_KEY, JSON.stringify(d)); } catch (e) { /* yok say */ } },
+  _save(d) { try { window.localStorage.setItem(PROFILES_KEY, JSON.stringify(d)); } catch (e) { /* yok say */ } idbPut(PROFILES_KEY, d); },
   exists() { return !!this._load(); },
   all() { const d = this._load(); return d ? d.list : []; },
   active() {
@@ -1529,6 +1681,8 @@ function installTransitionGuard(container) {
 }
 
 export async function mount(container, api, toolId) {
+  await hydrateFromIDB();
+  startTimeTracking();
   container.innerHTML = STYLE + `
     <div class="ke-shell">
       <button class="ke-fullscreen-btn" id="keFullscreenBtn" title="${L('Tam ekran', 'Full screen')}" aria-label="${L('Tam ekran', 'Full screen')}">${ICON_EXPAND}<span id="keFullscreenLabel">${L('Tam Ekran', 'Full screen')}</span></button>
@@ -1605,6 +1759,7 @@ function showSectionMenu(container, api, toolId, categories) {
     <div class="ke-landing-header">
       <button type="button" class="ke-profile-chip" id="keProfileBtn"><span class="ke-avatar-mini"><img class="ke-av-body" src="${avatarBodySrc('wave', Profiles.active().color)}" alt="" draggable="false" /></span>${escapeProfileText(Profiles.active().name || L('Ben', 'Me'))} · ${Progress.totalStars()} ⭐${Streak.get() > 0 ? ` · 🔥${Streak.get()}` : ''} · ${L("Aktapokus'um", 'My Aktapokus')} ✏️</button>
       <div class="ke-daily-goal">${L('Bugünün hedefi', "Today's goal")}: ${Math.min(DailyGoal.today(), DailyGoal.TARGET)} / ${DailyGoal.TARGET} ${L('kelime', 'words')} ${DailyGoal.today() >= DailyGoal.TARGET ? '🎉' : '🎯'}</div>
+      <button type="button" class="ke-profile-chip" id="keStatsBtn" style="margin-left:8px;">📊 ${L('İlerleme', 'Progress')}</button>
       <h1 class="ke-title">${bubbleTitleHTML(L("Aktapokus'un Kelime Safarisi", "Aktapokus Word Safari"))}</h1>
       <p class="ke-subtitle">${L('Ne öğrenmek istiyorsun? Bir bölüm seç!', 'What do you want to learn? Pick a section!')}</p>
     </div>
@@ -1619,6 +1774,7 @@ function showSectionMenu(container, api, toolId, categories) {
   host.querySelector('#keSoundTest').addEventListener('click', () => runSoundTest(host.querySelector('#keSoundInfo')));
   host.querySelector('#keLangBtn').addEventListener('click', () => { setLang(_lang === 'tr' ? 'en' : 'tr'); showSectionMenu(container, api, toolId, categories); });
   host.querySelector('#keProfileBtn').addEventListener('click', () => showProfileScreen(container, api, toolId, categories, {}));
+  host.querySelector('#keStatsBtn').addEventListener('click', () => showStatsScreen(container, api, toolId, categories));
   const grid = host.querySelector('#keSectionGrid');
   SECTIONS.forEach((sec) => {
     const cats = categories.filter(sec.pick);
@@ -1648,6 +1804,112 @@ function showSectionMenu(container, api, toolId, categories) {
   });
 }
 
+
+// Olay gunlugunden (IndexedDB) KPI'lari hesaplar. Not: sadece Quiz turu
+// VE her yanlis cevap tutarli sekilde olay yaziyor; Cumle/Harf turlarinin
+// DOGRU cevaplari henuz ayri loglanmiyor (bilinen kapsam siniri) - yani
+// dogruluk orani gercekte biraz daha yuksek olabilir.
+async function computeKPIs(profileId) {
+  const events = await idbGetEvents(profileId);
+  const total = events.length;
+  const correct = events.filter((e) => e.isCorrect).length;
+  const accuracy = total ? Math.round((correct / total) * 100) : null;
+  const learnedWords = new Set(events.filter((e) => e.isCorrect).map((e) => e.word)).size;
+  return {
+    total, correct, accuracy, learnedWords,
+    puzzlesCompleted: Progress.totalStars(),
+    streak: Streak.get(),
+    timeSeconds: TimeTrack.total(),
+  };
+}
+
+function profileStorageKeys(pid) {
+  return {
+    progress: pid === 'p1' ? PROGRESS_KEY : PROGRESS_KEY + '_' + pid,
+    streak: pid === 'p1' ? STREAK_KEY : STREAK_KEY + '_' + pid,
+    daily: pid === 'p1' ? DAILY_KEY : DAILY_KEY + '_' + pid,
+    time: pid === 'p1' ? TIME_KEY : TIME_KEY + '_' + pid,
+  };
+}
+
+// Cihazlar arasi senkron YOK (sunucu/hesap yok) - kullanicinin kendi
+// istegiyle indirip baska bir cihaza tasiyabilecegi tek JSON dosyasi.
+function exportBackup() {
+  const data = { version: 1, exportedAt: new Date().toISOString(), profiles: null, byProfile: {} };
+  try { data.profiles = JSON.parse(window.localStorage.getItem(PROFILES_KEY)); } catch (e) { /* yok say */ }
+  Profiles.all().forEach((p) => {
+    const k = profileStorageKeys(p.id);
+    const blob = {};
+    Object.entries(k).forEach(([name, key]) => {
+      try { blob[name] = JSON.parse(window.localStorage.getItem(key)); } catch (e) { blob[name] = null; }
+    });
+    data.byProfile[p.id] = blob;
+  });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `aktapokus-yedek-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+function importBackup(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(String(reader.result));
+      if (data.profiles) window.localStorage.setItem(PROFILES_KEY, JSON.stringify(data.profiles));
+      Object.entries(data.byProfile || {}).forEach(([pid, blob]) => {
+        const k = profileStorageKeys(pid);
+        Object.entries(k).forEach(([name, key]) => {
+          if (blob[name] != null) window.localStorage.setItem(key, JSON.stringify(blob[name]));
+        });
+      });
+      window.alert(L('Yedek yüklendi! Sayfa yenileniyor.', 'Backup restored! Reloading.'));
+      window.location.reload();
+    } catch (e) {
+      window.alert(L('Yedek dosyası okunamadı — dosya bozuk olabilir.', 'Could not read the backup file — it may be corrupted.'));
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function showStatsScreen(container, api, toolId, categories) {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  const host = container.querySelector('#keScreenHost');
+  host.innerHTML = `
+    <button class="ke-back-btn" id="keStatsBack">${ICON_BACK} ${L('Bölümler', 'Sections')}</button>
+    <div class="ke-profile-screen">
+      <h1 class="ke-title">${bubbleTitleHTML(L('İlerleme Raporu', 'Progress Report'))}</h1>
+      <div id="keStatsBody" style="margin-top:18px;">${L('Yükleniyor…', 'Loading…')}</div>
+      <div class="ke-pl-label" style="margin-top:18px;">${L('Yedekleme', 'Backup')}</div>
+      <div class="ke-pick-row">
+        <button type="button" class="ke-pick" id="keExportBtn">⬇️ ${L('Yedek indir', 'Download')}</button>
+        <label class="ke-pick" for="keImportInput" style="cursor:pointer;">⬆️ ${L('Yedek yükle', 'Restore')}</label>
+        <input type="file" id="keImportInput" accept="application/json" style="display:none;" />
+      </div>
+      <div class="ke-pl-label">${L('Veri, hiçbir sunucuya gönderilmez — sadece bu cihazda tutulur.', 'Your data is never sent to a server — it stays on this device only.')}</div>
+    </div>
+  `;
+  host.querySelector('#keStatsBack').addEventListener('click', () => showSectionMenu(container, api, toolId, categories));
+  pushBackState(() => showSectionMenu(container, api, toolId, categories));
+  host.querySelector('#keExportBtn').addEventListener('click', exportBackup);
+  host.querySelector('#keImportInput').addEventListener('change', (e) => importBackup(e.target.files[0]));
+
+  const kpi = await computeKPIs(Profiles.active().id);
+  const mins = Math.floor(kpi.timeSeconds / 60);
+  const body = host.querySelector('#keStatsBody');
+  if (body) {
+    body.innerHTML = `
+      <div class="ke-stat-row">🌟 ${L('Tamamlanan bölüm', 'Episodes completed')}: <b>${kpi.puzzlesCompleted}</b></div>
+      <div class="ke-stat-row">🔥 ${L('Seri', 'Streak')}: <b>${kpi.streak} ${L('gün', 'days')}</b></div>
+      <div class="ke-stat-row">📚 ${L('Öğrenilen kelime', 'Words learned')}: <b>${kpi.learnedWords}</b></div>
+      <div class="ke-stat-row">🎯 ${L('Doğruluk oranı', 'Accuracy')}: <b>${kpi.accuracy === null ? '—' : kpi.accuracy + '%'}</b> ${kpi.total ? `(${kpi.correct}/${kpi.total})` : ''}</div>
+      <div class="ke-stat-row">⏱️ ${L('Uygulamada geçirilen süre', 'Time in app')}: <b>${mins} ${L('dk', 'min')}</b></div>
+    `;
+  }
+}
 
 function escapeProfileText(t) {
   return String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
