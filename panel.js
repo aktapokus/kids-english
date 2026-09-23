@@ -952,7 +952,7 @@ ${FONT_FACES}
      "tahtaya yapıştırılmış bir sticker" gibi, ana tebeşir yazı alanıyla
      kontrast için yarışmıyor. Altına küçük, soluk bir elips gölge
      (::after, tebeşir tozu/raf hissi) eklendi — yeni görsel dosya yok. */
-  .ke-mascot-img{ display:block; width:100%; height:auto; filter:); user-select:none; -webkit-user-drag:none; animation:ke-bob 2.6s ease-in-out infinite; position:relative; z-index:1; }
+  .ke-mascot-img{ display:block; width:100%; height:auto; user-select:none; -webkit-user-drag:none; animation:ke-bob 2.6s ease-in-out infinite; position:relative; z-index:1; }
   .ke-mascot-wrap::after{
     content:''; position:absolute; left:50%; bottom:-4px; transform:translateX(-50%);
     width:60%; height:10px; border-radius:50%;
@@ -1199,12 +1199,12 @@ ${FONT_FACES}
      üzerine binmesini engelliyoruz — "kalabalık" geri bildirimi. */
   .ke-landing-mascot{
     position:absolute; top:0; right:6px; width:86px; height:auto;
-    filter:); pointer-events:none;
+    pointer-events:none;
     z-index:1; animation:ke-bob 2.6s ease-in-out infinite;
   }
 
   /* Avatar: sapka overlay'i maskot görseliyle aynı animasyonu paylaşır */
-  .ke-mascot-hat{ position:absolute; z-index:2; pointer-events:none; height:auto; animation:ke-bob 2.6s ease-in-out infinite; filter:); }
+  .ke-mascot-hat{ position:absolute; z-index:2; pointer-events:none; height:auto; animation:ke-bob 2.6s ease-in-out infinite; }
   .ke-mascot-wrap.ke-celebrate .ke-mascot-hat{ animation:ke-mascot-jump .6s ease; }
   .ke-mascot-wrap.ke-mascot-narrow .ke-mascot-hat{ animation:none; }
   .ke-landing-mascot img{ display:block; width:100%; height:auto; }
@@ -1238,7 +1238,7 @@ ${FONT_FACES}
   .ke-avatar-mini img.ke-av-body{ width:100%; height:100%; object-fit:cover; object-position:50% 12%; border-radius:50%; background:rgba(255,255,255,.15); }
   .ke-profile-screen{ max-width:640px; margin:0 auto; text-align:center; position:relative; z-index:1; }
   .ke-avatar-stage{ position:relative; width:min(170px,24vh); margin:30px auto 4px; }
-  .ke-avatar-stage img.ke-av-body{ display:block; width:100%; height:auto; filter:); }
+  .ke-avatar-stage img.ke-av-body{ display:block; width:100%; height:auto; }
   .ke-avatar-stage .ke-mascot-hat{ animation:none; }
   .ke-pick-row{ display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:6px 0 10px; }
   .ke-pick{ min-width:52px; min-height:44px; padding:6px 10px !important; border-radius:14px !important; font-size:13px !important; position:relative; }
@@ -1249,7 +1249,13 @@ ${FONT_FACES}
   .ke-pl-label{ font-size:12px; font-weight:800; color:var(--kb-chalk-dim, #ccc); margin-top:6px; }
 .ke-shell .ke-landing-header .ke-subtitle{ font-size:16px !important; margin-bottom:12px; }
   .ke-avatar-stage::before, .ke-landing-mascot::before, .ke-mascot-wrap::before{
-    content:''; position:absolute; left:50%; top:46%; width:104%; aspect-ratio:1/1; transform:translate(-50%,-50%);
+    /* Yuvarlak degil OVAL: yeni maskot gorseli uzun boylu bir portre
+       (ayaklar tuvalin en altina kadar iniyor) - sabit bir daire eski,
+       daha kisa gorsele gore olculuydu ve ayaklar disina tasiyordu
+       ("goruntu altta kalmis" geri bildirimi). Oval, konteynerin kendi
+       yuksekligine (resmin dogal yuksekligine) oranli oldugu icin
+       karakterin tamamini kapsiyor. */
+    content:''; position:absolute; left:50%; top:50%; width:112%; height:108%; transform:translate(-50%,-50%);
     border-radius:50%; z-index:0; pointer-events:none;
     background:radial-gradient(circle, rgba(255,248,226,.97) 0%, rgba(255,240,200,.9) 55%, rgba(255,235,190,.55) 68%, rgba(255,235,190,0) 74%);
   }
@@ -1767,12 +1773,12 @@ const SECTIONS = [
   { id: 'get', title: 'Get', sub: 'get up, get in, get on…', subTr: 'get up, get in, get on…', titleTr: 'Get', motif: '🔄',
     theme: { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
     pick: (c) => GET_CATEGORY_IDS.includes(c.id) },
-  { id: 'tourist', title: 'Travel Talk', sub: 'Airport, restaurant, directions, hotel', subTr: 'Havaalanı, restoran, yön sorma, otel', titleTr: 'Seyahat Sohbeti', motif: '🗺️',
-    theme: { c: '#8E44AD', dark: '#712E8C', tint: '#C990E0' },
-    pick: (c) => TOURIST_CATEGORY_IDS.includes(c.id) },
-  { id: 'conversations', title: 'Conversations', sub: 'Aktapokus asks, you answer', subTr: 'Aktapokus sorar, sen cevaplarsın', titleTr: 'Konuşmalar', motif: '💬',
+  { id: 'conversations', title: 'Conversations', sub: 'Airport, restaurant, and everyday chats', subTr: 'Havaalanı, restoran ve günlük sohbetler', titleTr: 'Konuşmalar', motif: '💬',
     theme: { c: '#EF6C9C', dark: '#D14F80', tint: '#F7A9C6' },
-    pick: (c) => CONVERSATION_CATEGORY_IDS.includes(c.id) },
+    // "Travel Talk" artik ayri bir bolum degil - kendi kategorisi olarak
+    // (kendi ders/diyalog mekanigiyle) Conversations bolumunun kategori
+    // izgarasina tasindi, boylece iki ayri "konusma" bolumu gormuyoruz.
+    pick: (c) => CONVERSATION_CATEGORY_IDS.includes(c.id) || TOURIST_CATEGORY_IDS.includes(c.id) },
 ];
 let _currentSection = null;
 
