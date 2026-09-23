@@ -56,6 +56,7 @@ const CATEGORY_THEME = {
   prepositions:          { c: '#00ACC1', dark: '#008BA0', tint: '#5DD6E6' },
   question_words:        { c: '#FF7043', dark: '#E5562B', tint: '#FFA383' },
   get:                    { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
+  tourist:                { c: '#8E44AD', dark: '#712E8C', tint: '#C990E0' },
 };
 
 // Bazı kategoriler için oyun sahnesine hafif saydam bir "dekor" katmanı
@@ -84,7 +85,7 @@ const CATEGORY_MOTIF = {
   city_places: '🏙️', body_health: '❤️', weather_seasons: '⛅',
   emotions_personality: '😊', clothes_shopping: '👕', jobs_professions: '💼',
   science: '🔬', communication_internet: '💬',
-  prepositions: '📦', question_words: '❓', get: '🔄',
+  prepositions: '📦', question_words: '❓', get: '🔄', tourist: '🗺️',
 };
 
 // Kalıcı, gizlilik-dostu ilerleme: sadece bu cihazın tarayıcısında
@@ -1493,10 +1494,11 @@ export async function mount(container, api, toolId) {
 const GRAMMAR_CATEGORY_IDS = ['prepositions'];
 const QA_CATEGORY_IDS = ['question_words'];
 const GET_CATEGORY_IDS = ['get'];
+const TOURIST_CATEGORY_IDS = ['tourist'];
 const SECTIONS = [
   { id: 'words', title: 'Words', sub: 'Themed word categories', subTr: 'Temalı kelime kategorileri', titleTr: 'Kelimeler', motif: '📚',
     theme: { c: '#FFA000', dark: '#DB8A00', tint: '#FFCF66' },
-    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) },
+    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !TOURIST_CATEGORY_IDS.includes(c.id) },
   { id: 'grammar', title: 'Grammar', sub: 'Prepositions: in, on, at, under…', subTr: 'Edatlar: in, on, at, under…', titleTr: 'Gramer', motif: '🧩',
     theme: { c: '#00ACC1', dark: '#008BA0', tint: '#5DD6E6' },
     pick: (c) => GRAMMAR_CATEGORY_IDS.includes(c.id) },
@@ -1509,6 +1511,9 @@ const SECTIONS = [
   { id: 'get', title: 'Get', sub: 'get up, get in, get on…', subTr: 'get up, get in, get on…', titleTr: 'Get', motif: '🔄',
     theme: { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
     pick: (c) => GET_CATEGORY_IDS.includes(c.id) },
+  { id: 'tourist', title: 'Travel Talk', sub: 'Airport, restaurant, directions, hotel', subTr: 'Havaalanı, restoran, yön sorma, otel', titleTr: 'Seyahat Sohbeti', motif: '🗺️',
+    theme: { c: '#8E44AD', dark: '#712E8C', tint: '#C990E0' },
+    pick: (c) => TOURIST_CATEGORY_IDS.includes(c.id) },
 ];
 let _currentSection = null;
 
