@@ -664,6 +664,11 @@ ${FONT_FACES}
        doku taşması için) hâlâ gizleniyor. */
     overflow-x: hidden;
     overflow-y: auto;
+    /* iOS Safari'de position:fixed + overflow:auto kombinasyonu, bu ozellik
+       olmadan dokunmatik kaydirmayi SESSIZCE calistirmiyor - icerik ekran
+       disina tasinca (ozellikle .ke-fs ile position:fixed olunca) altta
+       kalan butonlar (ör. ilk "Let's go!" butonu) kaydirilip ulasilamiyor. */
+    -webkit-overflow-scrolling: touch;
     min-height: 640px;
   }
   .ke-shell, .ke-shell *{ box-sizing: border-box; }
