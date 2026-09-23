@@ -1252,11 +1252,38 @@ const avatarHats = () => [
   { id: 'wizard', label: L('Büyücü', 'Wizard'), need: 10, emoji: '🧙' },
 ];
 
+// localStorage tarayicidan/devtools'tan elle degistirilebilir ya da
+// bozulabilir - guvenilmeyen girdi sayiyoruz. Profil listesini OKUMA
+// noktasinda (once _load burada) sanitize ediyoruz ki asagidaki her
+// fonksiyon (all/active/save/remove...) zaten temiz veriyle calissin;
+// tek bir yerde yalnizca active() icin temizlemek, all()'un dondurdugu
+// diger profillerin (ornegin profil degistirici listesindeki data-profile
+// attribute'una) ham/kacissiz gitmesine yol aciyordu.
+function _sanitizeProfile(p) {
+  p = p || {};
+  return {
+    id: String(p.id || 'p1').replace(/[^a-z0-9]/gi, '').slice(0, 12) || 'p1',
+    name: String(p.name || '').slice(0, 12),
+    color: ['yellow', 'blue', 'green', 'pink', 'purple'].includes(p.color) ? p.color : 'yellow',
+    hat: ['none', 'cap', 'party', 'crown', 'wizard'].includes(p.hat) ? p.hat : 'none',
+  };
+}
 const Profiles = {
   _load() {
     try {
-      const d = JSON.parse(window.localStorage.getItem(PROFILES_KEY));
-      if (d && Array.isArray(d.list) && d.list.length) return d;
+      const raw = JSON.parse(window.localStorage.getItem(PROFILES_KEY));
+      if (!raw || !Array.isArray(raw.list) || !raw.list.length) return null;
+      const seen = new Set();
+      const list = [];
+      for (const p of raw.list) {
+        const clean = _sanitizeProfile(p);
+        if (seen.has(clean.id)) continue;
+        seen.add(clean.id);
+        list.push(clean);
+      }
+      if (!list.length) return null;
+      const active = list.some((p) => p.id === raw.active) ? raw.active : list[0].id;
+      return { active, list };
     } catch (e) { /* yok say */ }
     return null;
   },
@@ -1266,13 +1293,7 @@ const Profiles = {
   active() {
     const d = this._load();
     if (!d) return { id: 'p1', name: '', color: 'yellow', hat: 'none' };
-    const p = d.list.find((x) => x.id === d.active) || d.list[0];
-    return {
-      id: String(p.id || 'p1').replace(/[^a-z0-9]/gi, '').slice(0, 12) || 'p1',
-      name: String(p.name || '').slice(0, 12),
-      color: ['yellow', 'blue', 'green', 'pink', 'purple'].includes(p.color) ? p.color : 'yellow',
-      hat: ['none', 'cap', 'party', 'crown', 'wizard'].includes(p.hat) ? p.hat : 'none',
-    };
+    return d.list.find((x) => x.id === d.active) || d.list[0];
   },
   save(profile) {
     const d = this._load() || { active: profile.id, list: [] };
