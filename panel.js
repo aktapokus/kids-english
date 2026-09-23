@@ -1375,6 +1375,21 @@ let _fullscreenChangeHandler = null;
 let _narrowMQ = null;
 let _narrowChangeHandler = null;
 
+// Donanim/tarayici GERI tusu: gercek bir router yok (tek sayfa, hic URL
+// degismiyor), bu yuzden geri tusunun donecek bir history kaydi hic
+// olmuyordu ve TWA/Chrome dogrudan uygulamayi kapatiyordu. Cozum: her
+// "ileri" ekran gecisinde sahte bir history girdisi push ediyoruz ve
+// GERI tusu o girdiyi tuketince (popstate) _backHandler'i cagiriyoruz —
+// _backHandler tam olarak ekrandaki gorunur "Geri" dugmesinin yaptigini
+// yapiyor. Ana menude (ilk ekran) hic push edilmiyor, o yuzden oradan
+// geri basmak normal sekilde uygulamadan cikariyor.
+let _backHandler = null;
+let _popstateHandler = null;
+function pushBackState(handler) {
+  _backHandler = handler;
+  try { history.pushState({ keNav: true }, ''); } catch (e) { /* no-op */ }
+}
+
 // Geniş ekranda maskot etrafındaki dairesel keşif dizilimi korunuyor;
 // dar ekranda (telefon) nesneler çakışmasın, rahat dokunulsun diye
 // CSS grid'e geçiyoruz (bkz. .ke-scene-narrow kuralları). Eşik, mevcut
@@ -1419,6 +1434,11 @@ export async function mount(container, api, toolId) {
   if (window.KE_STATIC) container.querySelector('.ke-shell').classList.add('ke-fs');
   installTransitionGuard(container);
   setupFullscreen(container);
+  _backHandler = null;
+  _popstateHandler = () => {
+    if (_backHandler) { const h = _backHandler; _backHandler = null; h(); }
+  };
+  window.addEventListener('popstate', _popstateHandler);
   primeMicrophonePermission();
   if ('speechSynthesis' in window) {
     window.speechSynthesis.onvoiceschanged = () => { _voiceLookupDone = false; };
@@ -1599,6 +1619,7 @@ function showProfileScreen(container, api, toolId, categories, opts) {
     });
   }
   draw();
+  if (!first) pushBackState(() => showSectionMenu(container, api, toolId, categories));
 }
 
 function showCategoryGrid(container, api, toolId, categories, sectionId) {
@@ -1676,6 +1697,7 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
     }
     grid.appendChild(card);
   });
+  pushBackState(() => showSectionMenu(container, api, toolId, categories));
 }
 
 async function enterCategory(container, api, toolId, categories, categoryId, episodeIndex) {
@@ -1821,14 +1843,15 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
   const completedSet = new Set(Progress.getCategory(episode.category_id).completed);
   renderMap(host, episode.episode_index, episode.episode_count, jumpToEpisode, completedSet);
 
-  host.querySelector('#keBackBtn').addEventListener('click', () => {
+  const leaveEpisode = () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     if (container._keActiveRecognition) {
       try { container._keActiveRecognition.abort(); } catch (e) { /* no-op */ }
       container._keActiveRecognition = null;
     }
     showCategoryGrid(container, api, toolId, categories);
-  });
+  };
+  host.querySelector('#keBackBtn').addEventListener('click', leaveEpisode);
 
   const objectsHost = host.querySelector('#keObjects');
   const total = episode.objects.length;
@@ -2052,6 +2075,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
     markAllFound();
     startSentenceRound(host, container, episode, episode.objects, mascotEl, null, goToNextEpisode);
   });
+  pushBackState(leaveEpisode);
 }
 
 function setupFullscreen(container) {
@@ -2892,6 +2916,8 @@ function launchConfetti(host) {
 }
 
 export function unmount(container) {
+  if (_popstateHandler) { window.removeEventListener('popstate', _popstateHandler); _popstateHandler = null; }
+  _backHandler = null;
   if (_guardObserver) { _guardObserver.disconnect(); _guardObserver = null; }
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   if (_speechTimer) clearTimeout(_speechTimer);

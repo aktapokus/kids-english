@@ -5,7 +5,12 @@
   "id": "/kids-english/",
   "start_url": "./",
   "scope": "./",
-  "display": "standalone",
+  "display": "fullscreen",
+  "display_override": [
+    "fullscreen",
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "background_color": "#10160f",
   "theme_color": "#10160f",
