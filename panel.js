@@ -89,6 +89,12 @@ const CATEGORY_MOTIF = {
   prepositions: '📦', question_words: '❓', get: '🔄', tourist: '🗺️', conversations: '💬',
 };
 
+// A2 kategorileri ('{kategori}_a2') A1'deki ayni temayi/motifi paylasir -
+// CEFR denetiminde A2 olarak isaretlenip A1'den tasinan kelimeler, GORSEL
+// KIMLIK olarak hala ayni kategoriye ait (ör. daily_life_a2, daily_life
+// ile ayni renk/motifi kullanir). Ayri bir renk seti tanimlamiyoruz.
+function baseCatId(id) { return id.endsWith('_a2') ? id.slice(0, -3) : id; }
+
 // Kalıcı, gizlilik-dostu ilerleme: sadece bu cihazın tarayıcısında
 // (localStorage), sunucuya/buluta hiç gönderilmeden. Ebeveyn tarayıcı
 // verisini temizleyerek sıfırlayabilir — ayrı bir "ilerlemeyi sıfırla"
@@ -1757,19 +1763,22 @@ const QA_CATEGORY_IDS = ['question_words'];
 const GET_CATEGORY_IDS = ['get'];
 const TOURIST_CATEGORY_IDS = ['tourist'];
 const CONVERSATION_CATEGORY_IDS = ['conversations'];
+const A2_CATEGORY_SUFFIX = '_a2';
 const SECTIONS = [
   { id: 'words', title: 'Words', sub: 'Themed word categories', subTr: 'Temalı kelime kategorileri', titleTr: 'Kelimeler', motif: '📚',
     theme: { c: '#FFA000', dark: '#DB8A00', tint: '#FFCF66' },
-    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !TOURIST_CATEGORY_IDS.includes(c.id) && !CONVERSATION_CATEGORY_IDS.includes(c.id) },
+    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !TOURIST_CATEGORY_IDS.includes(c.id) && !CONVERSATION_CATEGORY_IDS.includes(c.id) && !c.id.endsWith(A2_CATEGORY_SUFFIX) },
   { id: 'grammar', title: 'Grammar', sub: 'Prepositions: in, on, at, under…', subTr: 'Edatlar: in, on, at, under…', titleTr: 'Gramer', motif: '🧩',
     theme: { c: '#00ACC1', dark: '#008BA0', tint: '#5DD6E6' },
     pick: (c) => GRAMMAR_CATEGORY_IDS.includes(c.id) },
   { id: 'qa', title: 'Questions', sub: 'Who, What, Where, When, Why, Which', subTr: 'Kim, Ne, Nerede, Ne zaman, Neden, Hangi', titleTr: 'Soru-Cevap', motif: '❓',
     theme: { c: '#FF7043', dark: '#E5562B', tint: '#FFA383' },
     pick: (c) => QA_CATEGORY_IDS.includes(c.id) },
-  { id: 'a2', title: 'A2 Level', sub: 'New words & sentences (coming soon)', subTr: 'Yeni kelimeler ve cümleler (yakında)', titleTr: 'A2 Seviyesi', motif: '🚀', locked: true,
+  { id: 'a2', title: 'A2 Level', sub: 'New words & sentences', subTr: 'Yeni kelimeler ve cümleler', titleTr: 'A2 Seviyesi', motif: '🚀',
     theme: { c: '#78909C', dark: '#5F7480', tint: '#A8BBC5' },
-    pick: () => false },
+    // CEFR denetiminde A2 olarak isaretlenip A1'den tasinan kelimeler -
+    // bkz. scripts/migrate_a2_from_audit.py. Su an 174/600 hedef kelime.
+    pick: (c) => c.id.endsWith(A2_CATEGORY_SUFFIX) },
   { id: 'get', title: 'Get', sub: 'get up, get in, get on…', subTr: 'get up, get in, get on…', titleTr: 'Get', motif: '🔄',
     theme: { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
     pick: (c) => GET_CATEGORY_IDS.includes(c.id) },
@@ -2127,7 +2136,7 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
     card.className = 'ke-category-card';
     const titleTr = catLabel(c);
     const initial = titleTr.trim().charAt(0).toLocaleUpperCase('tr');
-    const theme = CATEGORY_THEME[c.id] || { c: '#4A90E2', dark: '#3A78C2', tint: '#E9F1FC' };
+    const theme = CATEGORY_THEME[baseCatId(c.id)] || { c: '#4A90E2', dark: '#3A78C2', tint: '#E9F1FC' };
     card.style.setProperty('--cc-tint', theme.tint);
     card.style.setProperty('--cc-dark', theme.dark);
     card.setAttribute('data-initial', initial);
@@ -2141,7 +2150,7 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
       : L(`${c.word_count} kelime · ${c.episode_count} bölüm`, `${c.word_count} words · ${c.episode_count} episodes`);
     const pct = c.episode_count ? Math.round((doneCount / c.episode_count) * 100) : 0;
     const nextEp = Progress.nextIncompleteEpisode(c.id, c.episode_count);
-    const motif = CATEGORY_MOTIF[c.id] || '⭐';
+    const motif = CATEGORY_MOTIF[baseCatId(c.id)] || '⭐';
 
     card.innerHTML = `
       <div class="ke-category-icon" style="color:${theme.c}">${initial}<span class="ke-cat-motif-badge">${motif}</span></div>
@@ -2232,8 +2241,8 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
   }
   const host = container.querySelector('#keScreenHost');
   const titleTr = catLabel({ title: episode.category_title });
-  const theme = CATEGORY_THEME[episode.category_id] || { c: '#4A90E2', dark: '#3A78C2', tint: '#E9F1FC' };
-  const motif = SCENE_MOTIF[episode.category_id];
+  const theme = CATEGORY_THEME[baseCatId(episode.category_id)] || { c: '#4A90E2', dark: '#3A78C2', tint: '#E9F1FC' };
+  const motif = SCENE_MOTIF[baseCatId(episode.category_id)];
 
   host.innerHTML = `
     <button class="ke-back-btn" id="keBackBtn">${ICON_BACK} ${L('Kategoriler', 'Categories')}</button>
