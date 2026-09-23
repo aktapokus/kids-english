@@ -58,6 +58,7 @@ const CATEGORY_THEME = {
   get:                    { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
   tourist:                { c: '#8E44AD', dark: '#712E8C', tint: '#C990E0' },
   conversations:          { c: '#EF6C9C', dark: '#D14F80', tint: '#F7A9C6' },
+  opposites:              { c: '#7E57C2', dark: '#6641A8', tint: '#B597E0' },
 };
 
 // Bazı kategoriler için oyun sahnesine hafif saydam bir "dekor" katmanı
@@ -86,7 +87,7 @@ const CATEGORY_MOTIF = {
   city_places: '🏙️', body_health: '❤️', weather_seasons: '⛅',
   emotions_personality: '😊', clothes_shopping: '👕', jobs_professions: '💼',
   science: '🔬', communication_internet: '💬',
-  prepositions: '📦', question_words: '❓', get: '🔄', tourist: '🗺️', conversations: '💬',
+  prepositions: '📦', question_words: '❓', get: '🔄', conversations: '💬', opposites: '↔️',
 };
 
 // A2 kategorileri ('{kategori}_a2') A1'deki ayni temayi/motifi paylasir -
@@ -1744,33 +1745,36 @@ export async function mount(container, api, toolId) {
 const GRAMMAR_CATEGORY_IDS = ['prepositions'];
 const QA_CATEGORY_IDS = ['question_words'];
 const GET_CATEGORY_IDS = ['get'];
-const TOURIST_CATEGORY_IDS = ['tourist'];
 const CONVERSATION_CATEGORY_IDS = ['conversations'];
+const OPPOSITE_CATEGORY_IDS = ['opposites'];
 const A2_CATEGORY_SUFFIX = '_a2';
 const SECTIONS = [
   { id: 'words', title: 'Words', sub: 'Themed word categories', subTr: 'Temalı kelime kategorileri', titleTr: 'Kelimeler', motif: '📚',
     theme: { c: '#FFA000', dark: '#DB8A00', tint: '#FFCF66' },
-    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !TOURIST_CATEGORY_IDS.includes(c.id) && !CONVERSATION_CATEGORY_IDS.includes(c.id) && !c.id.endsWith(A2_CATEGORY_SUFFIX) },
+    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !CONVERSATION_CATEGORY_IDS.includes(c.id) && !OPPOSITE_CATEGORY_IDS.includes(c.id) && !c.id.endsWith(A2_CATEGORY_SUFFIX) },
   { id: 'grammar', title: 'Grammar', sub: 'Prepositions: in, on, at, under…', subTr: 'Edatlar: in, on, at, under…', titleTr: 'Gramer', motif: '🧩',
     theme: { c: '#00ACC1', dark: '#008BA0', tint: '#5DD6E6' },
     pick: (c) => GRAMMAR_CATEGORY_IDS.includes(c.id) },
   { id: 'qa', title: 'Questions', sub: 'Who, What, Where, When, Why, Which', subTr: 'Kim, Ne, Nerede, Ne zaman, Neden, Hangi', titleTr: 'Soru-Cevap', motif: '❓',
     theme: { c: '#FF7043', dark: '#E5562B', tint: '#FFA383' },
     pick: (c) => QA_CATEGORY_IDS.includes(c.id) },
+  { id: 'opposites', title: 'Opposites', sub: 'Big/small, fast/slow, happy/sad…', subTr: 'Büyük/küçük, hızlı/yavaş, mutlu/üzgün…', titleTr: 'Zıt Anlamlılar', motif: '↔️',
+    theme: { c: '#7E57C2', dark: '#6641A8', tint: '#B597E0' },
+    pick: (c) => OPPOSITE_CATEGORY_IDS.includes(c.id) },
   { id: 'a2', title: 'A2 Level', sub: 'New words & sentences', subTr: 'Yeni kelimeler ve cümleler', titleTr: 'A2 Seviyesi', motif: '🚀',
     theme: { c: '#78909C', dark: '#5F7480', tint: '#A8BBC5' },
     // CEFR denetiminde A2 olarak isaretlenip A1'den tasinan kelimeler -
-    // bkz. scripts/migrate_a2_from_audit.py. Su an 174/600 hedef kelime.
+    // bkz. scripts/migrate_a2_from_audit.py. Su an 228/600 hedef kelime.
     pick: (c) => c.id.endsWith(A2_CATEGORY_SUFFIX) },
   { id: 'get', title: 'Get', sub: 'get up, get in, get on…', subTr: 'get up, get in, get on…', titleTr: 'Get', motif: '🔄',
     theme: { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
     pick: (c) => GET_CATEGORY_IDS.includes(c.id) },
   { id: 'conversations', title: 'Conversations', sub: 'Airport, restaurant, and everyday chats', subTr: 'Havaalanı, restoran ve günlük sohbetler', titleTr: 'Konuşmalar', motif: '💬',
     theme: { c: '#EF6C9C', dark: '#D14F80', tint: '#F7A9C6' },
-    // "Travel Talk" artik ayri bir bolum degil - kendi kategorisi olarak
-    // (kendi ders/diyalog mekanigiyle) Conversations bolumunun kategori
-    // izgarasina tasindi, boylece iki ayri "konusma" bolumu gormuyoruz.
-    pick: (c) => CONVERSATION_CATEGORY_IDS.includes(c.id) || TOURIST_CATEGORY_IDS.includes(c.id) },
+    // "Travel Talk" artik ayri bir kategori bile degil - episode'lari
+    // dogrudan 'conversations' kategorisinin kendi bolum listesine
+    // katildi (bkz. veri tarafindaki birlestirme), tek liste.
+    pick: (c) => CONVERSATION_CATEGORY_IDS.includes(c.id) },
 ];
 let _currentSection = null;
 
