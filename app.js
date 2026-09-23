@@ -23,5 +23,21 @@ const api = {
 mount(document.getElementById('app'), api, 'kids_english');
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  // "her guncellemede kullanici elle onbellek temizlemek zorunda kalmasin"
+  // - iki parca: (1) updateViaCache:'none' tarayiciya sw.js dosyasinin
+  // KENDISINI asla HTTP onbelleginden degil, her zaman agdan almasini
+  // soyler (spec geregi normalde bu kontrol max 24 saatte bir yapilir -
+  // bu satir olmadan yeni bir surum gunler boyu fark edilmeyebiliyordu).
+  // (2) yeni bir SW devreye girince (skipWaiting+clients.claim zaten
+  // sw.js icinde) sayfayi KENDILIGINDEN bir kez yeniliyoruz - kullanici
+  // hicbir sey yapmadan bir sonraki acilista guncel icerigi goruyor.
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((reg) => {
+    reg.update().catch(() => {});
+  }).catch(() => {});
+  let keRefreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (keRefreshing) return;
+    keRefreshing = true;
+    window.location.reload();
+  });
 }
