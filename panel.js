@@ -57,6 +57,7 @@ const CATEGORY_THEME = {
   question_words:        { c: '#FF7043', dark: '#E5562B', tint: '#FFA383' },
   get:                    { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
   tourist:                { c: '#8E44AD', dark: '#712E8C', tint: '#C990E0' },
+  conversations:          { c: '#EF6C9C', dark: '#D14F80', tint: '#F7A9C6' },
 };
 
 // Bazı kategoriler için oyun sahnesine hafif saydam bir "dekor" katmanı
@@ -85,7 +86,7 @@ const CATEGORY_MOTIF = {
   city_places: '🏙️', body_health: '❤️', weather_seasons: '⛅',
   emotions_personality: '😊', clothes_shopping: '👕', jobs_professions: '💼',
   science: '🔬', communication_internet: '💬',
-  prepositions: '📦', question_words: '❓', get: '🔄', tourist: '🗺️',
+  prepositions: '📦', question_words: '❓', get: '🔄', tourist: '🗺️', conversations: '💬',
 };
 
 // Kalıcı, gizlilik-dostu ilerleme: sadece bu cihazın tarayıcısında
@@ -1749,10 +1750,11 @@ const GRAMMAR_CATEGORY_IDS = ['prepositions'];
 const QA_CATEGORY_IDS = ['question_words'];
 const GET_CATEGORY_IDS = ['get'];
 const TOURIST_CATEGORY_IDS = ['tourist'];
+const CONVERSATION_CATEGORY_IDS = ['conversations'];
 const SECTIONS = [
   { id: 'words', title: 'Words', sub: 'Themed word categories', subTr: 'Temalı kelime kategorileri', titleTr: 'Kelimeler', motif: '📚',
     theme: { c: '#FFA000', dark: '#DB8A00', tint: '#FFCF66' },
-    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !TOURIST_CATEGORY_IDS.includes(c.id) },
+    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !TOURIST_CATEGORY_IDS.includes(c.id) && !CONVERSATION_CATEGORY_IDS.includes(c.id) },
   { id: 'grammar', title: 'Grammar', sub: 'Prepositions: in, on, at, under…', subTr: 'Edatlar: in, on, at, under…', titleTr: 'Gramer', motif: '🧩',
     theme: { c: '#00ACC1', dark: '#008BA0', tint: '#5DD6E6' },
     pick: (c) => GRAMMAR_CATEGORY_IDS.includes(c.id) },
@@ -1768,6 +1770,9 @@ const SECTIONS = [
   { id: 'tourist', title: 'Travel Talk', sub: 'Airport, restaurant, directions, hotel', subTr: 'Havaalanı, restoran, yön sorma, otel', titleTr: 'Seyahat Sohbeti', motif: '🗺️',
     theme: { c: '#8E44AD', dark: '#712E8C', tint: '#C990E0' },
     pick: (c) => TOURIST_CATEGORY_IDS.includes(c.id) },
+  { id: 'conversations', title: 'Conversations', sub: 'Aktapokus asks, you answer', subTr: 'Aktapokus sorar, sen cevaplarsın', titleTr: 'Konuşmalar', motif: '💬',
+    theme: { c: '#EF6C9C', dark: '#D14F80', tint: '#F7A9C6' },
+    pick: (c) => CONVERSATION_CATEGORY_IDS.includes(c.id) },
 ];
 let _currentSection = null;
 
@@ -2215,6 +2220,10 @@ function startReviewSession(container, api, toolId, categories, categoryId, cate
 }
 
 function renderEpisodeScene(container, api, toolId, categories, episode) {
+  if (episode.conversation) {
+    renderConversationEpisodeScene(container, api, toolId, categories, episode);
+    return;
+  }
   const host = container.querySelector('#keScreenHost');
   const titleTr = catLabel({ title: episode.category_title });
   const theme = CATEGORY_THEME[episode.category_id] || { c: '#4A90E2', dark: '#3A78C2', tint: '#E9F1FC' };
@@ -2552,6 +2561,113 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
     startLetterRound(host, container, episode, episode.objects, mascotEl, null, goToNextEpisode);
   });
   pushBackState(leaveEpisode);
+}
+
+// Konuşma bölümleri (episode.conversation) kelime-keşif/soru/konuşma/cümle
+// akışını atlar — bunlar tek tek kelime-obje değil, Aktapokus'un sorduğu,
+// öğrencinin kelime-taşlarıyla cevapladığı 5 turluk bir sohbet. "Aktapokus
+// sorar, öğrenci cevaplar... konuşma şeklinde devam eden bir konsept"
+// isteğinin karşılığı — bkz. startConversationRound.
+function renderConversationEpisodeScene(container, api, toolId, categories, episode) {
+  const host = container.querySelector('#keScreenHost');
+  const titleTr = catLabel({ title: episode.category_title });
+  const theme = CATEGORY_THEME[episode.category_id] || { c: '#EF6C9C', dark: '#D14F80', tint: '#F7A9C6' };
+  const topicTitle = _lang === 'tr' ? (episode.title_tr || episode.title_en) : episode.title_en;
+
+  host.innerHTML = `
+    <button class="ke-back-btn" id="keBackBtn">${ICON_BACK} ${L('Kategoriler', 'Categories')}</button>
+    <details class="ke-map-details" id="keMapDetails"${isNarrowLayout() ? '' : ' open'}>
+      <summary class="ke-map-summary">🗺️ ${L('Konu', 'Topic')} <span id="keMapSummaryNum">${episode.episode_index + 1}</span> / <span id="keMapSummaryTotal">${episode.episode_count}</span></summary>
+      <div class="ke-map" id="keMap"></div>
+    </details>
+    <h1 class="ke-title">${bubbleTitleHTML(L('Aktapokus ile ', 'Aktapokus: ') + titleTr)}</h1>
+    <p class="ke-subtitle" id="keSubtitle">${L('Konu', 'Topic')} ${episode.episode_index + 1} / ${episode.episode_count} — ${topicTitle}</p>
+
+    <div class="ke-scene-wrap" style="--cc-tint:${theme.tint};--cc-c:${theme.c}">
+      <div class="ke-scene" id="keScene">
+        <div class="ke-stars"></div>
+        <div class="ke-mascot-wrap" id="keMascot">${mascotSvg()}</div>
+        <div class="ke-sentence ke-show" id="keSentence">
+          <div class="ke-bubble ke-sentence-bubble" id="keSentenceBubble"></div>
+          <div class="ke-sentence-progress" id="keSentenceProgress"></div>
+          <div class="ke-sentence-slots" id="keSentenceSlots"></div>
+          <div class="ke-sentence-bank" id="keSentenceBank"></div>
+          <div class="ke-btn-row" id="keSentenceActions" style="display:none;">
+            <button class="ke-btn-secondary" id="keSentenceReset">${L('Baştan Başla', 'Start over')}</button>
+            <button class="ke-btn-primary" id="keSentenceCheck">${L('Kontrol Et', 'Check')} ✓</button>
+          </div>
+        </div>
+        <div class="ke-celebration" id="keCelebration">
+          <div id="keConfettiHost"></div>
+          <div style="font-size:52px;">🎉</div>
+          <h2>${L('Harika iş çıkardın!', 'Great job!')}</h2>
+          <p id="keCelebrationText"></p>
+          <div class="ke-score" id="keScore" style="display:none;"></div>
+          <div class="ke-reward-chip" id="keRewardChip"></div>
+          <div class="ke-btn-row">
+            <button class="ke-btn-secondary" id="keReplayBtn">${L('Tekrar Oyna', 'Play again')}</button>
+            <button class="ke-btn-primary" id="keNextEpisodeBtn"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ke-footer-row" style="flex-direction:column; gap:10px;">
+      <p class="ke-hint">${L('Aktapokus soruyor, sen cevabı kelimelerle kuruyorsun! 🧩', "Aktapokus asks, you build the answer with words! 🧩")}</p>
+    </div>
+  `;
+
+  function jumpToEpisode(index) {
+    if (index === episode.episode_index) return;
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    enterCategory(container, api, toolId, categories, episode.category_id, index);
+  }
+  const completedSet = new Set(Progress.getCategory(episode.category_id).completed);
+  renderMap(host, episode.episode_index, episode.episode_count, jumpToEpisode, completedSet);
+
+  const leaveEpisode = () => {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    showCategoryGrid(container, api, toolId, categories);
+  };
+  host.querySelector('#keBackBtn').addEventListener('click', leaveEpisode);
+  pushBackState(leaveEpisode);
+
+  const mascotEl = host.querySelector('#keMascot');
+
+  function goToNextEpisode() {
+    const nextIndex = episode.episode_index + 1;
+    if (nextIndex < episode.episode_count) {
+      enterCategory(container, api, toolId, categories, episode.category_id, nextIndex);
+    } else {
+      showCategoryGrid(container, api, toolId, categories);
+    }
+  }
+
+  host.querySelector('#keReplayBtn').addEventListener('click', () => {
+    renderConversationEpisodeScene(container, api, toolId, categories, episode);
+  });
+
+  function onFinished(score) {
+    Progress.markComplete(episode.category_id, episode.episode_index);
+    try { DailyGoal.add(episode.conversation.length); } catch (e) { /* yok say */ }
+    const overlay = host.querySelector('#keCelebration');
+    host.querySelector('#keCelebrationText').textContent = L(`${episode.conversation.length} soruyu cevapladın!`, `You answered ${episode.conversation.length} questions!`)
+      + (episode.episode_index + 1 < episode.episode_count
+        ? L(' Bir sonraki konunun kilidi açıldı.', ' The next topic is unlocked.')
+        : L(' Bu bölümü tamamladın!', ' You finished this section!'));
+    const scoreEl = host.querySelector('#keScore');
+    scoreEl.textContent = `${L('Skor', 'Score')}: ${score.correct} / ${score.total} ⭐`;
+    scoreEl.style.display = 'block';
+    host.querySelector('#keRewardChip').textContent = `⭐ ${rewardLabel(episode.reward_label)}`;
+    const nextBtn = host.querySelector('#keNextEpisodeBtn');
+    const hasNext = episode.episode_index + 1 < episode.episode_count;
+    nextBtn.textContent = hasNext ? L('Sonraki Konu →', 'Next topic →') : L('Kategoriye Dön', 'Back to category');
+    nextBtn.onclick = goToNextEpisode;
+    overlay.classList.add('ke-show');
+    launchConfetti(host);
+    setMascotPose(host, 'celebrate');
+  }
+
+  startConversationRound(host, container, episode, mascotEl, onFinished);
 }
 
 function setupFullscreen(container) {
@@ -3513,6 +3629,185 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
   }
 
   renderItem();
+}
+
+// Konuşma bölümü: Aktapokus episode.conversation'daki her soruyu sırayla
+// sorar (TTS), öğrenci cevabı kelime-taşlarıyla kurar — mekanik
+// startSentenceRound'un slot/tuzak-kelime/sürükle-bırak mantığının aynısı,
+// ama tek bir cümle yerine art arda gelen bir soru-cevap ZİNCİRİ (gerçek
+// bir konuşma hissi versin diye tek seferlik izole kartlar değil).
+function startConversationRound(host, container, episode, mascotEl, onFinished) {
+  const bubbleEl = host.querySelector('#keSentenceBubble');
+  const progressEl = host.querySelector('#keSentenceProgress');
+  const slotsEl = host.querySelector('#keSentenceSlots');
+  const bankEl = host.querySelector('#keSentenceBank');
+  const actionsEl = host.querySelector('#keSentenceActions');
+  const checkBtn = host.querySelector('#keSentenceCheck');
+  const resetBtn = host.querySelector('#keSentenceReset');
+
+  mascotEl.classList.add('ke-mascot-compact');
+  setMascotPose(host, 'write');
+
+  const turns = episode.conversation;
+  let idx = 0;
+  let correctFirstTry = 0;
+
+  function renderTurn() {
+    if (idx >= turns.length) {
+      mascotEl.classList.remove('ke-mascot-compact');
+      setMascotPose(host, 'idle');
+      onFinished({ correct: correctFirstTry, total: turns.length });
+      return;
+    }
+    const turn = turns[idx];
+    const tokens = turn.a.split(' ');
+    let firstTry = true;
+    progressEl.textContent = `${L('Konuşma', 'Conversation')} ${idx + 1} / ${turns.length}`;
+    bubbleEl.textContent = `🗣️ ${turn.q}`;
+    speakWord(turn.q, mascotEl);
+
+    slotsEl.innerHTML = '';
+    tokens.forEach(() => {
+      const slot = document.createElement('div');
+      slot.className = 'ke-slot';
+      slotsEl.appendChild(slot);
+    });
+    actionsEl.style.display = 'none';
+    checkBtn.disabled = true;
+
+    let wrongAttempts = 0;
+    const slotItems = new Array(tokens.length).fill(null);
+    const slotEls0 = () => [...slotsEl.children];
+
+    function renderSlots() {
+      slotEls0().forEach((slot, i) => {
+        const it = slotItems[i];
+        slot.textContent = it ? it.tok.text : '';
+        if (it) slot.dataset.origIndex = String(it.tok.origIndex); else slot.removeAttribute('data-orig-index');
+        slot.classList.toggle('ke-filled', !!it);
+      });
+      const cnt = slotItems.filter(Boolean).length;
+      const full = cnt === tokens.length;
+      actionsEl.style.display = cnt ? 'flex' : 'none';
+      checkBtn.disabled = !full;
+      checkBtn.style.display = full ? '' : 'none';
+    }
+    function freeItem(i) {
+      const it = slotItems[i];
+      if (it) { it.tile.classList.remove('ke-used'); slotItems[i] = null; }
+    }
+    function placeTile(tile, tok, i) {
+      freeItem(i);
+      slotItems[i] = { tile, tok };
+      tile.classList.add('ke-used');
+    }
+    function resetSlots() {
+      slotItems.forEach((_, i) => freeItem(i));
+      renderSlots();
+    }
+
+    function slotIndexAt(x, y) {
+      const el = document.elementFromPoint(x, y);
+      const slot = el && el.closest ? el.closest('.ke-slot') : null;
+      return slot ? slotEls0().indexOf(slot) : -1;
+    }
+    function startDrag(ev, label, onDrop, onTap) {
+      if (ev.button !== undefined && ev.button > 0) return;
+      const sx = ev.clientX, sy = ev.clientY;
+      let ghost = null, moved = false;
+      const move = (e) => {
+        if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) > 8) {
+          moved = true;
+          ghost = document.createElement('div');
+          ghost.className = 'ke-tile ke-drag-ghost';
+          ghost.textContent = label;
+          document.body.appendChild(ghost);
+        }
+        if (ghost) { ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px'; e.preventDefault(); }
+      };
+      const up = (e) => {
+        document.removeEventListener('pointermove', move);
+        document.removeEventListener('pointerup', up);
+        document.removeEventListener('pointercancel', up);
+        if (ghost) ghost.remove();
+        if (moved) onDrop(slotIndexAt(e.clientX, e.clientY)); else onTap();
+      };
+      document.addEventListener('pointermove', move, { passive: false });
+      document.addEventListener('pointerup', up);
+      document.addEventListener('pointercancel', up);
+    }
+
+    slotEls0().forEach((slot, i) => {
+      slot.addEventListener('pointerdown', (ev) => {
+        if (!slotItems[i]) return;
+        ev.preventDefault();
+        startDrag(ev, slotItems[i].tok.text,
+          (j) => {
+            if (j >= 0 && j !== i) { const t = slotItems[i]; slotItems[i] = slotItems[j]; slotItems[j] = t; }
+            else if (j < 0) freeItem(i);
+            renderSlots();
+          },
+          () => { freeItem(i); renderSlots(); });
+      });
+    });
+
+    const bankItems = tokens.map((text, origIndex) => ({ text, origIndex }));
+    const otherAnswers = turns.filter((_, i) => i !== idx).map((t) => ({ word: t.a }));
+    const distractorWord = pickDistractorWord(tokens, otherAnswers, turn.a);
+    if (distractorWord) bankItems.push({ text: distractorWord, origIndex: -1 });
+    const shuffled = shuffle(bankItems);
+    bankEl.innerHTML = '';
+    shuffled.forEach((tok) => {
+      const tile = document.createElement('button');
+      tile.className = 'ke-tile';
+      tile.textContent = tok.text;
+      tile.addEventListener('pointerdown', (ev) => {
+        if (tile.classList.contains('ke-used')) return;
+        startDrag(ev, tok.text,
+          (j) => { if (j >= 0) { placeTile(tile, tok, j); renderSlots(); } },
+          () => {
+            const j = slotItems.indexOf(null);
+            if (j >= 0) { placeTile(tile, tok, j); renderSlots(); }
+          });
+      });
+      tile.addEventListener('click', (e) => e.preventDefault());
+      bankEl.appendChild(tile);
+    });
+
+    resetBtn.onclick = resetSlots;
+
+    checkBtn.onclick = () => {
+      const slotEls = [...slotsEl.children];
+      const isCorrect = slotEls.every((s, i) => Number(s.dataset.origIndex) === i);
+      if (isCorrect) {
+        checkBtn.disabled = true;
+        if (firstTry) correctFirstTry++;
+        bubbleEl.textContent = L('Harika cevap! 🎉', 'Great answer! 🎉');
+        celebrateBounce(mascotEl);
+        speakWord(turn.a, mascotEl);
+        setTimeout(() => { idx++; renderTurn(); }, 1300);
+      } else if (++wrongAttempts >= 2) {
+        firstTry = false;
+        checkBtn.disabled = true;
+        slotEls.forEach((sl, i) => { sl.textContent = tokens[i]; sl.classList.remove('ke-filled'); sl.classList.add('ke-reveal'); });
+        bubbleEl.textContent = L(`Doğru cevap: ${turn.a} 💡`, `The correct answer: ${turn.a} 💡`);
+        speakWord(turn.a, mascotEl);
+        setTimeout(() => { idx++; renderTurn(); }, 3200);
+      } else {
+        firstTry = false;
+        bubbleEl.textContent = L('Bu değil, tekrar dene! 🔄', 'Not quite — try again! 🔄');
+        checkBtn.disabled = true;
+        slotEls.forEach((s) => s.classList.add('ke-shake'));
+        setTimeout(() => {
+          slotEls.forEach((s) => s.classList.remove('ke-shake'));
+          bubbleEl.textContent = `🗣️ ${turn.q}`;
+          resetSlots();
+        }, 800);
+      }
+    };
+  }
+
+  renderTurn();
 }
 
 function showCelebration(host, container, episode, wordList, score, onDone) {
