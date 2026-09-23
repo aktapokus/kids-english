@@ -55,6 +55,7 @@ const CATEGORY_THEME = {
   communication_internet:{ c: '#26C6DA', dark: '#1BA9BC', tint: '#78E1EE' },
   prepositions:          { c: '#00ACC1', dark: '#008BA0', tint: '#5DD6E6' },
   question_words:        { c: '#FF7043', dark: '#E5562B', tint: '#FFA383' },
+  get:                    { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
 };
 
 // Bazı kategoriler için oyun sahnesine hafif saydam bir "dekor" katmanı
@@ -83,7 +84,7 @@ const CATEGORY_MOTIF = {
   city_places: '🏙️', body_health: '❤️', weather_seasons: '⛅',
   emotions_personality: '😊', clothes_shopping: '👕', jobs_professions: '💼',
   science: '🔬', communication_internet: '💬',
-  prepositions: '📦', question_words: '❓',
+  prepositions: '📦', question_words: '❓', get: '🔄',
 };
 
 // Kalıcı, gizlilik-dostu ilerleme: sadece bu cihazın tarayıcısında
@@ -269,11 +270,11 @@ ${FONT_FACES}
        kartları hâlâ yukarıdaki --ke-* setini kullanıyor (kategori
        renkleri bilinçli olarak korunuyor); bu yeni --kb-* seti SADECE
        tahta yüzeyleri ve üzerindeki tebeşir metin/kontrollerinde. */
-    --kb-board: #1976B8; --kb-board-dark: #0F4E78;
+    --kb-board: #14231A; --kb-board-dark: #09120D;
     --kb-chalk: #F5F0DF; --kb-chalk-dim: #D9D4C2;
     --kb-action: #6EC8FF; --kb-discover: #FFD75A;
     --kb-correct: #85D98A; --kb-wrong: #FF8B82; --kb-voice: #C8A2FF;
-    --kb-wood-dark: #D9922E; --kb-wood-light: #F6D488;
+    --kb-wood-dark: #5B351C; --kb-wood-light: #A86632;
     font-family: 'Fredoka', 'Baloo 2', 'Nunito', 'Segoe UI', system-ui, sans-serif;
     color: var(--kb-chalk);
     /* TAM TEBEŞİR-KARATAHTA (v2) — önceki mor/turuncu glow'lu "hafif
@@ -299,7 +300,7 @@ ${FONT_FACES}
        hissi, "modern plastik panel" değil gerçek bir tahta rafı çerçevesi. */
     background-origin: border-box;
     border: 3px solid #E9C385;
-    border-image: linear-gradient(90deg, var(--kb-wood-dark), var(--kb-wood-light) 14%, #E8A94A 48%, #FCE1A0 78%, var(--kb-wood-dark)) 1;
+    border-image: linear-gradient(90deg, var(--kb-wood-dark), var(--kb-wood-light) 14%, #6E4020 48%, #B8783D 78%, var(--kb-wood-dark)) 1;
     box-shadow:
       inset 0 0 0 6px rgba(47,25,12,.45),
       inset 0 0 18px rgba(0,0,0,.28),
@@ -582,7 +583,7 @@ ${FONT_FACES}
      rengine/kesik kenarlığa çevrildi. */
   .ke-progress-chip{
     position:absolute; top:16px; right:16px;
-    background: rgba(15,78,120,.5); border: 2px dashed var(--kb-discover);
+    background: rgba(9,18,13,.5); border: 2px dashed var(--kb-discover);
     color: var(--kb-discover); border-radius: 10px 14px 10px 14px;
     padding:7px 16px; font-size:13px; font-weight:800; z-index:5;
     box-shadow:1px 2px 0 rgba(0,0,0,.25); text-shadow:0 0 4px rgba(255,215,90,.5);
@@ -815,7 +816,7 @@ ${FONT_FACES}
      kirpiliyordu ("kontrol et yazisi gorunmuyor" geri bildirimi).
      bottom:10px vererek panelin kendisini sahneye sigdiriyoruz, tasan
      icerik KIRPILMIYOR, panelin kendi icinde kayiyor. */
-  .ke-quiz{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:620px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:16px; padding:52px 20px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #2C86C4 0%, #1976B8 55%, #0F4E78 100%); border:5px solid #D9922E; border-radius:22px; box-shadow:inset 0 0 40px rgba(0,0,0,.5); }
+  .ke-quiz{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:620px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:16px; padding:52px 20px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border:5px solid #6b4226; border-radius:22px; box-shadow:inset 0 0 40px rgba(0,0,0,.5); }
   .ke-quiz.ke-show{ display:flex; }
   .ke-quiz-bubble{ position:static; transform:none; margin:0; }
   .ke-quiz-progress{ background:rgba(110,200,255,.1); border:2px dashed var(--kb-action); color:var(--kb-action); border-radius:10px 14px 10px 14px; padding:6px 16px; font-size:12.5px; font-weight:800; box-shadow:1px 2px 0 rgba(0,0,0,.2); text-shadow:0 0 4px rgba(110,200,255,.5); }
@@ -871,7 +872,7 @@ ${FONT_FACES}
   .ke-scene:not(.ke-scene-narrow) .ke-quiz .ke-quiz-card .ke-icon-hex{ width:min(100cqw,100cqh); height:min(100cqw,100cqh); max-width:none; flex:none; }
   .ke-shell.ke-fs .ke-quiz-cards{ max-width:min(600px,100%); }
 
-  .ke-speak{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:480px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:14px; padding:52px 20px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #2C86C4 0%, #1976B8 55%, #0F4E78 100%); border:5px solid #D9922E; border-radius:22px; box-shadow:inset 0 0 40px rgba(0,0,0,.5); }
+  .ke-speak{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:480px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:14px; padding:52px 20px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border:5px solid #6b4226; border-radius:22px; box-shadow:inset 0 0 40px rgba(0,0,0,.5); }
   .ke-speak.ke-show{ display:flex; }
   .ke-speak-progress{ background:rgba(110,200,255,.1); border:2px dashed var(--kb-action); color:var(--kb-action); border-radius:10px 14px 10px 14px; padding:6px 16px; font-size:12.5px; font-weight:800; box-shadow:1px 2px 0 rgba(0,0,0,.2); text-shadow:0 0 4px rgba(110,200,255,.5); }
   .ke-speak-card{ background:#ffffff; border:3px solid var(--ke-border); border-radius:24px; padding:18px 34px; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 5px 0 var(--ke-border); }
@@ -891,7 +892,7 @@ ${FONT_FACES}
   .ke-speak-mic.ke-listening{ background:var(--kb-voice); color:#1A1030; --btn-shadow:#9576D6; animation:ke-pulse 1s ease-in-out infinite; }
   @keyframes ke-pulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
 
-  .ke-sentence{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:620px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:16px; padding:48px 16px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #2C86C4 0%, #1976B8 55%, #0F4E78 100%); border:5px solid #D9922E; border-radius:22px; box-shadow:inset 0 0 40px rgba(0,0,0,.5); }
+  .ke-sentence{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:620px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:16px; padding:48px 16px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border:5px solid #6b4226; border-radius:22px; box-shadow:inset 0 0 40px rgba(0,0,0,.5); }
   .ke-sentence.ke-show{ display:flex; }
   .ke-sentence-bubble{ position:static; transform:none; margin:0; }
   .ke-sentence-progress{ background:rgba(110,200,255,.1); border:2px dashed var(--kb-action); color:var(--kb-action); border-radius:10px 14px 10px 14px; padding:6px 16px; font-size:12.5px; font-weight:800; box-shadow:1px 2px 0 rgba(0,0,0,.2); text-shadow:0 0 4px rgba(110,200,255,.5); }
@@ -1205,7 +1206,7 @@ ${FONT_FACES}
   .ke-map .ke-dot:focus-visible{
     outline: 3px solid var(--kb-action);
     outline-offset: 2px;
-    box-shadow: 0 0 0 5px rgba(15,78,120,.55);
+    box-shadow: 0 0 0 5px rgba(9,18,13,.55);
   }
 </style>`;
 
@@ -1491,10 +1492,11 @@ export async function mount(container, api, toolId) {
 // hazır olmadığı için kilitli/"yakında".
 const GRAMMAR_CATEGORY_IDS = ['prepositions'];
 const QA_CATEGORY_IDS = ['question_words'];
+const GET_CATEGORY_IDS = ['get'];
 const SECTIONS = [
   { id: 'words', title: 'Words', sub: 'Themed word categories', subTr: 'Temalı kelime kategorileri', titleTr: 'Kelimeler', motif: '📚',
     theme: { c: '#FFA000', dark: '#DB8A00', tint: '#FFCF66' },
-    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) },
+    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) },
   { id: 'grammar', title: 'Grammar', sub: 'Prepositions: in, on, at, under…', subTr: 'Edatlar: in, on, at, under…', titleTr: 'Gramer', motif: '🧩',
     theme: { c: '#00ACC1', dark: '#008BA0', tint: '#5DD6E6' },
     pick: (c) => GRAMMAR_CATEGORY_IDS.includes(c.id) },
@@ -1504,9 +1506,9 @@ const SECTIONS = [
   { id: 'a2', title: 'A2 Level', sub: 'New words & sentences (coming soon)', subTr: 'Yeni kelimeler ve cümleler (yakında)', titleTr: 'A2 Seviyesi', motif: '🚀', locked: true,
     theme: { c: '#78909C', dark: '#5F7480', tint: '#A8BBC5' },
     pick: () => false },
-  { id: 'get', title: 'Get', sub: 'get up, get in, get on… (coming soon)', subTr: 'get up, get in, get on… (yakında)', titleTr: 'Get', motif: '🔄', locked: true,
-    theme: { c: '#78909C', dark: '#5F7480', tint: '#A8BBC5' },
-    pick: () => false },
+  { id: 'get', title: 'Get', sub: 'get up, get in, get on…', subTr: 'get up, get in, get on…', titleTr: 'Get', motif: '🔄',
+    theme: { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
+    pick: (c) => GET_CATEGORY_IDS.includes(c.id) },
 ];
 let _currentSection = null;
 
