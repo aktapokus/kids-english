@@ -383,10 +383,7 @@ ${FONT_FACES}
     background-origin: border-box;
     border: 3px solid #E9C385;
     border-image: linear-gradient(90deg, var(--kb-wood-dark), var(--kb-wood-light) 14%, #6E4020 48%, #B8783D 78%, var(--kb-wood-dark)) 1;
-    box-shadow:
-      inset 0 0 0 6px rgba(47,25,12,.45),
-      inset 0 0 18px rgba(0,0,0,.28),
-      0 14px 32px rgba(0,0,0,.38);
+    box-shadow:none;
     border-radius: 22px;
     padding: 18px 16px 32px;
     position: relative;
@@ -469,10 +466,10 @@ ${FONT_FACES}
     font-family:'Fredoka','Baloo 2','Nunito',sans-serif; font-weight:700; font-size:15px; letter-spacing:.2px;
     padding:14px 24px; border-radius:16px; border:none; cursor:pointer;
     position:relative; top:0;
-    box-shadow: 0 4px 0 var(--btn-shadow, #c7cfd9);
+    box-shadow:none;
     transition: top .08s ease, box-shadow .08s ease, opacity .15s ease;
   }
-  .ke-shell button:active:not(:disabled){ top:4px; box-shadow:0 0 0 var(--btn-shadow, #c7cfd9); }
+  .ke-shell button:active:not(:disabled){ top:4px; box-shadow:none; }
   /* Renk rolü: MAVİ = ana aksiyon/ilerleme (bu buton "Sorulara Geç",
      "Sonraki Bölüm", tam ekran gibi ilerletici eylemler için varsayılan
      birincil renk). SARI artık sadece keşif/ödül anlamı taşıyan yerlerde
@@ -486,18 +483,18 @@ ${FONT_FACES}
   .ke-btn-primary{
     background: rgba(110,200,255,.12); color: var(--kb-action);
     border: 2px dashed var(--kb-action); border-radius: 10px 14px 11px 13px;
-    box-shadow: 2px 3px 0 rgba(0,0,0,.22); --btn-shadow: transparent;
-    transform: rotate(-.4deg); text-shadow: 0 0 5px rgba(110,200,255,.55);
+    box-shadow:none; --btn-shadow: transparent;
+    transform: rotate(-.4deg); text-shadow:none;
   }
   .ke-btn-primary:hover:not(:disabled){ background: rgba(110,200,255,.2); }
   .ke-btn-secondary{
     background: rgba(245,240,223,.08); color: var(--kb-chalk-dim);
     border: 2px dashed rgba(245,240,223,.5); border-radius: 11px 13px 10px 14px;
-    box-shadow: 2px 3px 0 rgba(0,0,0,.18); --btn-shadow: transparent;
+    box-shadow:none; --btn-shadow: transparent;
     transform: rotate(.3deg);
   }
   .ke-btn-secondary:hover:not(:disabled){ background: rgba(245,240,223,.15); }
-  .ke-btn-primary:disabled{ opacity:.4; cursor:not-allowed; top:0 !important; box-shadow:2px 3px 0 rgba(0,0,0,.22) !important; }
+  .ke-btn-primary:disabled{ opacity:.4; cursor:not-allowed; top:0 !important; box-shadow:none; }
 
   .ke-fullscreen-btn{
     position: absolute; top: 16px; left: 16px; z-index: 10;
@@ -546,13 +543,13 @@ ${FONT_FACES}
   .ke-map .ke-node{ display:flex; align-items:center; gap:6px; }
   .ke-map .ke-dot{
     width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    font-size:15px; font-weight:800; border:none; box-shadow: 0 4px 0 #7FA8D6;
+    font-size:15px; font-weight:800; border:none; box-shadow:none;
     background:var(--ke-surface-2); color:var(--ke-ink-soft); flex-shrink:0; cursor:pointer;
     transition: transform .1s ease;
   }
-  .ke-map .ke-dot:active{ transform:translateY(3px); box-shadow:0 1px 0 #7FA8D6; }
-  .ke-map .ke-dot.current{ background:var(--ke-yellow); color:var(--ke-ink); box-shadow:0 4px 0 var(--ke-yellow-dark); animation:ke-node-bounce 1.4s ease-in-out infinite; }
-  .ke-map .ke-dot.done{ background:var(--ke-green); color:#fff; box-shadow:0 4px 0 var(--ke-green-dark); }
+  .ke-map .ke-dot:active{ transform:translateY(3px); box-shadow:none; }
+  .ke-map .ke-dot.current{ background:var(--ke-yellow); color:var(--ke-ink); box-shadow:none; animation:ke-node-bounce 1.4s ease-in-out infinite; }
+  .ke-map .ke-dot.done{ background:var(--ke-green); color:#fff; box-shadow:none; }
   @keyframes ke-node-bounce{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-5px); } }
   .ke-map .ke-line{ width:18px; height:5px; background:var(--ke-border); border-radius:3px; flex-shrink:0; }
 
@@ -575,14 +572,10 @@ ${FONT_FACES}
     color: var(--kb-chalk);
     -webkit-text-stroke: 1px rgba(255,255,255,.4);
     paint-order: stroke fill;
-    text-shadow:
-      0 0 2px rgba(255,255,255,.5),
-      1px 1px 0 rgba(255,255,255,.16),
-      -1px -1px 0 rgba(255,255,255,.1),
-      2px 4px 10px rgba(0,0,0,.4);
+    text-shadow:none;
   }
   .ke-title .ke-tword:first-child{ color: var(--kb-discover); }
-  .ke-subtitle{ text-align:center; margin:0 0 20px; color:var(--kb-chalk-dim); font-size:14.5px; font-weight:700; text-shadow:0 0 1px rgba(255,255,255,.4); }
+  .ke-subtitle{ text-align:center; margin:0 0 20px; color:var(--kb-chalk-dim); font-size:14.5px; font-weight:700; text-shadow:none; }
 
   /* Kategoriye özgü zemin: renderEpisodeScene, --cc-tint/--cc-c inline
      değişkenlerini CATEGORY_THEME'den enjekte ediyor — böylece her
@@ -592,7 +585,7 @@ ${FONT_FACES}
     position:relative; border-radius:28px; overflow:hidden;
     background: linear-gradient(180deg, var(--cc-tint, #8FCBFA) 0%, var(--cc-c, #1CB0F6) 100%);
     border:3px solid #ffffff;
-    box-shadow:0 16px 40px color-mix(in srgb, var(--cc-c, #1CB0F6) 22%, transparent), 0 0 0 3px var(--ke-border);
+    box-shadow:none;
     max-width:900px; margin:0 auto;
   }
   .ke-stars{
@@ -628,7 +621,7 @@ ${FONT_FACES}
   .ke-motif-space::before{
     content:''; position:absolute; top:6%; right:7%; width:100px; height:100px; border-radius:50%;
     background:radial-gradient(circle at 35% 32%, #DCC6FF, #7C4DFF 72%);
-    opacity:.65; box-shadow:0 0 0 12px rgba(124,77,255,.18);
+    opacity:.65; box-shadow:none;
   }
   .ke-motif-space::after{
     content:''; position:absolute; bottom:10%; left:5%; width:56px; height:56px; border-radius:50%;
@@ -645,7 +638,7 @@ ${FONT_FACES}
   .ke-motif-sky::before{
     content:''; position:absolute; top:9%; left:8%; width:110px; height:36px; border-radius:40px;
     background:#ffffff; opacity:.8;
-    box-shadow: 80px 18px 0 -6px rgba(255,255,255,.75), 145px -8px 0 -10px rgba(255,255,255,.65);
+    box-shadow:none;
   }
   .ke-motif-sky::after{
     content:''; position:absolute; top:24%; right:10%; width:80px; height:28px; border-radius:40px;
@@ -656,7 +649,7 @@ ${FONT_FACES}
     background:repeating-linear-gradient(90deg, rgba(41,182,246,.16) 0 40px, transparent 40px 80px);
     opacity:.6;
   }
-  .ke-bubble{ position:absolute; top:16px; left:50%; transform:translateX(-50%); background:#ffffff; color:var(--ke-ink); padding:11px 20px; border-radius:18px; font-size:14.5px; font-weight:700; text-align:center; max-width:86%; border:2px solid var(--ke-border); box-shadow:0 4px 0 var(--ke-border); z-index:5; }
+  .ke-bubble{ position:absolute; top:16px; left:50%; transform:translateX(-50%); background:#ffffff; color:var(--ke-ink); padding:11px 20px; border-radius:18px; font-size:14.5px; font-weight:700; text-align:center; max-width:86%; border:2px solid var(--ke-border); box-shadow:none; z-index:5; }
   /* Diğer tebeşir-etiket dönüşümlerinden FARKLI: bu çip koyu tahtanın
      üzerinde değil, DOĞRUDAN parlak kategori sahnesinin üzerinde duruyor
      (bkz. .ke-scene-wrap kategori rengi). Tam şeffaf tebeşir etiketi
@@ -668,7 +661,7 @@ ${FONT_FACES}
     background: rgba(9,18,13,.5); border: 2px dashed var(--kb-discover);
     color: var(--kb-discover); border-radius: 10px 14px 10px 14px;
     padding:7px 16px; font-size:13px; font-weight:800; z-index:5;
-    box-shadow:1px 2px 0 rgba(0,0,0,.25); text-shadow:0 0 4px rgba(255,215,90,.5);
+    box-shadow:none; text-shadow:none;
   }
   .ke-obj{ position:absolute; z-index:5; cursor:pointer; transform-origin:center bottom; transition:transform .15s ease; animation:ke-floaty 3.4s ease-in-out infinite; }
   .ke-obj:hover, .ke-obj:focus-visible{ transform:scale(1.1) rotate(-3deg); }
@@ -742,7 +735,7 @@ ${FONT_FACES}
   .ke-icon-hex{
     width:132px; height:132px; background:var(--kb-chalk); border-radius:48% 52% 51% 49% / 52% 48% 53% 47%;
     display:flex; align-items:center; justify-content:center;
-    box-shadow: 0 0 0 2px rgba(245,240,223,.35), 0 5px 10px rgba(0,0,0,.3);
+    box-shadow:none;
     flex-shrink:0;
   }
   .ke-icon-hex-inner{
@@ -753,7 +746,7 @@ ${FONT_FACES}
   .ke-icon-hex-inner .ke-photo-img{ width:100%; height:100%; object-fit:cover; display:block; }
   .ke-icon-hex-inner .ke-icon-img{ width:100%; height:100%; object-fit:contain; }
   .ke-icon-hex-inner .ke-emoji-icon{ font-size:52px; line-height:1; }
-  .ke-icon-hex-inner .ke-letter-badge-text{ font-size:13px; font-weight:800; color:#fff; text-align:center; line-height:1.15; text-shadow:0 1px 3px rgba(0,0,0,.45); }
+  .ke-icon-hex-inner .ke-letter-badge-text{ font-size:13px; font-weight:800; color:#fff; text-align:center; line-height:1.15; text-shadow:none; }
 
   /* Aktapokus'un bunu SÖYLEDİĞİNİ göstermek için gerçek bir çizgi-roman
      konuşma balonu — kutunun altında maskotun başına doğru bir kuyruk
@@ -770,7 +763,7 @@ ${FONT_FACES}
      konumuna göre px cinsinden set ediliyor - burada sadece güvenli bir
      ilk değer + yatay ortalama (translateX(-50%), JS her zaman left'i
      nesnenin YATAY MERKEZİNE göre veriyor) tanımlı. */
-  .ke-word-popup{ position:absolute; right:auto; left:50%; bottom:auto; top:16%; transform:translateX(-50%) translateY(-8px) scale(.85); background:var(--ke-yellow); color:var(--ke-ink); padding:11px 28px; border-radius:20px; font-family:'Chewy','Fredoka',sans-serif; font-size:26px; font-weight:400; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease; z-index:6; box-shadow:0 5px 0 var(--ke-yellow-dark); max-width:80%; text-align:center; }
+  .ke-word-popup{ position:absolute; right:auto; left:50%; bottom:auto; top:16%; transform:translateX(-50%) translateY(-8px) scale(.85); background:var(--ke-yellow); color:var(--ke-ink); padding:11px 28px; border-radius:20px; font-family:'Chewy','Fredoka',sans-serif; font-size:26px; font-weight:400; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease; z-index:6; box-shadow:none; max-width:80%; text-align:center; }
   .ke-word-popup::before{
     content:''; position:absolute; left:50%; bottom:-14px; transform:translateX(-50%);
     border-left:7px solid transparent; border-right:7px solid transparent;
@@ -807,7 +800,7 @@ ${FONT_FACES}
      "tahtaya yapıştırılmış bir sticker" gibi, ana tebeşir yazı alanıyla
      kontrast için yarışmıyor. Altına küçük, soluk bir elips gölge
      (::after, tebeşir tozu/raf hissi) eklendi — yeni görsel dosya yok. */
-  .ke-mascot-img{ display:block; width:100%; height:auto; filter:drop-shadow(0 5px 6px rgba(0,0,0,.22)); user-select:none; -webkit-user-drag:none; animation:ke-bob 2.6s ease-in-out infinite; position:relative; z-index:1; }
+  .ke-mascot-img{ display:block; width:100%; height:auto; filter:); user-select:none; -webkit-user-drag:none; animation:ke-bob 2.6s ease-in-out infinite; position:relative; z-index:1; }
   .ke-mascot-wrap::after{
     content:''; position:absolute; left:50%; bottom:-4px; transform:translateX(-50%);
     width:60%; height:10px; border-radius:50%;
@@ -878,8 +871,8 @@ ${FONT_FACES}
      tekrarlamak gerekiyor — yoksa düğmeler kapalıyken de görünür kalır. */
   .ke-jump-buttons{ display:none; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:8px; }
   .ke-jump-row[open] .ke-jump-buttons{ display:flex; }
-  .ke-jump-btn{ font-size:11.5px !important; font-weight:700 !important; padding:6px 13px !important; border-radius:8px 12px 9px 11px !important; background:rgba(245,240,223,.06) !important; color:var(--kb-chalk-dim) !important; border:1.5px dashed rgba(245,240,223,.4) !important; --btn-shadow:transparent !important; box-shadow:1px 2px 0 rgba(0,0,0,.2) !important; }
-  .ke-jump-btn:active{ top:2px !important; box-shadow:0 0 0 transparent !important; }
+  .ke-jump-btn{ font-size:11.5px !important; font-weight:700 !important; padding:6px 13px !important; border-radius:8px 12px 9px 11px !important; background:rgba(245,240,223,.06) !important; color:var(--kb-chalk-dim) !important; border:1.5px dashed rgba(245,240,223,.4) !important; --btn-shadow:transparent !important; box-shadow:none; }
+  .ke-jump-btn:active{ top:2px !important; box-shadow:none; }
 
   /* GERÇEK karatahta denemesi (v2) — ilk deneme kategori rengiyle
      karışıp şeffaflaşan bir "mor-turuncu bulanıklık"a dönüşmüştü ("kara
@@ -898,11 +891,11 @@ ${FONT_FACES}
      kirpiliyordu ("kontrol et yazisi gorunmuyor" geri bildirimi).
      bottom:10px vererek panelin kendisini sahneye sigdiriyoruz, tasan
      icerik KIRPILMIYOR, panelin kendi icinde kayiyor. */
-  .ke-quiz{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:620px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:16px; padding:52px 20px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border:5px solid #6b4226; border-radius:22px; box-shadow:inset 0 0 40px rgba(0,0,0,.5); }
+  .ke-quiz{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:620px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:16px; padding:52px 20px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border:5px solid #6b4226; border-radius:22px; box-shadow:none; }
   .ke-quiz.ke-show{ display:flex; }
   .ke-quiz-bubble{ position:static; transform:none; margin:0; }
-  .ke-quiz-progress{ background:rgba(110,200,255,.1); border:2px dashed var(--kb-action); color:var(--kb-action); border-radius:10px 14px 10px 14px; padding:6px 16px; font-size:12.5px; font-weight:800; box-shadow:1px 2px 0 rgba(0,0,0,.2); text-shadow:0 0 4px rgba(110,200,255,.5); }
-  .ke-quiz-word{ font-family:'Fredericka the Great','Chewy','Fredoka',sans-serif; font-weight:400; font-size:26px; color:#F5F3EE; text-shadow:0 0 2px rgba(255,255,255,.25), 0 2px 6px rgba(0,0,0,.5); }
+  .ke-quiz-progress{ background:rgba(110,200,255,.1); border:2px dashed var(--kb-action); color:var(--kb-action); border-radius:10px 14px 10px 14px; padding:6px 16px; font-size:12.5px; font-weight:800; box-shadow:none; text-shadow:none; }
+  .ke-quiz-word{ font-family:'Fredericka the Great','Chewy','Fredoka',sans-serif; font-weight:400; font-size:26px; color:#F5F3EE; text-shadow:none; }
   .ke-quiz-replay{
     position:absolute; top:16px; right:16px; width:44px; height:44px; border-radius:50% !important;
     background:var(--ke-surface-2); --btn-shadow:#7FA8D6; color:var(--ke-ink);
@@ -917,18 +910,18 @@ ${FONT_FACES}
     background:#ffffff; border:4px solid var(--ke-border); border-radius:24px;
     padding:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;
     transition: border-color .15s ease, background .15s ease, top .08s ease, box-shadow .08s ease;
-    aspect-ratio:1/1; position:relative; top:0; box-shadow:0 5px 0 var(--ke-border);
+    aspect-ratio:1/1; position:relative; top:0; box-shadow:none;
   }
   .ke-quiz-card .ke-icon-hex{ width:100%; height:100%; box-shadow:none; background:transparent; }
   .ke-quiz-card .ke-icon-hex-inner{ width:100%; height:100%; }
   .ke-quiz-card .ke-icon-hex .ke-emoji-icon{ font-size:52px; }
   .ke-quiz-card .ke-icon-hex .ke-letter-badge-text{ font-size:13px; }
   .ke-quiz-card:hover{ border-color:var(--ke-blue); }
-  .ke-quiz-card:active:not(:disabled){ top:5px; box-shadow:0 0 0 var(--ke-border); }
+  .ke-quiz-card:active:not(:disabled){ top:5px; box-shadow:none; }
   .ke-quiz-card:disabled{ cursor:not-allowed; }
   .ke-quiz-card:disabled:hover{ border-color:var(--ke-border); }
-  .ke-quiz-card.ke-correct{ border-color:var(--kb-correct); background:#EFFCE5; box-shadow:0 5px 0 var(--kb-correct); animation:ke-pop .35s ease; }
-  .ke-quiz-card.ke-wrong{ border-color:var(--kb-wrong); background:#FFEDED; opacity:.65; box-shadow:0 5px 0 var(--kb-wrong); animation:ke-shake-x .35s ease; }
+  .ke-quiz-card.ke-correct{ border-color:var(--kb-correct); background:#EFFCE5; box-shadow:none; animation:ke-pop .35s ease; }
+  .ke-quiz-card.ke-wrong{ border-color:var(--kb-wrong); background:#FFEDED; opacity:.65; box-shadow:none; animation:ke-shake-x .35s ease; }
   /* Doğru/yanlış SADECE renkle değil — keşif ekranındaki ✓ rozetiyle
      aynı dilde bir simge de ekleniyor (renk körü/düşük görüşlü çocuklar
      için). */
@@ -954,10 +947,10 @@ ${FONT_FACES}
   .ke-scene:not(.ke-scene-narrow) .ke-quiz .ke-quiz-card .ke-icon-hex{ width:min(100cqw,100cqh); height:min(100cqw,100cqh); max-width:none; flex:none; }
   .ke-shell.ke-fs .ke-quiz-cards{ max-width:min(600px,100%); }
 
-  .ke-speak{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:480px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:14px; padding:52px 20px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border:5px solid #6b4226; border-radius:22px; box-shadow:inset 0 0 40px rgba(0,0,0,.5); }
+  .ke-speak{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:480px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:14px; padding:52px 20px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border:5px solid #6b4226; border-radius:22px; box-shadow:none; }
   .ke-speak.ke-show{ display:flex; }
-  .ke-speak-progress{ background:rgba(110,200,255,.1); border:2px dashed var(--kb-action); color:var(--kb-action); border-radius:10px 14px 10px 14px; padding:6px 16px; font-size:12.5px; font-weight:800; box-shadow:1px 2px 0 rgba(0,0,0,.2); text-shadow:0 0 4px rgba(110,200,255,.5); }
-  .ke-speak-card{ background:#ffffff; border:3px solid var(--ke-border); border-radius:24px; padding:18px 34px; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 5px 0 var(--ke-border); }
+  .ke-speak-progress{ background:rgba(110,200,255,.1); border:2px dashed var(--kb-action); color:var(--kb-action); border-radius:10px 14px 10px 14px; padding:6px 16px; font-size:12.5px; font-weight:800; box-shadow:none; text-shadow:none; }
+  .ke-speak-card{ background:#ffffff; border:3px solid var(--ke-border); border-radius:24px; padding:18px 34px; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:none; }
   .ke-speak-card .ke-icon-hex{ width:170px; height:170px; }
   .ke-speak-card .ke-icon-hex .ke-emoji-icon{ font-size:66px; }
   /* DİKKAT: bu metin .ke-speak-card'ın (BEYAZ kart) İÇİNDE — tahtanın
@@ -965,7 +958,7 @@ ${FONT_FACES}
      görünmez olurdu; "tebeşir hissi" fontun şekli üzerinden korunuyor,
      renk okunaklılık için koyu tahta rengine çekildi. */
   .ke-speak-word{ font-family:'Fredericka the Great','Chewy','Fredoka',sans-serif; font-size:30px; font-weight:400; color:var(--kb-board); letter-spacing:.5px; text-align:center; }
-  .ke-speak-feedback{ min-height:20px; font-size:13.5px; font-weight:700; text-align:center; max-width:90%; color:#F3EEFF; text-shadow:0 1px 3px rgba(0,0,0,.4); }
+  .ke-speak-feedback{ min-height:20px; font-size:13.5px; font-weight:700; text-align:center; max-width:90%; color:#F3EEFF; text-shadow:none; }
   .ke-speak-mic{ display:inline-flex; align-items:center; gap:8px; background:var(--ke-blue); color:#fff; --btn-shadow:var(--ke-blue-dark); }
   /* Dinleme durumu kasıtlı olarak KIRMIZI değil — kırmızı bu uygulamada
      sadece "hata/yanlış" anlamına geliyor (bkz. ke-quiz-card.ke-wrong),
@@ -974,10 +967,10 @@ ${FONT_FACES}
   .ke-speak-mic.ke-listening{ background:var(--kb-voice); color:#1A1030; --btn-shadow:#9576D6; animation:ke-pulse 1s ease-in-out infinite; }
   @keyframes ke-pulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
 
-  .ke-sentence{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:620px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:16px; padding:48px 16px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border:5px solid #6b4226; border-radius:22px; box-shadow:inset 0 0 40px rgba(0,0,0,.5); }
+  .ke-sentence{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:620px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:16px; padding:48px 16px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border:5px solid #6b4226; border-radius:22px; box-shadow:none; }
   .ke-sentence.ke-show{ display:flex; }
   .ke-sentence-bubble{ position:static; transform:none; margin:0; }
-  .ke-sentence-progress{ background:rgba(110,200,255,.1); border:2px dashed var(--kb-action); color:var(--kb-action); border-radius:10px 14px 10px 14px; padding:6px 16px; font-size:12.5px; font-weight:800; box-shadow:1px 2px 0 rgba(0,0,0,.2); text-shadow:0 0 4px rgba(110,200,255,.5); }
+  .ke-sentence-progress{ background:rgba(110,200,255,.1); border:2px dashed var(--kb-action); color:var(--kb-action); border-radius:10px 14px 10px 14px; padding:6px 16px; font-size:12.5px; font-weight:800; box-shadow:none; text-shadow:none; }
   /* Çocuğun hangi kelimenin cümlesini kurduğunu göremediği, sadece
      tuzak kelimenin de anlamlı bir cümle kurduğu ("I see a cat" yerine
      "I see a dog" bekleniyordu ama hangisi hedef belli değildi) geri
@@ -989,7 +982,7 @@ ${FONT_FACES}
      zemininde önceki mavi-üstü-mavi (blue-dark metin + #7FA8D6 çizgi)
      kombinasyonu neredeyse görünmezdi ("mavi font görünmüyor" geri
      bildirimi). */
-  .ke-slot{ min-width:48px; height:44px; border-bottom:3px dashed rgba(245,240,223,.55); display:flex; align-items:center; justify-content:center; padding:0 6px; font-weight:400; font-family:'Fredericka the Great','Chewy',sans-serif; color:var(--kb-chalk); text-shadow:0 0 2px rgba(255,255,255,.25), 0 1px 3px rgba(0,0,0,.45); font-size:19px; }
+  .ke-slot{ min-width:48px; height:44px; border-bottom:3px dashed rgba(245,240,223,.55); display:flex; align-items:center; justify-content:center; padding:0 6px; font-weight:400; font-family:'Fredericka the Great','Chewy',sans-serif; color:var(--kb-chalk); text-shadow:none; font-size:19px; }
   .ke-slot.ke-filled{ cursor:pointer; border-bottom-style:solid; }
   .ke-slot.ke-reveal{ color:var(--kb-correct); border-bottom-style:solid; }
   .ke-tile, .ke-slot{ touch-action:none; user-select:none; -webkit-user-select:none; }
@@ -997,20 +990,20 @@ ${FONT_FACES}
   .ke-slot-gap{ min-width:14px; width:14px; border-bottom:none; }
   .ke-letter-slot.ke-fixed, .ke-letter-slot.ke-hint{ color:var(--kb-discover); border-bottom-style:solid; }
   .ke-letter-tile{ min-width:44px; padding:10px 14px !important; font-size:20px !important; }
-  .ke-drag-ghost{ position:fixed !important; z-index:99999; transform:translate(-50%,-60%); pointer-events:none; opacity:.92; box-shadow:0 8px 18px rgba(0,0,0,.45); }
+  .ke-drag-ghost{ position:fixed !important; z-index:99999; transform:translate(-50%,-60%); pointer-events:none; opacity:.92; box-shadow:none; }
   .ke-slot.ke-shake{ border-bottom-color:var(--kb-wrong); animation:ke-shake-x .35s ease; }
   .ke-sentence-bank{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; max-width:560px; }
   .ke-tile{
     background:#ffffff; border:3px solid var(--ke-border); border-radius:14px; padding:10px 18px;
     font-weight:800; font-size:15px; color:var(--ke-ink); cursor:pointer;
-    position:relative; top:0; box-shadow:0 4px 0 var(--ke-border);
+    position:relative; top:0; box-shadow:none;
   }
   .ke-tile:hover{ border-color:var(--ke-blue); }
-  .ke-tile:active{ top:4px; box-shadow:0 0 0 var(--ke-border); }
+  .ke-tile:active{ top:4px; box-shadow:none; }
   .ke-tile.ke-used{ visibility:hidden; }
   .ke-tile.ke-shake{ animation:ke-shake-x .3s ease; border-color:var(--kb-wrong); }
 
-  .ke-score{ font-size:17px; font-weight:800; color:var(--kb-action); text-shadow:0 0 4px rgba(110,200,255,.5); margin-bottom:8px; }
+  .ke-score{ font-size:17px; font-weight:800; color:var(--kb-action); text-shadow:none; margin-bottom:8px; }
   /* TAM TEBEŞİR (v2): beyaz/açık-mavi modal kaldırıldı — kutlama artık
      koyu tahta zemini + sarı tebeşir "yıldızlar" (radial-gradient
      benekleri, yeni asset yok) + büyük yeşil tebeşir başarı mesajı. */
@@ -1029,14 +1022,14 @@ ${FONT_FACES}
     border: 3px solid var(--kb-wood-light);
   }
   .ke-celebration.ke-show{ display:flex; }
-  .ke-celebration h2{ font-family:'Fredoka','Baloo 2',sans-serif; color:var(--kb-correct); font-size:clamp(24px,5vw,34px); font-weight:600; margin:6px 0 4px; text-shadow:0 0 6px rgba(133,217,138,.5); }
+  .ke-celebration h2{ font-family:'Fredoka','Baloo 2',sans-serif; color:var(--kb-correct); font-size:clamp(24px,5vw,34px); font-weight:600; margin:6px 0 4px; text-shadow:none; }
   .ke-celebration p{ color:var(--kb-chalk-dim); margin:0 0 18px; font-size:15px; font-weight:600; }
   .ke-reward-chip{
     display:inline-flex; align-items:center; gap:8px;
     background: rgba(255,215,90,.12); color: var(--kb-discover);
     font-family:'Fredoka','Baloo 2',sans-serif; font-weight:600; font-size:16px;
     padding:13px 24px; border-radius:14px 18px 15px 17px; border:2px dashed var(--kb-discover);
-    box-shadow:2px 3px 0 rgba(0,0,0,.25); text-shadow:0 0 5px rgba(255,215,90,.5);
+    box-shadow:none; text-shadow:none;
     margin-bottom:22px;
   }
   .ke-btn-row{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
@@ -1054,12 +1047,12 @@ ${FONT_FACES}
      üzerine binmesini engelliyoruz — "kalabalık" geri bildirimi. */
   .ke-landing-mascot{
     position:absolute; top:0; right:6px; width:86px; height:auto;
-    filter:drop-shadow(0 8px 10px rgba(0,0,0,.35)); pointer-events:none;
+    filter:); pointer-events:none;
     z-index:1; animation:ke-bob 2.6s ease-in-out infinite;
   }
 
   /* Avatar: sapka overlay'i maskot görseliyle aynı animasyonu paylaşır */
-  .ke-mascot-hat{ position:absolute; z-index:2; pointer-events:none; height:auto; animation:ke-bob 2.6s ease-in-out infinite; filter:drop-shadow(0 3px 4px rgba(0,0,0,.25)); }
+  .ke-mascot-hat{ position:absolute; z-index:2; pointer-events:none; height:auto; animation:ke-bob 2.6s ease-in-out infinite; filter:); }
   .ke-mascot-wrap.ke-celebrate .ke-mascot-hat{ animation:ke-mascot-jump .6s ease; }
   .ke-mascot-wrap.ke-mascot-narrow .ke-mascot-hat{ animation:none; }
   .ke-landing-mascot img{ display:block; width:100%; height:auto; }
@@ -1070,7 +1063,7 @@ ${FONT_FACES}
   .ke-avatar-mini img.ke-av-body{ width:100%; height:100%; object-fit:cover; object-position:50% 12%; border-radius:50%; background:rgba(255,255,255,.15); }
   .ke-profile-screen{ max-width:640px; margin:0 auto; text-align:center; position:relative; z-index:1; }
   .ke-avatar-stage{ position:relative; width:min(170px,24vh); margin:30px auto 4px; }
-  .ke-avatar-stage img.ke-av-body{ display:block; width:100%; height:auto; filter:drop-shadow(0 6px 8px rgba(0,0,0,.3)); }
+  .ke-avatar-stage img.ke-av-body{ display:block; width:100%; height:auto; filter:); }
   .ke-avatar-stage .ke-mascot-hat{ animation:none; }
   .ke-pick-row{ display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:6px 0 10px; }
   .ke-pick{ min-width:52px; min-height:44px; padding:6px 10px !important; border-radius:14px !important; font-size:13px !important; position:relative; }
@@ -1232,7 +1225,7 @@ ${FONT_FACES}
     position:absolute; right:-6px; bottom:-6px; z-index:2;
     width:22px; height:22px; border-radius:50%; background:#fff;
     display:flex; align-items:center; justify-content:center; font-size:12px;
-    box-shadow:0 2px 0 rgba(0,0,0,.15);
+    box-shadow:none;
   }
   .ke-cat-progress-track{ margin-top:6px; height:6px; border-radius:999px; background:rgba(0,0,0,.2); overflow:hidden; }
   .ke-cat-progress-fill{ height:100%; background:#fff; border-radius:999px; }
@@ -1245,10 +1238,10 @@ ${FONT_FACES}
     font-family:'Fredoka','Baloo 2','Nunito',sans-serif;
     background:var(--ke-purple); color:#fff;
     font-size:11.5px; font-weight:800; padding:6px 11px; line-height:1.3;
-    border-radius:999px; box-shadow:0 3px 0 var(--ke-purple-dark);
+    border-radius:999px; box-shadow:none;
     transition: top .08s ease, box-shadow .08s ease;
   }
-  .ke-review-chip:active{ top:13px; box-shadow:0 0 0 var(--ke-purple-dark); }
+  .ke-review-chip:active{ top:13px; box-shadow:none; }
 
   /* Eskiden burada "WELCOME panosu" tarzı renkli eğik bayrakçık başlık
      vardı (.ke-banner/.ke-flag) — parlak/candy-app hissi verip tebeşir
@@ -1289,7 +1282,7 @@ ${FONT_FACES}
   .ke-map .ke-dot:focus-visible{
     outline: 3px solid var(--kb-action);
     outline-offset: 2px;
-    box-shadow: 0 0 0 5px rgba(9,18,13,.55);
+    box-shadow:none;
   }
 </style>`;
 
@@ -1405,12 +1398,15 @@ const Profiles = {
   },
 };
 
+// Kullanici geri bildirimi: diger pozlarin kaynak gorseli (idle disinda)
+// amator/kenar-hatali duruyordu - tutarlilik icin TUM maskot gorunumleri
+// (poz farki fark etmeksizin) artik ayni temiz "idle" render'ini kullaniyor.
 function avatarBodySrc(pose, color) {
-  const rel = (!color || color === 'yellow') ? `mascot/mascot_${pose}.png` : `mascot/avatar/${pose}_${color}.png`;
+  const rel = (!color || color === 'yellow') ? `mascot/mascot_idle.png` : `mascot/avatar/idle_${color}.png`;
   return new URL(rel, ASSET_BASE_URL).href;
 }
 function avatarHatStyle(pose) {
-  const a = AVATAR_ANCHORS[pose] || AVATAR_ANCHORS.idle;
+  const a = AVATAR_ANCHORS.idle;
   return `left:${((a.x - a.w / 2) * 100).toFixed(2)}%;width:${(a.w * 100).toFixed(2)}%;bottom:${((1 - a.y) * 100).toFixed(2)}%`;
 }
 function avatarHatHTML(pose, profile) {
