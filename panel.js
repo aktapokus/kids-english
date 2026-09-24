@@ -1111,6 +1111,7 @@ ${FONT_FACES}
   .ke-quickmenu-tile.qm-sound{ background:var(--ke-green) !important; --btn-shadow:var(--ke-green-dark); }
   .ke-quickmenu-tile.qm-lang{ background:var(--ke-purple) !important; --btn-shadow:var(--ke-purple-dark); }
   .ke-quickmenu-tile.qm-rank{ background:#B08718 !important; --btn-shadow:#8C6A10; color:#fff !important; }
+  .ke-quickmenu-tile.qm-guide{ background:#546E7A !important; --btn-shadow:#3E4F58; color:#fff !important; }
   .ke-quickmenu-tile:disabled{ opacity:.4; }
 
   /* Kategoriye özgü zemin: renderEpisodeScene, --cc-tint/--cc-c inline
@@ -1897,6 +1898,22 @@ ${FONT_FACES}
   .ke-story-text p{ margin:0 0 6px; }
   .ke-story-word{ border-radius:5px; padding:1px 2px; transition:background-color .1s ease, color .1s ease; }
   .ke-story-word-active{ background:var(--kb-discover); color:var(--ke-ink); }
+
+  /* Uygulama içi kullanım kılavuzu - akordeon liste, her madde gerçek
+     bileşenlerin inert küçük örneklerini gösteriyor (bkz. showGuide). */
+  .ke-guide-list{ display:flex; flex-direction:column; gap:10px; max-width:560px; margin:0 auto; position:relative; z-index:1; }
+  .ke-guide-item{ background:rgba(255,255,255,.05); border:2px solid rgba(255,255,255,.15); border-radius:16px; overflow:hidden; }
+  .ke-guide-summary{
+    list-style:none; cursor:pointer; display:flex; align-items:center; gap:10px;
+    padding:14px 16px; font-family:'Fredoka','Baloo 2',sans-serif; font-weight:700; font-size:15.5px; color:var(--kb-chalk);
+  }
+  .ke-guide-summary::-webkit-details-marker{ display:none; }
+  .ke-guide-summary::after{ content:'▾'; margin-left:auto; transition:transform .15s ease; }
+  .ke-guide-item[open] .ke-guide-summary::after{ transform:rotate(180deg); }
+  .ke-guide-ico{ font-size:20px; flex-shrink:0; }
+  .ke-guide-body{ padding:0 16px 16px; }
+  .ke-guide-body p{ margin:0 0 12px; font-size:14px; font-weight:600; color:var(--kb-chalk-dim); line-height:1.5; }
+  .ke-guide-demo{ background:rgba(0,0,0,.2); border-radius:14px; padding:14px; display:flex; justify-content:center; }
   .ke-story-glossary{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:10px; width:100%; }
   .ke-story-glossary-item{
     display:flex; flex-direction:column; gap:2px; background:rgba(255,255,255,.08);
@@ -2416,6 +2433,7 @@ function showQuickMenu(container, api, toolId, categories) {
         <button type="button" class="ke-quickmenu-tile qm-sound" id="keQmSound"><span class="qm-ico">🔊</span>${L('Ses Testi', 'Sound Test')}</button>
         <button type="button" class="ke-quickmenu-tile qm-lang" id="keQmLang"><span class="qm-ico">🌐</span>${_lang === 'tr' ? 'English' : 'Türkçe'}</button>
         <button type="button" class="ke-quickmenu-tile qm-rank" id="keQmRank"><span class="qm-ico">🏆</span>${L('Sıralama', 'Leaderboard')}</button>
+        <button type="button" class="ke-quickmenu-tile qm-guide" id="keQmGuide"><span class="qm-ico">📖</span>${L('Kılavuz', 'Guide')}</button>
       </div>
       <div id="keQmSoundInfo" style="margin-top:2px;font-size:11.5px;color:var(--kb-chalk-dim);font-weight:700;"></div>
       ${window.KE_STATIC ? `<div style="margin-top:10px;font-size:12.5px;font-weight:700;"><a href="privacy.html" style="color:var(--kb-chalk-dim);">${L('Gizlilik', 'Privacy')}</a> · <a href="${reportProblemHref()}" style="color:var(--kb-chalk-dim);">${L('Sorun bildir', 'Report a problem')}</a> · <a href="teacher.html" target="_blank" rel="noopener noreferrer" style="color:var(--kb-chalk-dim);">${L('Öğretmen Paneli', 'Teacher Portal')}</a></div>` : ''}
@@ -2440,11 +2458,104 @@ function showQuickMenu(container, api, toolId, categories) {
   overlay.querySelector('#keQmSound').addEventListener('click', () => runSoundTest(overlay.querySelector('#keQmSoundInfo')));
   overlay.querySelector('#keQmLang').addEventListener('click', () => { setLang(_lang === 'tr' ? 'en' : 'tr'); close(); showQuickMenu(container, api, toolId, categories); });
   overlay.querySelector('#keQmRank').addEventListener('click', () => { close(); showLeaderboard(container); });
+  overlay.querySelector('#keQmGuide').addEventListener('click', () => { close(); showGuide(container, api, toolId, categories); });
   overlay.querySelector('#keQmClose').addEventListener('click', close);
   overlay.querySelector('#keQmTestKey').addEventListener('click', () => {
     const code = window.prompt(L('Test şifresi', 'Test code'));
     if (code === '181078') { GameTokens.add(1); refreshGameBadge(container); }
   });
+}
+
+// Uygulama içi kullanım kılavuzu - "bu kılavuzu da mutlaka uygulamaya
+// ekleyelim" isteği üzerine. Statik ekran görüntüsü YOK: her madde,
+// uygulamanın GERÇEK bileşenlerinin (kategori kartı, quiz seçeneği,
+// cümle yuvası, mikrofon, hikaye sayfası vb.) inert (tıklanamaz) küçük
+// birer örneğini kullanıyor - böylece kılavuz her zaman gerçek
+// görünümle senkron kalıyor, ayrı ekran görüntüsü bakımı gerekmiyor.
+function showGuide(container, api, toolId, categories) {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  const host = container.querySelector('#keScreenHost');
+  const back = () => showSectionMenu(container, api, toolId, categories);
+  const topics = [
+    {
+      icon: '🧩', title: L('Bölümler', 'Sections'),
+      body: L('Ana ekrandaki renkli kartlara dokun: Kelimeler, Dilbilgisi, Sorular, Zıt Anlamlılar, Hikaye Zamanı ve daha fazlası. Her kart kendi kategori listesini açar.', 'Tap a colored card on the home screen: Words, Grammar, Questions, Opposites, Story Time and more. Each card opens its own list of categories.'),
+      demo: `<div class="ke-category-card" style="--cc-c:#FF7A45;--cc-dark:#D65E2E;--cc-tint:#FFC9A8;background:#FF7A45;pointer-events:none;max-width:240px;">
+        <div class="ke-category-icon" style="color:#FF7A45">W<span class="ke-cat-motif-badge">🐾</span></div>
+        <div class="ke-category-text">
+          <div class="ke-category-title">Words</div>
+          <div class="ke-category-meta">21 categories · 856 words</div>
+        </div>
+      </div>`,
+    },
+    {
+      icon: '❓', title: L('Kelime Sorusu', 'Word Quiz'),
+      body: L('Bir bölümde önce kelime tanıtılır, sonra 4 seçenekten doğru olanına dokunulur. Doğru cevap yeşil yanıp söner, yanlışta doğrusu gösterilir.', 'In an episode a word is introduced first, then you tap the right one out of 4 choices. A correct answer flashes green; a wrong one reveals the right answer.'),
+      demo: `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-width:220px;pointer-events:none;">
+        <div class="ke-quiz-card ke-correct" style="padding:8px;"><div class="ke-icon-hex"><div class="ke-icon-hex-inner" style="background:#FFE9B3"><div class="ke-emoji-icon" style="font-size:30px;">🐶</div></div></div></div>
+        <div class="ke-quiz-card" style="padding:8px;"><div class="ke-icon-hex"><div class="ke-icon-hex-inner" style="background:#D9E8FF"><div class="ke-emoji-icon" style="font-size:30px;">🐱</div></div></div></div>
+      </div>`,
+    },
+    {
+      icon: '🎤', title: L('Şimdi Sen Söyle', 'Now You Say It'),
+      body: L('Konuşma turunda mikrofona dokun ve kelimeyi İngilizce söyle. Uygulama söylediğini dinler ve doğru telaffuz ettiysen seni onaylar.', 'In the speak round, tap the microphone and say the word in English. The app listens and confirms it if you pronounced it correctly.'),
+      demo: `<div style="text-align:center;pointer-events:none;">
+        <div class="ke-speak-word">dog</div>
+        <div style="margin-top:8px;font-size:34px;">🎙️</div>
+      </div>`,
+    },
+    {
+      icon: '🧱', title: L('Cümle Kur', 'Build a Sentence'),
+      body: L('Alttaki kelime parçacıklarını yukarıdaki boşluklara sürükleyerek doğru cümleyi oluştur.', 'Drag the word tiles at the bottom into the blanks above to build the correct sentence.'),
+      demo: `<div style="pointer-events:none;">
+        <div style="display:flex;gap:6px;justify-content:center;margin-bottom:10px;">
+          <span class="ke-slot ke-filled">I</span><span class="ke-slot ke-filled">like</span><span class="ke-slot">____</span>
+        </div>
+        <div style="display:flex;gap:6px;justify-content:center;">
+          <span class="ke-tile" style="background:#fff;border-radius:10px;padding:6px 12px;font-weight:700;color:var(--ke-ink);">dogs</span>
+          <span class="ke-tile" style="background:#fff;border-radius:10px;padding:6px 12px;font-weight:700;color:var(--ke-ink);">cats</span>
+        </div>
+      </div>`,
+    },
+    {
+      icon: '📖', title: L('Hikaye Zamanı', 'Story Time'),
+      body: L('Sesli okunan bir hikayeyi sayfa sayfa takip et — okunan kelime altın renkte vurgulanır. İstersen kendi sesinle de okuyup kaydedebilir, kaydı telefonundan öğretmenine/velisine gönderebilirsin (kayıt hiçbir yere yüklenmez, sadece cihazda kalır).', 'Follow a read-along story page by page — the word being read is highlighted in gold. You can also record yourself reading and share the clip from your phone with a teacher or parent (nothing is uploaded, it stays on the device).'),
+      demo: `<div style="text-align:center;pointer-events:none;font-size:14px;font-weight:700;color:var(--kb-chalk);">He is <span class="ke-story-word ke-story-word-active">yellow</span> and very cute.</div>`,
+    },
+    {
+      icon: '⭐', title: L('İlerleme ve Ödüller', 'Progress & Rewards'),
+      body: L('Her doğru cevap yıldız kazandırır. Günlük hedefini tamamlayınca serin uzar, biriken yıldızlarla ödül oyunlarının kilidi açılır. Aktapokus\'a dokununca ilerlemeni, ödül oyununu ve daha fazlasını gösteren hızlı menü açılır.', 'Every correct answer earns a star. Hitting your daily goal extends your streak, and enough stars unlock reward games. Tap Aktapokus to open a quick menu with your progress, the reward game, and more.'),
+      demo: `<div style="display:flex;gap:10px;align-items:center;justify-content:center;pointer-events:none;font-weight:700;color:var(--kb-chalk);font-size:15px;"><span>⭐ 42</span><span>🔥 5 ${L('gün', 'days')}</span></div>`,
+    },
+    {
+      icon: '🏫', title: L('Sınıf (Öğretmenler için)', 'Classroom (for teachers)'),
+      body: L('Öğretmenin sana bir sınıf kodu verirse, hızlı menüdeki Avatar ekranından bu kodu girerek sınıfa katılabilirsin — böylece öğretmenin ilerlemeni takip edebilir. Öğretmenler kendi panellerine ayrı bir bağlantıdan giriş yapar.', 'If your teacher gives you a class code, enter it on the Avatar screen (from the quick menu) to join the class — then your teacher can see your progress. Teachers sign in to their own portal from a separate link.'),
+    },
+    {
+      icon: '⛶', title: L('Tam Ekran', 'Full Screen'),
+      body: L('Sol üstteki tam ekran düğmesiyle adres çubuğunu gizleyip daha büyük bir oyun alanı elde edebilirsin.', 'Use the full-screen button in the top-left corner to hide the address bar and get a bigger play area.'),
+    },
+  ];
+  host.innerHTML = `
+    <button class="ke-back-btn" id="keGuideBack">${ICON_BACK} ${L('Kapat', 'Close')}</button>
+    <div class="ke-landing-header">
+      <h1 class="ke-title">${bubbleTitleHTML(L('Nasıl Kullanılır?', 'How to Use'))}</h1>
+      <p class="ke-subtitle">${L('Uygulamayı tanıyalım', "Let's get to know the app")}</p>
+    </div>
+    <div class="ke-guide-list">
+      ${topics.map((t, i) => `
+        <details class="ke-guide-item"${i === 0 ? ' open' : ''}>
+          <summary class="ke-guide-summary"><span class="ke-guide-ico">${t.icon}</span>${t.title}</summary>
+          <div class="ke-guide-body">
+            <p>${t.body}</p>
+            ${t.demo ? `<div class="ke-guide-demo">${t.demo}</div>` : ''}
+          </div>
+        </details>
+      `).join('')}
+    </div>
+  `;
+  host.querySelector('#keGuideBack').addEventListener('click', back);
+  pushBackState(back);
 }
 
 function showSectionMenu(container, api, toolId, categories) {
