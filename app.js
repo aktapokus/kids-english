@@ -2,7 +2,9 @@ import { mount } from './panel.js';
 window.KE_STATIC = true;
 
 const data = await (await fetch('data/episodes.json')).json();
+const storiesData = await (await fetch('data/stories.json')).json();
 const byId = new Map(data.categories.map((c) => [c.id, c]));
+const storyById = new Map(storiesData.stories.map((s) => [s.id, s]));
 const json = (obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json' } });
 
 const api = {
@@ -15,6 +17,15 @@ const api = {
       const cat = byId.get(m[1]); const i = Number(m[2]);
       if (!cat || !cat.episodes[i]) return json({ detail: 'not found' }, 404);
       return json({ ...cat.episodes[i], category_id: cat.id, category_title: cat.title, episode_index: i, episode_count: cat.episode_count });
+    }
+    if (/\/stories$/.test(url)) {
+      return json(storiesData.stories.map((s) => ({ id: s.id, title: s.title, title_tr: s.title_tr, episode_label: s.episode_label, intro: s.intro, cover: s.cover, card_count: s.cards.length })));
+    }
+    const sm = url.match(/\/stories\/([^/]+)$/);
+    if (sm) {
+      const story = storyById.get(sm[1]);
+      if (!story) return json({ detail: 'not found' }, 404);
+      return json(story);
     }
     return json({ detail: 'not found' }, 404);
   },

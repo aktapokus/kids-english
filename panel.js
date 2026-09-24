@@ -832,6 +832,15 @@ ${FONT_FACES}
        disina tasinca (ozellikle .ke-fs ile position:fixed olunca) altta
        kalan butonlar (ör. ilk "Let's go!" butonu) kaydirilip ulasilamiyor. */
     -webkit-overflow-scrolling: touch;
+    /* html,body'deki overscroll-behavior:none bu KENDI ic kaydirmasina
+       (overflow-y:auto) miras gecmiyor - .ke-shell kendi scroll container'i.
+       Bunsuz, telefonda alt/ust sinira gelince Android'in overscroll
+       "glow" efekti (yesil kavisli seffaf sinir - "altinda yesil bir
+       kisim var" geri bildirimi) tetikleniyor VE bazen bu jest tarayicinin
+       kendi geri/ileri navigasyon jestiyle karisip ekrandan disari
+       atiyor ("bir sonraki bolume gecemiyorum" / oyun ortasinda ana
+       menuye donme bildirimleri) - masaustunde fare ile hic gorulmuyor. */
+    overscroll-behavior: contain;
     min-height: 640px;
   }
   .ke-shell, .ke-shell *{ box-sizing: border-box; }
@@ -1860,6 +1869,40 @@ ${FONT_FACES}
   }
   .ke-review-chip:active{ top:13px; box-shadow:none; }
 
+  /* Story Time (StoryBook ppt'sinden adapte edilen okuma bölümü) —
+     kategori kartlarından bilinçli olarak ayrı bir görünüm: quiz yok,
+     sayfa sayfa resim+metin. Kart görselleri kaynakta düşük çözünürlük
+     (~190x190px) geldiği için büyük gösterilmiyor, kart içinde küçük
+     kapak/önizleme olarak kullanılıyor. */
+  .ke-story-list{ display:flex; flex-direction:column; gap:14px; max-width:560px; margin:0 auto; position:relative; z-index:1; }
+  .ke-story-card{
+    display:flex; align-items:center; gap:14px; text-align:left; cursor:pointer;
+    background:linear-gradient(135deg,#8D6E63,#6d5450); border:3px solid rgba(255,255,255,.5);
+    border-radius:22px; padding:12px 16px;
+    transition: transform .12s ease;
+  }
+  .ke-story-card:hover{ transform:translateY(-2px); }
+  .ke-story-card:active{ transform:translateY(1px); }
+  .ke-story-cover{ width:56px; height:56px; border-radius:14px; object-fit:cover; flex-shrink:0; background:#fff; }
+  .ke-story-info{ min-width:0; flex:1; }
+  .ke-story-eyebrow{ font-size:11.5px; font-weight:800; color:rgba(255,255,255,.75); text-transform:uppercase; letter-spacing:.04em; }
+  .ke-story-title{ font-family:'Fredoka','Baloo 2',sans-serif; font-weight:700; font-size:18px; color:#fff; margin:2px 0; }
+  .ke-story-meta{ font-size:12.5px; color:rgba(255,255,255,.85); font-weight:600; line-height:1.35; }
+  .ke-story-reader{ display:flex; flex-direction:column; align-items:center; gap:10px; max-width:480px; margin:0 auto; position:relative; z-index:1; text-align:center; }
+  .ke-story-cover-page{ gap:14px; }
+  .ke-story-cover-big{ width:min(240px,70vw); border-radius:18px; box-shadow:0 10px 24px rgba(0,0,0,.35); }
+  .ke-story-page-img{ width:190px; height:190px; object-fit:contain; border-radius:18px; background:#fff; box-shadow:0 6px 16px rgba(0,0,0,.3); }
+  .ke-story-card-title{ font-family:'Fredoka','Baloo 2',sans-serif; font-weight:700; font-size:20px; color:var(--kb-chalk); margin:0; }
+  .ke-story-text{ font-size:16.5px; font-weight:600; color:var(--kb-chalk); line-height:1.5; }
+  .ke-story-text p{ margin:0 0 6px; }
+  .ke-story-glossary{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:10px; width:100%; }
+  .ke-story-glossary-item{
+    display:flex; flex-direction:column; gap:2px; background:rgba(255,255,255,.08);
+    border:2px solid rgba(255,255,255,.25); border-radius:14px; padding:10px 12px; text-align:left;
+  }
+  .ke-story-glossary-item b{ font-size:15px; color:#fff; }
+  .ke-story-glossary-item span{ font-size:13px; color:var(--kb-chalk-dim); }
+
   /* Eskiden burada "WELCOME panosu" tarzı renkli eğik bayrakçık başlık
      vardı (.ke-banner/.ke-flag) — parlak/candy-app hissi verip tebeşir
      temasıyla çelişiyordu ("hiç chalk havası yok" geri bildirimi
@@ -2256,6 +2299,15 @@ const SECTIONS = [
     // artik yok ama CONVERSATION_CATEGORY_IDS'de geriye donuk uyumluluk
     // icin duruyor.
     pick: (c) => CONVERSATION_CATEGORY_IDS.includes(c.id) },
+  // "StoryBook altındaki ppt'yi sisteme adapte edelim" - kelime
+  // kategorilerinden TAMAMEN AYRI bir veri kaynağı (data/stories.json,
+  // /stories API'si) kullandığı için categories dizisinde hiç yok;
+  // pick() hep false döner, tıklama showCategoryGrid yerine
+  // showStoryList'e özel olarak yönlendiriliyor (bkz. showSectionMenu).
+  { id: 'stories', title: 'Story Time', sub: 'Read along with Aktapokus', subTr: 'Aktapokus ile birlikte oku', titleTr: 'Hikaye Zamanı', motif: '📖',
+    theme: { c: '#8D6E63', dark: '#715650', tint: '#C7A998' },
+    special: 'stories',
+    pick: () => false },
 ];
 let _currentSection = null;
 
@@ -2427,7 +2479,9 @@ function showSectionMenu(container, api, toolId, categories) {
     const words = cats.reduce((s, c) => s + c.word_count, 0);
     const meta = sec.locked
       ? L('Yakında 🔒', 'Coming soon 🔒')
-      : L(`${cats.length} kategori · ${words} kelime`, `${cats.length} ${cats.length === 1 ? "category" : "categories"} · ${words} words`);
+      : sec.special === 'stories'
+        ? L('Sesli okuma hikayesi', 'A read-along story')
+        : L(`${cats.length} kategori · ${words} kelime`, `${cats.length} ${cats.length === 1 ? "category" : "categories"} · ${words} words`);
     if (sec.locked) { card.disabled = true; card.style.opacity = '.6'; card.style.cursor = 'not-allowed'; }
     card.innerHTML = `
       <div class="ke-category-icon" style="color:${sec.theme.c}">${sec.title.charAt(0).toLocaleUpperCase('tr')}<span class="ke-cat-motif-badge">${sec.motif}</span></div>
@@ -2438,7 +2492,10 @@ function showSectionMenu(container, api, toolId, categories) {
       </div>
     `;
     if (!sec.locked) {
-      card.addEventListener('click', () => showCategoryGrid(container, api, toolId, categories, sec.id));
+      card.addEventListener('click', () => {
+        if (sec.special === 'stories') showStoryList(container, api, toolId, categories);
+        else showCategoryGrid(container, api, toolId, categories, sec.id);
+      });
     }
     grid.appendChild(card);
   });
@@ -2834,6 +2891,144 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
     grid.appendChild(card);
   });
   pushBackState(() => showSectionMenu(container, api, toolId, categories));
+}
+
+// "StoryBook altındaki ppt'yi sisteme adapte edelim" - sesli okuma
+// hikayesi. Kelime kategorilerinden bilinçli olarak ayrı: quiz/sınav
+// yok, sadece sayfa sayfa resim + metin + sesli okuma, sonda küçük bir
+// sözlük. Tamamlanınca Progress'e 'story_<id>' sahte-kategorisi olarak
+// tek bir yıldız işleniyor (rozet/seri sistemiyle tutarlı kalsın diye).
+async function showStoryList(container, api, toolId, categories) {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  const host = container.querySelector('#keScreenHost');
+  host.innerHTML = `
+    <button class="ke-back-btn" id="keSectionsBack">${ICON_BACK} ${L('Bölümler', 'Sections')}</button>
+    <div class="ke-landing-header">
+      <h1 class="ke-title">${bubbleTitleHTML(L('Hikaye Zamanı', 'Story Time'))}</h1>
+      <p class="ke-subtitle">${L('Aktapokus ile birlikte oku!', 'Read along with Aktapokus!')}</p>
+    </div>
+    <div class="ke-story-list" id="keStoryList"><div style="padding:40px;text-align:center;color:rgba(245,247,250,.6);">${L('Yükleniyor...', 'Loading...')}</div></div>
+  `;
+  host.querySelector('#keSectionsBack').addEventListener('click', () => showSectionMenu(container, api, toolId, categories));
+  let stories;
+  try {
+    const r = await api.apiFetch(`/api/tools/${toolId}/stories`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    stories = await r.json();
+  } catch (e) {
+    host.querySelector('#keStoryList').innerHTML = `<div style="padding:40px;text-align:center;color:#FF4D4D;">${L('Hikayeler yüklenemedi', 'Could not load stories')}: ${e.message}</div>`;
+    return;
+  }
+  const listEl = host.querySelector('#keStoryList');
+  listEl.innerHTML = '';
+  stories.forEach((s) => {
+    const done = Progress.getCategory('story_' + s.id).completed.length > 0;
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'ke-story-card';
+    card.innerHTML = `
+      <img class="ke-story-cover" src="${new URL(s.cover, ASSET_BASE_URL).href}" alt="" draggable="false" />
+      <div class="ke-story-info">
+        <div class="ke-story-eyebrow">${s.episode_label}${done ? ' · ⭐' : ''}</div>
+        <div class="ke-story-title">${escapeProfileText(_lang === 'tr' ? s.title_tr : s.title)}</div>
+        <div class="ke-story-meta">${_lang === 'tr' ? s.intro : s.intro}</div>
+        <div class="ke-story-meta">${s.card_count} ${L('sayfa', 'pages')}</div>
+      </div>
+    `;
+    card.addEventListener('click', () => showStoryReader(container, api, toolId, categories, s.id));
+    listEl.appendChild(card);
+  });
+  pushBackState(() => showSectionMenu(container, api, toolId, categories));
+}
+
+async function showStoryReader(container, api, toolId, categories, storyId) {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  const host = container.querySelector('#keScreenHost');
+  host.innerHTML = `<div style="padding:60px;text-align:center;color:rgba(245,247,250,.6);">${L('Yükleniyor...', 'Loading...')}</div>`;
+  let story;
+  try {
+    const r = await api.apiFetch(`/api/tools/${toolId}/stories/${storyId}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    story = await r.json();
+  } catch (e) {
+    host.innerHTML = `<div style="padding:40px;text-align:center;color:#FF4D4D;">${L('Hikaye yüklenemedi', 'Could not load story')}: ${e.message}</div>`;
+    return;
+  }
+
+  let page = -1; // -1 = kapak/giriş, 0..N-1 = kartlar, N = sözlük
+  const lastPage = story.cards.length;
+  const exit = () => showStoryList(container, api, toolId, categories);
+
+  function render() {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    const host2 = container.querySelector('#keScreenHost');
+    if (page === -1) {
+      host2.innerHTML = `
+        <button class="ke-back-btn" id="keStoryExit">${ICON_BACK} ${L('Hikayeler', 'Stories')}</button>
+        <div class="ke-story-reader ke-story-cover-page">
+          <img class="ke-story-cover-big" src="${new URL(story.cover, ASSET_BASE_URL).href}" alt="" draggable="false" />
+          <h1 class="ke-title">${bubbleTitleHTML(_lang === 'tr' ? story.title_tr : story.title)}</h1>
+          <p class="ke-subtitle">${escapeProfileText(story.intro)}</p>
+          <button type="button" class="ke-btn-primary" id="keStoryStart" style="font-size:16px !important;padding:14px 28px !important;">${L('Başla', 'Start')} 📖</button>
+        </div>
+      `;
+      host2.querySelector('#keStoryExit').addEventListener('click', exit);
+      host2.querySelector('#keStoryStart').addEventListener('click', () => { page = 0; render(); });
+      return;
+    }
+    if (page === lastPage) {
+      host2.innerHTML = `
+        <button class="ke-back-btn" id="keStoryExit">${ICON_BACK} ${L('Hikayeler', 'Stories')}</button>
+        <div id="keConfettiHost"></div>
+        <div class="ke-story-reader">
+          <h1 class="ke-title">${bubbleTitleHTML(L('Yeni Kelimeler', 'New Words'))}</h1>
+          <p class="ke-subtitle">${L('Bu hikayede öğrendiğin kelimeler:', 'Words you learned in this story:')}</p>
+          <div class="ke-story-glossary">
+            ${story.glossary.map((g) => `<div class="ke-story-glossary-item"><b>${escapeProfileText(g.word)}</b><span>${escapeProfileText(g.tr)}</span></div>`).join('')}
+          </div>
+          <div class="ke-btn-row" style="margin-top:18px;">
+            <button type="button" class="ke-btn-secondary" id="keStoryPrev">${L('Geri', 'Back')}</button>
+            <button type="button" class="ke-btn-primary" id="keStoryFinish">${L('Bitir', 'Finish')} ⭐</button>
+          </div>
+        </div>
+      `;
+      host2.querySelector('#keStoryExit').addEventListener('click', exit);
+      host2.querySelector('#keStoryPrev').addEventListener('click', () => { page--; render(); });
+      host2.querySelector('#keStoryFinish').addEventListener('click', () => {
+        Progress.markComplete('story_' + story.id, 0);
+        launchConfetti(host2);
+        setTimeout(exit, 900);
+      });
+      return;
+    }
+    const card = story.cards[page];
+    host2.innerHTML = `
+      <button class="ke-back-btn" id="keStoryExit">${ICON_BACK} ${L('Hikayeler', 'Stories')}</button>
+      <details class="ke-map-details" open><summary class="ke-map-summary">📖 ${L('Sayfa', 'Page')} <span>${page + 1}</span> / <span>${story.cards.length}</span></summary></details>
+      <div class="ke-story-reader">
+        <img class="ke-story-page-img" src="${new URL(card.image, ASSET_BASE_URL).href}" alt="" draggable="false" />
+        <h2 class="ke-story-card-title">${escapeProfileText(card.title)}</h2>
+        <div class="ke-story-text" id="keStoryText">${card.text.map((t) => `<p>${escapeProfileText(t)}</p>`).join('')}</div>
+        <button type="button" class="ke-btn-secondary" id="keStorySpeak">${ICON_SPEAKER} ${L('Sesli Oku', 'Read Aloud')}</button>
+        <div class="ke-btn-row" style="margin-top:14px;">
+          <button type="button" class="ke-btn-secondary" id="keStoryPrev" ${page === 0 ? 'disabled' : ''}>${L('Geri', 'Back')}</button>
+          <button type="button" class="ke-btn-primary" id="keStoryNext">${L('İleri', 'Next')} ▶</button>
+        </div>
+      </div>
+    `;
+    host2.querySelector('#keStoryExit').addEventListener('click', exit);
+    host2.querySelector('#keStoryPrev').addEventListener('click', () => { page--; render(); });
+    host2.querySelector('#keStoryNext').addEventListener('click', () => { page++; render(); });
+    host2.querySelector('#keStorySpeak').addEventListener('click', (e) => {
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      const dummyMascot = { classList: { add() {}, remove() {} } };
+      speakWord(card.text.join('. '), dummyMascot, () => { btn.disabled = false; });
+    });
+  }
+
+  render();
+  pushBackState(exit);
 }
 
 async function enterCategory(container, api, toolId, categories, categoryId, episodeIndex) {
