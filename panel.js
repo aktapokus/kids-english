@@ -787,7 +787,6 @@ ${FONT_FACES}
     --kb-chalk: #F5F0DF; --kb-chalk-dim: #D9D4C2;
     --kb-action: #6EC8FF; --kb-discover: #FFD75A;
     --kb-correct: #85D98A; --kb-wrong: #FF8B82; --kb-voice: #C8A2FF;
-    --kb-wood-dark: #5B351C; --kb-wood-light: #A86632;
     font-family: 'Fredoka', 'Baloo 2', 'Nunito', 'Segoe UI', system-ui, sans-serif;
     color: var(--kb-chalk);
     /* TAM TEBEŞİR-KARATAHTA (v2) — önceki mor/turuncu glow'lu "hafif
@@ -1410,7 +1409,7 @@ ${FONT_FACES}
      kirpiliyordu ("kontrol et yazisi gorunmuyor" geri bildirimi).
      bottom:10px vererek panelin kendisini sahneye sigdiriyoruz, tasan
      icerik KIRPILMIYOR, panelin kendi icinde kayiyor. */
-  .ke-quiz{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:620px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:16px; padding:52px 20px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border:5px solid #6b4226; border-radius:22px; box-shadow:none; }
+  .ke-quiz{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:620px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:16px; padding:52px 20px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border-radius:22px; box-shadow:none; }
   .ke-quiz.ke-show{ display:flex; }
   .ke-quiz-bubble{ position:static; transform:none; margin:0; }
   .ke-quiz-progress{ background:rgba(110,200,255,.1); border:2px dashed var(--kb-action); color:var(--kb-action); border-radius:10px 14px 10px 14px; padding:6px 16px; font-size:12.5px; font-weight:800; box-shadow:none; text-shadow:none; }
@@ -1466,7 +1465,7 @@ ${FONT_FACES}
   .ke-scene:not(.ke-scene-narrow) .ke-quiz .ke-quiz-card .ke-icon-hex{ width:min(100cqw,100cqh); height:min(100cqw,100cqh); max-width:none; flex:none; }
   .ke-shell.ke-fs .ke-quiz-cards{ max-width:min(600px,100%); }
 
-  .ke-speak{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:480px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:14px; padding:52px 20px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border:5px solid #6b4226; border-radius:22px; box-shadow:none; }
+  .ke-speak{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:480px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:14px; padding:52px 20px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border-radius:22px; box-shadow:none; }
   .ke-speak.ke-show{ display:flex; }
   .ke-speak-progress{ background:rgba(110,200,255,.1); border:2px dashed var(--kb-action); color:var(--kb-action); border-radius:10px 14px 10px 14px; padding:6px 16px; font-size:12.5px; font-weight:800; box-shadow:none; text-shadow:none; }
   .ke-speak-card{ background:#ffffff; border:3px solid var(--ke-border); border-radius:24px; padding:18px 34px; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:none; }
@@ -1486,7 +1485,7 @@ ${FONT_FACES}
   .ke-speak-mic.ke-listening{ background:var(--kb-voice); color:#1A1030; --btn-shadow:#9576D6; animation:ke-pulse 1s ease-in-out infinite; }
   @keyframes ke-pulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
 
-  .ke-sentence{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:620px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:16px; padding:48px 16px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border:5px solid #6b4226; border-radius:22px; box-shadow:none; }
+  .ke-sentence{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:620px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:16px; padding:48px 16px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border-radius:22px; box-shadow:none; }
   .ke-sentence.ke-show{ display:flex; }
   .ke-sentence-bubble{ position:static; transform:none; margin:0; }
   .ke-sentence-progress{ background:rgba(110,200,255,.1); border:2px dashed var(--kb-action); color:var(--kb-action); border-radius:10px 14px 10px 14px; padding:6px 16px; font-size:12.5px; font-weight:800; box-shadow:none; text-shadow:none; }
@@ -1538,7 +1537,6 @@ ${FONT_FACES}
       radial-gradient(1.5px 1.5px at 88% 25%, rgba(255,215,90,.65), transparent),
       radial-gradient(1px 1px at 45% 85%, rgba(255,255,255,.5), transparent),
       radial-gradient(circle at 30% 0%, rgba(255,255,255,.05), transparent 60%);
-    border: 3px solid var(--kb-wood-light);
   }
   .ke-celebration.ke-show{ display:flex; }
   .ke-celebration h2{ font-family:'Fredoka','Baloo 2',sans-serif; color:var(--kb-correct); font-size:clamp(24px,5vw,34px); font-weight:600; margin:6px 0 4px; text-shadow:none; }
