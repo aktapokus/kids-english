@@ -672,11 +672,11 @@ ${FONT_FACES}
       ),
       linear-gradient(135deg, rgba(0,0,0,.18), transparent 42%, rgba(255,255,255,.025));
     background-size: 110px 95px, 170px 145px, auto, auto;
-    /* Ahşap çerçeve — turuncu/kahverengi degrade + iç oyuk (inset gölge)
-       hissi, "modern plastik panel" değil gerçek bir tahta rafı çerçevesi. */
+    /* Onceki ahşap (turuncu/kahverengi degrade) çerçeve kaldırıldı -
+       "uygulamanın etrafında kahverengi bir çerçeve var, kaldırır mısın"
+       geri bildirimi. */
     background-origin: border-box;
-    border: 3px solid #E9C385;
-    border-image: linear-gradient(90deg, var(--kb-wood-dark), var(--kb-wood-light) 14%, #6E4020 48%, #B8783D 78%, var(--kb-wood-dark)) 1;
+    border: none;
     box-shadow:none;
     border-radius: 22px;
     padding: 18px 16px 32px;
