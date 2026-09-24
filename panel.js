@@ -36,6 +36,7 @@ const CATEGORY_THEME = {
   daily_life:            { c: '#FFA000', dark: '#DB8A00', tint: '#FFCF66' },
   family_people:         { c: '#FF6B9D', dark: '#E5507F', tint: '#FF9EC0' },
   school_education:      { c: '#2ECC71', dark: '#25A85C', tint: '#6BE49A' },
+  classroom_life:        { c: '#5C6BC0', dark: '#4756A8', tint: '#93A0E0' },
   home:                  { c: '#FF9142', dark: '#E67A2E', tint: '#FFB877' },
   food_drinks:           { c: '#FF6347', dark: '#E24E33', tint: '#FF9782' },
   nature_environment:    { c: '#4CAF50', dark: '#3D9140', tint: '#7ED282' },
@@ -101,7 +102,7 @@ const SCENE_MOTIF = {
 // yeni bir görsel varlık/ağ isteği gerektirmiyor (bkz. görsel varlıklara
 // dokunmama kısıtı).
 const CATEGORY_MOTIF = {
-  daily_life: '⏰', family_people: '👨‍👩‍👧', school_education: '📚',
+  daily_life: '⏰', family_people: '👨‍👩‍👧', school_education: '📚', classroom_life: '🧑‍🏫',
   home: '🏠', food_drinks: '🍽️', nature_environment: '🌿',
   space_astronomy: '🚀', animals: '🐾', sports_exercise: '⚽',
   hobbies_free_time: '🎨', technology_computers: '💻', travel_transportation: '✈️',
