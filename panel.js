@@ -427,6 +427,50 @@ const RiverHighScore = {
   },
 };
 
+// Bulut sıralama (Supabase) - sadece herkese açık/PUBLISHABLE anahtar
+// client'a gömülü (bu servisin kendi tasarımı: bu anahtar tarayıcıda
+// görünmek için var), gerçek koruma veritabanı tarafındaki RLS
+// politikalarında (public select + public insert, update/delete YOK).
+// Hiçbir veri OTOMATİK gönderilmiyor - sadece kullanıcı "Skor Gönder"e
+// dokunursa, ve sadece profildeki takma isim + skor gidiyor (gerçek isim,
+// cihaz bilgisi vb. yok).
+const SUPABASE_URL = 'https://wtrkfzmmhabcpoipaccf.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_87EZgr1ftB1SnIY5FoDaKA_xmxlD7kU';
+// Kaba, en-iyi-çaba bir uygunsuz-kelime filtresi - sunucu tarafında
+// gerçek bir denetim yok (RLS bunu yapamaz), bu sadece ilk savunma
+// katmanı, kesin degil.
+const NAME_BLOCKLIST = ['fuck', 'shit', 'bitch', 'asshole', 'amk', 'aq', 'siktir', 'orospu', 'piç', 'yarrak', 'göt'];
+function isNameAllowed(name) {
+  const low = name.toLowerCase();
+  return !NAME_BLOCKLIST.some((w) => low.includes(w));
+}
+const Leaderboard = {
+  async submit(name, score, game) {
+    game = game || 'river';
+    const cleanName = String(name || '').trim().slice(0, 14) || 'Friend';
+    if (!isNameAllowed(cleanName)) throw new Error('name-not-allowed');
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify([{ name: cleanName, score: Math.max(0, Math.min(99999, Math.floor(score))), game }]),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  },
+  async top(game, limit) {
+    game = game || 'river';
+    limit = limit || 20;
+    const url = `${SUPABASE_URL}/rest/v1/leaderboard?game=eq.${encodeURIComponent(game)}&select=name,score&order=score.desc&limit=${limit}`;
+    const res = await fetch(url, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  },
+};
+
 const CONTINUOUS_STUDY_SECONDS = 15 * 60;
 let _continuousStart = null;
 let _continuousGranted = 0; // bu "kesintisiz kosu" icinde simdiye kadar kac esik gecildi
@@ -905,13 +949,19 @@ ${FONT_FACES}
      the Great'e geçildi (iri, net harf gövdeleri olan bir tahta-yazısı
      fontu, tam Türkçe glif desteği var) VE büyütüldü — okunaklılık +
      tebeşir hissini birlikte hedefliyor. */
+  /* "bu fontların sadece sentence'ta sürükle bırak kısmında kalmasını
+     istemiştim, diğer başlıkların hepsi değişecek" - chalk fontu
+     (Fredericka the Great) artık HİÇBİR yerde kalmıyor: ne başlıklarda
+     (.ke-title - kategori/bölüm/"My Aktapokus" vb.) ne de cümle kurma/
+     harf turundaki kelime ve boşluklarda (.ke-quiz-word/.ke-speak-word/
+     .ke-slot, önceki turda zaten Baloo 2'ye geçmişti) - hepsi tutarlı
+     şekilde Baloo 2. */
   .ke-title{
-    text-align:center; font-family:'Fredericka the Great','Fredoka','Baloo 2',sans-serif; font-size:clamp(28px,5.6vw,44px);
-    font-weight:400; margin:0 0 10px; letter-spacing:.5px; line-height:1.3;
+    text-align:center; font-family:'Baloo 2','Fredoka',sans-serif; font-size:clamp(28px,5.6vw,44px);
+    font-weight:700; margin:0 0 10px; letter-spacing:0; line-height:1.3;
     color: var(--kb-chalk);
-    -webkit-text-stroke: 1px rgba(255,255,255,.4);
-    paint-order: stroke fill;
-    text-shadow:none;
+    -webkit-text-stroke: 0;
+    text-shadow: 0 2px 0 rgba(0,0,0,.3);
   }
   .ke-title .ke-tword:first-child{ color: var(--kb-discover); }
   .ke-subtitle{ text-align:center; margin:0 0 20px; color:var(--kb-chalk-dim); font-size:14.5px; font-weight:700; text-shadow:none; }
@@ -993,6 +1043,7 @@ ${FONT_FACES}
   .ke-quickmenu-tile.qm-game{ background:var(--ke-red) !important; --btn-shadow:var(--ke-red-dark); }
   .ke-quickmenu-tile.qm-sound{ background:var(--ke-green) !important; --btn-shadow:var(--ke-green-dark); }
   .ke-quickmenu-tile.qm-lang{ background:var(--ke-purple) !important; --btn-shadow:var(--ke-purple-dark); }
+  .ke-quickmenu-tile.qm-rank{ background:#B08718 !important; --btn-shadow:#8C6A10; color:#fff !important; }
   .ke-quickmenu-tile:disabled{ opacity:.4; }
 
   /* Kategoriye özgü zemin: renderEpisodeScene, --cc-tint/--cc-c inline
@@ -1535,6 +1586,15 @@ ${FONT_FACES}
   .ke-picker-btn{ display:flex; flex-direction:column; align-items:center; gap:8px; width:140px; padding:18px 10px !important; border-radius:18px !important; background:#fff !important; border:2px solid var(--ke-border) !important; box-shadow:none !important; top:0 !important; font-size:13.5px !important; font-weight:800 !important; color:var(--ke-ink) !important; }
   .ke-picker-btn:active{ background:#F5F0DF !important; }
   .ke-picker-emoji{ font-size:40px; }
+  .ke-lb-card{ max-width:360px; width:100%; }
+  .ke-lb-list{ max-height:44vh; overflow-y:auto; display:flex; flex-direction:column; gap:6px; margin-top:4px; }
+  .ke-lb-row{ display:flex; align-items:center; gap:10px; background:#fff; border:2px solid var(--ke-border); border-radius:12px; padding:8px 12px; }
+  .ke-lb-rank{ font-size:15px; font-weight:800; width:26px; flex:none; text-align:center; }
+  .ke-lb-name{ flex:1; text-align:left; font-weight:700; font-size:14px; color:var(--ke-ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ke-lb-score{ font-weight:800; font-size:14px; color:#B08718; flex:none; }
+  .ke-lb-loading, .ke-lb-empty{ padding:20px 10px; font-size:13.5px; font-weight:700; color:#8a7a55; text-align:center; }
+  .ke-lb-submit-row{ display:flex; align-items:center; gap:8px; justify-content:center; margin-top:10px; }
+  .ke-lb-submit-row input{ font-family:inherit; font-size:13px; font-weight:700; text-align:center; padding:8px 10px; border-radius:10px; border:2px dashed var(--ke-border); width:110px; }
   .ke-puzzle-game{ position:absolute; inset:0; z-index:100; background:#243b55; border-radius:inherit; overflow:hidden; display:flex; flex-direction:column; }
   .ke-puzzle-hud{ display:flex; align-items:center; justify-content:space-between; padding:calc(10px + env(safe-area-inset-top, 0px)) calc(14px + env(safe-area-inset-right, 0px)) 10px calc(14px + env(safe-area-inset-left, 0px)); z-index:2; }
   .ke-puzzle-moves{ background:rgba(0,0,0,.35); color:#FFD75A; font-weight:800; padding:6px 14px; border-radius:999px; font-size:14px; }
@@ -2217,6 +2277,7 @@ function showQuickMenu(container, api, toolId, categories) {
         <button type="button" class="ke-quickmenu-tile qm-game" id="keQmGame" ${hasReward ? '' : 'disabled'}><span class="qm-ico">🎮</span>${L('Ödül Oyunu', 'Reward Game')}</button>
         <button type="button" class="ke-quickmenu-tile qm-sound" id="keQmSound"><span class="qm-ico">🔊</span>${L('Ses Testi', 'Sound Test')}</button>
         <button type="button" class="ke-quickmenu-tile qm-lang" id="keQmLang"><span class="qm-ico">🌐</span>${_lang === 'tr' ? 'English' : 'Türkçe'}</button>
+        <button type="button" class="ke-quickmenu-tile qm-rank" id="keQmRank"><span class="qm-ico">🏆</span>${L('Sıralama', 'Leaderboard')}</button>
       </div>
       <div id="keQmSoundInfo" style="margin-top:2px;font-size:11.5px;color:var(--kb-chalk-dim);font-weight:700;"></div>
       ${window.KE_STATIC ? `<div style="margin-top:10px;font-size:12.5px;font-weight:700;"><a href="privacy.html" style="color:var(--kb-chalk-dim);">${L('Gizlilik', 'Privacy')}</a> · <a href="${reportProblemHref()}" style="color:var(--kb-chalk-dim);">${L('Sorun bildir', 'Report a problem')}</a></div>` : ''}
@@ -2240,6 +2301,7 @@ function showQuickMenu(container, api, toolId, categories) {
   });
   overlay.querySelector('#keQmSound').addEventListener('click', () => runSoundTest(overlay.querySelector('#keQmSoundInfo')));
   overlay.querySelector('#keQmLang').addEventListener('click', () => { setLang(_lang === 'tr' ? 'en' : 'tr'); close(); showQuickMenu(container, api, toolId, categories); });
+  overlay.querySelector('#keQmRank').addEventListener('click', () => { close(); showLeaderboard(container); });
   overlay.querySelector('#keQmClose').addEventListener('click', close);
   overlay.querySelector('#keQmTestKey').addEventListener('click', () => {
     const code = window.prompt(L('Test şifresi', 'Test code'));
@@ -4515,6 +4577,44 @@ function showGamePicker(container, onExit) {
   overlay.querySelector('#kePickCancel').addEventListener('click', close);
 }
 
+// "Github'ta ranking sayfasi... kullanicilar isterse buraya kendi
+// skorlarini gondersin" - Supabase'e (bkz. Leaderboard nesnesi) baglı,
+// sadece River Adventure skoru icin, herkese acik bir siralama. Hicbir
+// otomatik gonderim yok - sadece oyun bitince "Skor Gonder" butonuna
+// basarsa (bkz. startRiverGame/endGame) profildeki takma isim + skoru
+// gonderiyor.
+function showLeaderboard(container, onExit) {
+  const shell = container.querySelector('.ke-shell');
+  const overlay = document.createElement('div');
+  overlay.className = 'ke-river-overlay-msg ke-leaderboard';
+  overlay.style.position = 'absolute'; overlay.style.zIndex = '90';
+  overlay.innerHTML = `
+    <div class="ke-river-msg-card ke-lb-card">
+      <h2>🏆 ${L('Sıralama', 'Leaderboard')}</h2>
+      <p style="margin:-4px 0 10px;font-size:12.5px;color:#8a7a55;font-weight:700;">${L('Nehir Macerası — en iyi skorlar', 'River Adventure — top scores')}</p>
+      <div class="ke-lb-list" id="keLbList"><div class="ke-lb-loading">⏳ ${L('Yükleniyor...', 'Loading...')}</div></div>
+      <button type="button" class="ke-btn-secondary" id="keLbClose" style="margin-top:14px;">${L('Kapat', 'Close')}</button>
+    </div>
+  `;
+  shell.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('ke-show'));
+  const close = () => { overlay.classList.remove('ke-show'); setTimeout(() => overlay.remove(), 250); if (onExit) onExit(); };
+  overlay.querySelector('#keLbClose').addEventListener('click', close);
+  const listEl = overlay.querySelector('#keLbList');
+  Leaderboard.top('river', 20).then((rows) => {
+    if (!rows.length) { listEl.innerHTML = `<div class="ke-lb-empty">${L('Henüz skor yok. İlk sen ol! 🚀', 'No scores yet. Be the first! 🚀')}</div>`; return; }
+    const medals = ['🥇', '🥈', '🥉'];
+    listEl.innerHTML = rows.map((r, i) => `
+      <div class="ke-lb-row">
+        <span class="ke-lb-rank">${medals[i] || (i + 1)}</span>
+        <span class="ke-lb-name">${escapeProfileText(r.name)}</span>
+        <span class="ke-lb-score">${r.score} ⭐</span>
+      </div>`).join('');
+  }).catch(() => {
+    listEl.innerHTML = `<div class="ke-lb-empty">${L('Sıralama yüklenemedi. İnternetini kontrol et.', "Couldn't load the leaderboard. Check your connection.")}</div>`;
+  });
+}
+
 // Resimli kayan yap-boz (klasik "15 puzzle"): 3x3, bir hucre bos, bosluga
 // komsu bir parcaya dokunarak kaydiriyorsun. Resimler uygulamanin kendi
 // (bugun tek tek gorsel olarak dogrulanmis) varliklarindan - Aktapokus'un
@@ -4780,6 +4880,10 @@ function startRiverGame(container, onExit) {
       <div class="ke-river-msg-card">
         <h2>${L('Oyun Bitti!', 'Game Over!')}</h2>
         <p id="keRiverFinalScore"></p>
+        <div class="ke-lb-submit-row" id="keRiverSubmitRow">
+          <button type="button" class="ke-btn-primary" id="keRiverSubmitBtn" style="font-size:13px !important;padding:10px 16px !important;">🏆 ${L('Skoru Gönder', 'Submit Score')}</button>
+        </div>
+        <div id="keRiverSubmitStatus" style="min-height:18px;font-size:12px;font-weight:800;margin-top:4px;"></div>
         <div class="ke-btn-row">
           <button type="button" class="ke-btn-secondary" id="keRiverExitBtn">${L('Çık', 'Exit')}</button>
           <button type="button" class="ke-btn-primary" id="keRiverAgainBtn" style="display:none;">${L('Tekrar Oyna', 'Play Again')} 🎮</button>
@@ -4827,6 +4931,7 @@ function startRiverGame(container, onExit) {
   let lastTime = null;
   let rafId = null;
   let isNewBest = false;
+  let lastFinalScore = 0;
   // Nehir "tek tip rastgele" hissetmesin diye - her checkpoint bagimsiz
   // zar atmak yerine, bir SURE boyunca ayni "mod"da devam ediyoruz
   // (duz surukleme, S-kivrimi, dar gecit, genis acik alan) - gercek
@@ -4934,6 +5039,7 @@ function startRiverGame(container, onExit) {
     running = false;
     if (rafId) cancelAnimationFrame(rafId);
     const finalScore = Math.floor(score);
+    lastFinalScore = finalScore;
     isNewBest = RiverHighScore.submit(finalScore);
     const bestEl = overlay.querySelector('#keRiverBestEl');
     if (bestEl) bestEl.textContent = RiverHighScore.get();
@@ -4942,6 +5048,12 @@ function startRiverGame(container, onExit) {
       : L(`Skor: ${finalScore} ⭐<br>Rekor: ${RiverHighScore.get()} 🏆`, `Score: ${finalScore} ⭐<br>Best: ${RiverHighScore.get()} 🏆`);
     const again = overlay.querySelector('#keRiverAgainBtn');
     again.style.display = GameTokens.get() > 0 ? '' : 'none';
+    // Her oyun sonunda gonder butonu/durumu sifirlaniyor - ayni DOM
+    // "Tekrar Oyna" ile yeniden kullaniliyor.
+    const submitBtn = overlay.querySelector('#keRiverSubmitBtn');
+    submitBtn.disabled = false;
+    submitBtn.style.display = '';
+    overlay.querySelector('#keRiverSubmitStatus').textContent = '';
     overlay.querySelector('#keRiverOverMsg').style.display = 'flex';
   }
 
