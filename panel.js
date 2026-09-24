@@ -882,6 +882,32 @@ ${FONT_FACES}
   .ke-title .ke-tword:first-child{ color: var(--kb-discover); }
   .ke-subtitle{ text-align:center; margin:0 0 20px; color:var(--kb-chalk-dim); font-size:14.5px; font-weight:700; text-shadow:none; }
 
+  /* Ana giriş sayfası başlığı SADECE burada tebeşirden çıkıyor - "tebeşir
+     konsepti güzel ama ana giriş sayfasını zayıflatıyor, Aktapokus Word
+     Safari yazısı renklendirilmeli, tebeşir olmamalı" geri bildirimi.
+     Diğer tüm ekranlardaki .ke-title (kategori/bölüm başlıkları) kasıtlı
+     olarak tebeşir kalıyor - sadece bu class landing'e özel. Her kelime
+     kart paletindeki canlı bir renk alıyor, ince beyaz kontur tebeşir
+     dokusu yerine düz koyu kontur + hafif gölge ile "oyuncu logo" hissi. */
+  .ke-title-landing{
+    -webkit-text-stroke: 0; text-shadow: 0 3px 0 rgba(0,0,0,.25);
+  }
+  .ke-title-landing .ke-tword:nth-child(1){ color: var(--ke-yellow); }
+  .ke-title-landing .ke-tword:nth-child(2){ color: var(--ke-blue); }
+  .ke-title-landing .ke-tword:nth-child(3){ color: var(--ke-green); }
+  .ke-title-landing .ke-tword:nth-child(4){ color: var(--ke-red); }
+  .ke-title-landing .ke-tword:nth-child(5){ color: var(--ke-purple); }
+
+  /* Kullanıcı/ayarlar satırı (profil, ilerleme, oyun, ses testi, dil) -
+     aynı geri bildirim: bu satır düz beyaz/soluk "tebeşir" tonundaydı,
+     kart paletindeki gibi canlı dolu renkler kazanıyor. */
+  #keProfileBtn{ background: var(--ke-yellow) !important; color: var(--ke-yellow-text) !important; --btn-shadow: var(--ke-yellow-dark); }
+  .ke-game-chip{ background: var(--ke-red) !important; color: #fff !important; --btn-shadow: var(--ke-red-dark); }
+  #keStatsBtn{ background: var(--ke-blue) !important; color: #fff !important; --btn-shadow: var(--ke-blue-dark); }
+  #keGameTestBtn{ background: var(--ke-purple) !important; color: #fff !important; --btn-shadow: var(--ke-purple-dark); }
+  #keSoundTest{ background: var(--ke-green) !important; color: #fff !important; --btn-shadow: var(--ke-green-dark); border-radius:999px !important; }
+  #keLangBtn{ background: var(--ke-blue) !important; color: #fff !important; --btn-shadow: var(--ke-blue-dark); border-radius:999px !important; }
+
   /* Kategoriye özgü zemin: renderEpisodeScene, --cc-tint/--cc-c inline
      değişkenlerini CATEGORY_THEME'den enjekte ediyor — böylece her
      kategorinin oyun sahnesi kendi konu rengini taşıyor, hepsi aynı
@@ -2035,7 +2061,7 @@ function showSectionMenu(container, api, toolId, categories) {
       <button type="button" class="ke-profile-chip" id="keStatsBtn" style="margin-left:8px;">📊 ${L('İlerleme', 'Progress')}</button>
       <button type="button" class="ke-profile-chip ke-game-chip" id="keGameBtn" style="margin-left:8px;" ${(GameTokens.get() > 0 || PendingQuiz.get() > 0) ? '' : 'disabled'}><span id="keGameTokenBadge">🎮 ${GameTokens.get()}</span></button>
       <button type="button" class="ke-profile-chip" id="keGameTestBtn" style="margin-left:8px;padding:4px 10px !important;font-size:11px !important;opacity:.55;" title="test">🔑</button>
-      <h1 class="ke-title">${bubbleTitleHTML(L("Aktapokus'un Kelime Safarisi", "Aktapokus Word Safari"))}</h1>
+      <h1 class="ke-title ke-title-landing">${bubbleTitleHTML(L("Aktapokus'un Kelime Safarisi", "Aktapokus Word Safari"))}</h1>
       <p class="ke-subtitle">${L('Ne öğrenmek istiyorsun? Bir bölüm seç!', 'What do you want to learn? Pick a section!')}</p>
     </div>
     <div style="text-align:center;margin:0 0 12px;">
