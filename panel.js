@@ -1902,6 +1902,10 @@ ${FONT_FACES}
   }
   .ke-story-glossary-item b{ font-size:15px; color:#fff; }
   .ke-story-glossary-item span{ font-size:13px; color:var(--kb-chalk-dim); }
+  .ke-story-record-bar{ width:100%; margin-top:10px; }
+  .ke-story-record-bar .ke-recording{ background:var(--kb-wrong); color:#fff; animation:ke-rec-pulse 1s ease-in-out infinite; }
+  @keyframes ke-rec-pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.7; } }
+  .ke-story-record-bar audio{ border-radius:999px; }
 
   /* Eskiden burada "WELCOME panosu" tarzı renkli eğik bayrakçık başlık
      vardı (.ke-banner/.ke-flag) — parlak/candy-app hissi verip tebeşir
@@ -2957,7 +2961,69 @@ async function showStoryReader(container, api, toolId, categories, storyId) {
 
   let page = -1; // -1 = kapak/giriş, 0..N-1 = kartlar, N = sözlük
   const lastPage = story.cards.length;
-  const exit = () => showStoryList(container, api, toolId, categories);
+
+  // Kendi sesini kaydetme: BULUTA YÜKLEME YOK, bilinçli tercih (çocuk
+  // sesi kaydı - KVKK/veli izni riski). Kayıt sadece tarayıcı belleğinde
+  // tutulur, öğretmene ulaştırmak telefonun kendi paylaşım menüsü
+  // (WhatsApp/e-posta/vb.) veya indirme üzerinden, elle yapılır.
+  let mediaRecorder = null;
+  let recordedChunks = [];
+  let recording = false;
+  let recordedBlobUrl = null;
+  let recordingStream = null;
+
+  function stopRecordingStream() {
+    if (recordingStream) { recordingStream.getTracks().forEach((t) => t.stop()); recordingStream = null; }
+  }
+
+  async function toggleRecording() {
+    if (recording) { mediaRecorder.stop(); return; }
+    if (!navigator.mediaDevices || !window.MediaRecorder) {
+      alert(L('Bu cihazda ses kaydı desteklenmiyor.', 'Voice recording is not supported on this device.'));
+      return;
+    }
+    try {
+      recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (e) {
+      alert(L('Kayıt için mikrofon izni gerekiyor.', 'Microphone permission is needed to record.'));
+      return;
+    }
+    recordedChunks = [];
+    if (recordedBlobUrl) { URL.revokeObjectURL(recordedBlobUrl); recordedBlobUrl = null; }
+    const mimeType = ['audio/mp4', 'audio/webm'].find((t) => MediaRecorder.isTypeSupported(t)) || '';
+    mediaRecorder = mimeType ? new MediaRecorder(recordingStream, { mimeType }) : new MediaRecorder(recordingStream);
+    mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      stopRecordingStream();
+      const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+      recordedBlobUrl = URL.createObjectURL(blob);
+      recording = false;
+      render();
+    };
+    mediaRecorder.start();
+    recording = true;
+    render();
+  }
+
+  async function shareRecording() {
+    if (!recordedBlobUrl) return;
+    const blob = await (await fetch(recordedBlobUrl)).blob();
+    const ext = blob.type.includes('mp4') ? 'm4a' : 'webm';
+    const file = new File([blob], `${story.id}_${(_lang === 'tr' ? story.title_tr : story.title).replace(/\s+/g, '_')}.${ext}`, { type: blob.type });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: story.title }); return; } catch (e) { /* kullanıcı iptal etti ya da desteklenmiyor - asagida indirmeye dus */ }
+    }
+    const a = document.createElement('a');
+    a.href = recordedBlobUrl; a.download = file.name;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  const exit = () => {
+    if (recording && mediaRecorder) { try { mediaRecorder.stop(); } catch (e) { /* no-op */ } }
+    stopRecordingStream();
+    if (recordedBlobUrl) { URL.revokeObjectURL(recordedBlobUrl); recordedBlobUrl = null; }
+    showStoryList(container, api, toolId, categories);
+  };
 
   function render() {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -3010,6 +3076,14 @@ async function showStoryReader(container, api, toolId, categories, storyId) {
         <h2 class="ke-story-card-title">${escapeProfileText(card.title)}</h2>
         <div class="ke-story-text" id="keStoryText">${card.text.map((t) => `<p>${escapeProfileText(t)}</p>`).join('')}</div>
         <button type="button" class="ke-btn-secondary" id="keStorySpeak">${ICON_SPEAKER} ${L('Sesli Oku', 'Read Aloud')}</button>
+        <div class="ke-story-record-bar">
+          <button type="button" class="ke-btn-secondary${recording ? ' ke-recording' : ''}" id="keStoryRecordBtn">${recording ? '⏹ ' + L('Kaydı Durdur', 'Stop Recording') : '🎙️ ' + L('Kendi Sesinle Oku', 'Record Yourself')}</button>
+          ${recordedBlobUrl ? `
+            <audio controls src="${recordedBlobUrl}" style="width:100%;margin-top:8px;"></audio>
+            <button type="button" class="ke-btn-secondary" id="keStoryRecordShare" style="margin-top:8px;">📤 ${L('Paylaş / İndir', 'Share / Download')}</button>
+            <p class="ke-story-meta" style="margin-top:4px;">${L('Kayıt sadece bu cihazda — hiçbir yere yüklenmiyor.', 'Recording stays on this device only — nothing is uploaded.')}</p>
+          ` : ''}
+        </div>
         <div class="ke-btn-row" style="margin-top:14px;">
           <button type="button" class="ke-btn-secondary" id="keStoryPrev" ${page === 0 ? 'disabled' : ''}>${L('Geri', 'Back')}</button>
           <button type="button" class="ke-btn-primary" id="keStoryNext">${L('İleri', 'Next')} ▶</button>
@@ -3025,6 +3099,9 @@ async function showStoryReader(container, api, toolId, categories, storyId) {
       const dummyMascot = { classList: { add() {}, remove() {} } };
       speakWord(card.text.join('. '), dummyMascot, () => { btn.disabled = false; });
     });
+    host2.querySelector('#keStoryRecordBtn').addEventListener('click', toggleRecording);
+    const shareBtn = host2.querySelector('#keStoryRecordShare');
+    if (shareBtn) shareBtn.addEventListener('click', shareRecording);
   }
 
   render();
