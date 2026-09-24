@@ -35,14 +35,19 @@ mount(document.getElementById('app'), api, 'kids_english');
 
 if ('serviceWorker' in navigator) {
   // "her guncellemede kullanici elle onbellek temizlemek zorunda kalmasin"
-  // - iki parca: (1) updateViaCache:'none' tarayiciya sw.js dosyasinin
-  // KENDISINI asla HTTP onbelleginden degil, her zaman agdan almasini
-  // soyler (spec geregi normalde bu kontrol max 24 saatte bir yapilir -
-  // bu satir olmadan yeni bir surum gunler boyu fark edilmeyebiliyordu).
-  // (2) yeni bir SW devreye girince (skipWaiting+clients.claim zaten
-  // sw.js icinde) sayfayi KENDILIGINDEN bir kez yeniliyoruz - kullanici
-  // hicbir sey yapmadan bir sonraki acilista guncel icerigi goruyor.
-  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((reg) => {
+  // - UC PARCA: (1) sw.js'i her build'de degisen bir ?v= sorgu dizgesiyle
+  // kaydediyoruz (asagida f401953944 yer tutucusu, build_pwa.py build
+  // hash'iyle degistiriyor) - GitHub Pages TUM dosyalari CDN'de 10 dakika
+  // onbelleklediginden (Cache-Control: max-age=600, updateViaCache:'none'
+  // SADECE tarayicinin KENDI HTTP onbellegini atlar, GitHub'in CDN edge
+  // onbellegini DEGIL), URL'nin KENDISI her deploy'da degismezse yeni bir
+  // surum CDN'in 10 dakikalik penceresi doluncaya kadar fark edilmeyebilir
+  // - canli sitede gozlemlenen bir sorun buydu. Farkli bir sorgu dizgesi
+  // CDN'de HER ZAMAN ilk istekte cache MISS garantiler. (2) yeni bir SW
+  // devreye girince (skipWaiting+clients.claim zaten sw.js icinde) sayfayi
+  // KENDILIGINDEN bir kez yeniliyoruz - kullanici hicbir sey yapmadan bir
+  // sonraki acilista guncel icerigi goruyor.
+  navigator.serviceWorker.register('sw.js?v=f401953944', { updateViaCache: 'none' }).then((reg) => {
     reg.update().catch(() => {});
   }).catch(() => {});
   let keRefreshing = false;
