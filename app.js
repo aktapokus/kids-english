@@ -34,31 +34,52 @@ const api = {
 mount(document.getElementById('app'), api, 'kids_english');
 
 if ('serviceWorker' in navigator) {
-  // "her guncellemede kullanici elle onbellek temizlemek zorunda kalmasin"
-  // - sw.js'i her build'de degisen bir ?v= sorgu dizgesiyle kaydediyoruz
-  // (asagida a2fc6b86a8 yer tutucusu, build_pwa.py build hash'iyle
+  // "her guncellemede kullanici elle onbellek temizlemek zorunda kalmasin,
+  // otomatik olmali - kullanici site verisini kendi eliyle temizlemeyecek"
+  // (kullanicinin kendi geri bildirimi). Iki parca:
+  //
+  // (1) sw.js'i her build'de degisen bir ?v= sorgu dizgesiyle kaydediyoruz
+  // (asagida 95692069ee yer tutucusu, build_pwa.py build hash'iyle
   // degistiriyor) - GitHub Pages TUM dosyalari CDN'de 10 dakika
   // onbelleklediginden (Cache-Control: max-age=600, updateViaCache:'none'
   // SADECE tarayicinin KENDI HTTP onbellegini atlar, GitHub'in CDN edge
   // onbellegini DEGIL), URL'nin KENDISI her deploy'da degismezse yeni bir
   // surum CDN'in 10 dakikalik penceresi doluncaya kadar fark edilmeyebilir.
   //
-  // ONEMLI: burada KASITLI OLARAK otomatik window.location.reload() YOK.
-  // Once vardi ("yeni SW devreye girince sayfayi kendiliginden yenile")
-  // ama GERCEK BIR REGRESYONA yol acti - "oyun oynarken bir sure sonra
-  // kendiliginden ana ekrana donuyor" seklinde bildirildi. Sebep: (1)
-  // controllerchange, controller'i hic olmayan bir istemcide (ILK KURULUM)
-  // bile null->worker gecisinde ateslenir, gercek bir "guncelleme" olmasa
-  // bile; (2) her reload() YENI bir app.js calistirmasi baslatiyor, o da
-  // kendi reg.update()'ini tetikliyor - CDN'in 10dk penceresi henuz her
-  // edge node'a yayilmamissa (deploy'dan hemen sonra) farkli istekler
-  // farkli icerik alabiliyor, bu da controllerchange'i TEKRAR tetikleyip
-  // kendi kendini besleyen bir reload donguisune donusebiliyor - cocuk
-  // bir bolumun ortasindayken beklenmedik sekilde ana ekrana atiliyordu.
-  // Guncel surum zaten BIR SONRAKI dogal sayfa acilisinda (?v= sayesinde)
-  // garantili yukleniyor - kullanicinin o an ortasinda oldugu bir oturumu
-  // riske atan otomatik reload'a gerek yok.
-  navigator.serviceWorker.register('sw.js?v=a2fc6b86a8', { updateViaCache: 'none' }).then((reg) => {
+  // (2) YENI SW devreye girince sayfayi OTOMATIK yeniliyoruz - ama iki
+  // guvenlik kemeriyle, cunku ilk denemede (kosulsuz reload) bu GERCEK BIR
+  // REGRESYONA yol acmisti ("oyun oynarken bir sure sonra kendiliginden
+  // ana ekrana donuyor, her yer refresh yapiyor gibi" - canli raporlandi):
+  //   (a) SADECE sayfa ILK ACILDIGINDA ZATEN AKTIF bir SW varsa dinliyoruz
+  //       (hadControllerAtLoad). Ilk kurulumda controller null'dan worker'a
+  //       gectiginde de controllerchange ateslenir ama bu GERCEK bir
+  //       guncelleme degil - o yuklemenin kendisi zaten agdan taze geldi,
+  //       reload'a gerek yok, gereksiz yere tetiklenirse zincirleme
+  //       reload'un ilk halkasi olabiliyordu.
+  //   (b) HER SURUM ICIN EN FAZLA BIR KEZ yeniliyoruz (localStorage'da
+  //       hangi surume zaten yenilendigimizi tutuyoruz). CDN edge
+  //       tutarsizligi (deploy hemen sonrasi farkli node'lar farkli icerik
+  //       donebiliyor) controllerchange'i tekrar tetiklese bile bu guard
+  //       SONSUZ DONGUYU imkansiz kilar - ayni surum icin ikinci bir
+  //       reload asla olmaz.
+  // Boylece kullanici HICBIR SEY yapmadan (site verisi temizlemeden) bir
+  // sonraki dogal ac/kapa VEYA arka plandan on plana gelisinde guncel
+  // surume geciyor - ama bu tek reload asla tekrarlanmiyor.
+  navigator.serviceWorker.register('sw.js?v=95692069ee', { updateViaCache: 'none' }).then((reg) => {
     reg.update().catch(() => {});
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') reg.update().catch(() => {});
+    });
   }).catch(() => {});
+  const hadControllerAtLoad = !!navigator.serviceWorker.controller;
+  if (hadControllerAtLoad) {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      const target = '95692069ee';
+      let already = '';
+      try { already = window.localStorage.getItem('ke_sw_reloaded_for') || ''; } catch (e) { /* yok say */ }
+      if (already === target) return;
+      try { window.localStorage.setItem('ke_sw_reloaded_for', target); } catch (e) { /* yok say */ }
+      window.location.reload();
+    });
+  }
 }
