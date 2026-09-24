@@ -882,31 +882,84 @@ ${FONT_FACES}
   .ke-title .ke-tword:first-child{ color: var(--kb-discover); }
   .ke-subtitle{ text-align:center; margin:0 0 20px; color:var(--kb-chalk-dim); font-size:14.5px; font-weight:700; text-shadow:none; }
 
-  /* Ana giriş sayfası başlığı SADECE burada tebeşirden çıkıyor - "tebeşir
-     konsepti güzel ama ana giriş sayfasını zayıflatıyor, Aktapokus Word
-     Safari yazısı renklendirilmeli, tebeşir olmamalı" geri bildirimi.
-     Diğer tüm ekranlardaki .ke-title (kategori/bölüm başlıkları) kasıtlı
-     olarak tebeşir kalıyor - sadece bu class landing'e özel. Her kelime
-     kart paletindeki canlı bir renk alıyor, ince beyaz kontur tebeşir
-     dokusu yerine düz koyu kontur + hafif gölge ile "oyuncu logo" hissi. */
-  .ke-title-landing{
-    -webkit-text-stroke: 0; text-shadow: 0 3px 0 rgba(0,0,0,.25);
+  /* GİRİŞ SAYFASI = LUNAPARK GİRİŞİ (v2): "burasi komple degissin, bir
+     lunapark girisi gibi eglenceli olsun" geri bildirimi - önceki tur
+     sadece eski satırı renklendirmişti, bu tur tüm bloğu (profil/ayar
+     çipleri dahil) kaldırıp yerine tek bir "karnaval tabelası" + büyük
+     tıklanabilir maskot koydu. Diğer ekranlardaki .ke-title kasıtlı
+     tebeşir kalıyor - bu stil SADECE .ke-carnival-title'a özel. */
+  .ke-carnival-hero{
+    position:relative; max-width:640px; margin:6px auto 18px; padding:26px 20px 22px;
+    border-radius:28px; text-align:center; overflow:hidden;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.09) 0 18px, rgba(255,255,255,0) 18px 36px),
+      linear-gradient(160deg, #2B6CB0 0%, #1CB0F6 55%, #29C4A9 100%);
+    border:4px solid rgba(255,255,255,.85);
+    box-shadow: 0 10px 0 rgba(0,0,0,.22);
   }
-  .ke-title-landing .ke-tword:nth-child(1){ color: var(--ke-yellow); }
-  .ke-title-landing .ke-tword:nth-child(2){ color: var(--ke-blue); }
-  .ke-title-landing .ke-tword:nth-child(3){ color: var(--ke-green); }
-  .ke-title-landing .ke-tword:nth-child(4){ color: var(--ke-red); }
-  .ke-title-landing .ke-tword:nth-child(5){ color: var(--ke-purple); }
+  .ke-carnival-sparkle{
+    position:absolute; color:#FFE97A; text-shadow:0 2px 0 rgba(0,0,0,.2);
+    animation: ke-sparkle-twinkle 2.2s ease-in-out infinite;
+    pointer-events:none; user-select:none;
+  }
+  .ke-carnival-sparkle.cs1{ top:10px; left:18px; font-size:22px; animation-delay:0s; }
+  .ke-carnival-sparkle.cs2{ top:16px; right:26px; font-size:16px; animation-delay:.4s; color:#fff; }
+  .ke-carnival-sparkle.cs3{ bottom:14px; left:32px; font-size:15px; animation-delay:.8s; color:#fff; }
+  .ke-carnival-sparkle.cs4{ bottom:20px; right:20px; font-size:20px; animation-delay:1.2s; }
+  .ke-carnival-sparkle.cs5{ top:44%; left:8px; font-size:13px; animation-delay:1.6s; color:#fff; }
+  @keyframes ke-sparkle-twinkle{ 0%,100%{ opacity:.35; transform:scale(.85) rotate(0deg); } 50%{ opacity:1; transform:scale(1.15) rotate(12deg); } }
 
-  /* Kullanıcı/ayarlar satırı (profil, ilerleme, oyun, ses testi, dil) -
-     aynı geri bildirim: bu satır düz beyaz/soluk "tebeşir" tonundaydı,
-     kart paletindeki gibi canlı dolu renkler kazanıyor. */
-  #keProfileBtn{ background: var(--ke-yellow) !important; color: var(--ke-yellow-text) !important; --btn-shadow: var(--ke-yellow-dark); }
-  .ke-game-chip{ background: var(--ke-red) !important; color: #fff !important; --btn-shadow: var(--ke-red-dark); }
-  #keStatsBtn{ background: var(--ke-blue) !important; color: #fff !important; --btn-shadow: var(--ke-blue-dark); }
-  #keGameTestBtn{ background: var(--ke-purple) !important; color: #fff !important; --btn-shadow: var(--ke-purple-dark); }
-  #keSoundTest{ background: var(--ke-green) !important; color: #fff !important; --btn-shadow: var(--ke-green-dark); border-radius:999px !important; }
-  #keLangBtn{ background: var(--ke-blue) !important; color: #fff !important; --btn-shadow: var(--ke-blue-dark); border-radius:999px !important; }
+  .ke-carnival-title{
+    margin:0 0 6px; -webkit-text-stroke:0; text-shadow:none;
+    font-size:clamp(30px,7vw,48px);
+  }
+  /* Kalın karnaval konturu: tek bir text-stroke yerine 8 yönlü koyu
+     text-shadow yığını - "Çocuk Meclisi" referans görselindeki kalın,
+     çizgi-film çıkartması hissini text-stroke'tan çok daha güvenilir
+     veriyor (bazı tarayıcılarda stroke içeriği inceltir/kırpar). */
+  .ke-carnival-title .ke-tword{
+    display:inline-block; text-shadow:
+      -2px -2px 0 #2A1B00, 2px -2px 0 #2A1B00, -2px 2px 0 #2A1B00, 2px 2px 0 #2A1B00,
+      0 -2px 0 #2A1B00, 0 2px 0 #2A1B00, -2px 0 0 #2A1B00, 2px 0 0 #2A1B00,
+      0 5px 0 rgba(0,0,0,.28);
+    transform: rotate(-2deg);
+  }
+  .ke-carnival-title .ke-tword:nth-child(2n){ transform: rotate(2deg); }
+  .ke-carnival-title .ke-tword:nth-child(1){ color: var(--ke-yellow); }
+  .ke-carnival-title .ke-tword:nth-child(2){ color: #fff; }
+  .ke-carnival-title .ke-tword:nth-child(3){ color: var(--ke-green); }
+  .ke-carnival-subtitle{
+    margin:0 auto 18px; max-width:420px; color:#fff; font-size:15px; font-weight:800;
+    text-shadow:0 2px 0 rgba(0,0,0,.25);
+  }
+  .ke-mascot-btn{
+    position:relative; display:inline-flex; align-items:center; justify-content:center;
+    width:clamp(96px,24vw,132px); height:clamp(96px,24vw,132px); padding:0 !important;
+    border-radius:50% !important; border:4px solid #fff !important;
+    background: radial-gradient(circle at 50% 40%, #FFE97A 0%, #FFC20E 70%, #E0A500 100%) !important;
+    box-shadow:none; top:0 !important; --btn-shadow:transparent;
+    animation: ke-bob 2.6s ease-in-out infinite;
+  }
+  .ke-mascot-btn:active{ top:0 !important; filter:brightness(.96); }
+  .ke-mascot-btn img.ke-av-body{ width:78%; height:78%; object-fit:contain; position:relative; z-index:1; }
+  .ke-mascot-btn .ke-mascot-hat{ z-index:2; }
+  .ke-mascot-badge{
+    position:absolute; top:-4px; right:-4px; z-index:3;
+    width:32px; height:32px; border-radius:50%; background:#fff;
+    border:3px solid var(--ke-red); display:flex; align-items:center; justify-content:center;
+    font-size:16px; box-shadow:0 3px 0 rgba(0,0,0,.2);
+  }
+  .ke-mascot-badge-pulse{ animation: ke-chip-pulse 1.1s ease-in-out infinite; }
+  @media (max-width:480px){ .ke-carnival-hero{ padding:20px 14px 18px; } }
+
+  /* Ayarlar/ayrıntılar artık maskota tıklayınca açılan hub sayfasında
+     (showProfileScreen) - burada sade bir bağlantı satırı. */
+  .ke-hub-links{ display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:14px 0; }
+  .ke-hub-link{ font-size:12.5px !important; padding:8px 14px !important; border-radius:999px !important; }
+  #keHubProgress{ background:var(--ke-blue) !important; color:#fff !important; --btn-shadow:var(--ke-blue-dark); }
+  #keHubGame{ background:var(--ke-red) !important; color:#fff !important; --btn-shadow:var(--ke-red-dark); }
+  #keHubSound{ background:var(--ke-green) !important; color:#fff !important; --btn-shadow:var(--ke-green-dark); }
+  #keHubLang{ background:var(--ke-purple) !important; color:#fff !important; --btn-shadow:var(--ke-purple-dark); }
 
   /* Kategoriye özgü zemin: renderEpisodeScene, --cc-tint/--cc-c inline
      değişkenlerini CATEGORY_THEME'den enjekte ediyor — böylece her
@@ -1911,7 +1964,7 @@ function installTransitionGuard(container) {
     if (performance.now() < _guardUntil) { e.stopPropagation(); e.preventDefault(); }
   };
   ['pointerdown', 'click'].forEach((t) => container.addEventListener(t, swallow, true));
-  const fresh = (n) => n.nodeType === 1 && (n.matches('.ke-quiz-card, .ke-category-card, .ke-profile-screen, .ke-landing-header, .ke-shell-inner') || n.querySelector('.ke-quiz-card, .ke-category-card, .ke-profile-screen, .ke-landing-header'));
+  const fresh = (n) => n.nodeType === 1 && (n.matches('.ke-quiz-card, .ke-category-card, .ke-profile-screen, .ke-landing-header, .ke-carnival-hero, .ke-shell-inner') || n.querySelector('.ke-quiz-card, .ke-category-card, .ke-profile-screen, .ke-landing-header, .ke-carnival-hero'));
   if (_guardObserver) _guardObserver.disconnect();
   _guardObserver = new MutationObserver((muts) => {
     for (const m of muts) {
@@ -2031,20 +2084,30 @@ function showQuizUnlockToast(container, onClick) {
   setTimeout(() => { el.classList.remove('ke-show'); setTimeout(() => el.remove(), 400); }, 9000);
 }
 
+// "orada aktapokus'un sadece maskotu olsun" geri bildirimi ile
+// keGameBtn/keGameTokenBadge (ayri bir "Quiz" cipi) kaldirildi - odul
+// bildirimi artik giris ekranindaki buyuk maskot dugmesinin uzerinde
+// kucuk bir rozet (#keMascotBadge). Element her zaman DOM'da duruyor
+// (baslangicta hidden), boylece token 0 -> pozitife gectiginde yeniden
+// bulunabiliyor (querySelector kaybolmuyor).
 function refreshGameBadge(container) {
-  const btn = container.querySelector('#keGameBtn');
-  const badge = container.querySelector('#keGameTokenBadge');
-  if (!btn || !badge) return;
+  const badge = container.querySelector('#keMascotBadge');
+  if (!badge) return;
   const pending = PendingQuiz.get();
   const tokens = GameTokens.get();
   if (pending > 0) {
-    badge.textContent = L(`🎁 Sınav (${pending})`, `🎁 Quiz (${pending})`);
-    btn.disabled = false;
-    btn.classList.add('ke-game-chip-pulse');
+    badge.textContent = '🎁';
+    badge.title = L(`Sınav hazır! (${pending})`, `Quiz ready! (${pending})`);
+    badge.hidden = false;
+    badge.classList.add('ke-mascot-badge-pulse');
+  } else if (tokens > 0) {
+    badge.textContent = '🎮';
+    badge.title = L(`${tokens} oyun hakkın var`, `${tokens} game token(s)`);
+    badge.hidden = false;
+    badge.classList.remove('ke-mascot-badge-pulse');
   } else {
-    badge.textContent = `🎮 ${tokens}`;
-    btn.disabled = tokens <= 0;
-    btn.classList.remove('ke-game-chip-pulse');
+    badge.hidden = true;
+    badge.classList.remove('ke-mascot-badge-pulse');
   }
 }
 
@@ -2053,47 +2116,26 @@ function showSectionMenu(container, api, toolId, categories) {
   _currentSection = null;
   const host = container.querySelector('#keScreenHost');
   const waveSrc = new URL('mascot/mascot_wave.png', ASSET_BASE_URL).href;
+  const hasBadge = GameTokens.get() > 0 || PendingQuiz.get() > 0;
   host.innerHTML = `
-    ${avatarLandingHTML('wave')}
-    <div class="ke-landing-header">
-      <button type="button" class="ke-profile-chip" id="keProfileBtn"><span class="ke-avatar-mini"><img class="ke-av-body" src="${avatarBodySrc('wave', Profiles.active().color)}" alt="" draggable="false" /></span>${escapeProfileText(Profiles.active().name || L('Ben', 'Me'))} · ${Progress.totalStars()} ⭐${Streak.get() > 0 ? ` · 🔥${Streak.get()}` : ''} · ${L("Aktapokus'um", 'My Aktapokus')} ✏️</button>
-      <div class="ke-daily-goal">${L('Bugünün hedefi', "Today's goal")}: ${Math.min(DailyGoal.today(), DailyGoal.TARGET)} / ${DailyGoal.TARGET} ${L('kelime', 'words')} ${DailyGoal.today() >= DailyGoal.TARGET ? '🎉' : '🎯'}</div>
-      <button type="button" class="ke-profile-chip" id="keStatsBtn" style="margin-left:8px;">📊 ${L('İlerleme', 'Progress')}</button>
-      <button type="button" class="ke-profile-chip ke-game-chip" id="keGameBtn" style="margin-left:8px;" ${(GameTokens.get() > 0 || PendingQuiz.get() > 0) ? '' : 'disabled'}><span id="keGameTokenBadge">🎮 ${GameTokens.get()}</span></button>
-      <button type="button" class="ke-profile-chip" id="keGameTestBtn" style="margin-left:8px;padding:4px 10px !important;font-size:11px !important;opacity:.55;" title="test">🔑</button>
-      <h1 class="ke-title ke-title-landing">${bubbleTitleHTML(L("Aktapokus'un Kelime Safarisi", "Aktapokus Word Safari"))}</h1>
-      <p class="ke-subtitle">${L('Ne öğrenmek istiyorsun? Bir bölüm seç!', 'What do you want to learn? Pick a section!')}</p>
-    </div>
-    <div style="text-align:center;margin:0 0 12px;">
-      <button type="button" id="keSoundTest" style="font-size:12px !important;padding:6px 14px !important;">🔊 ${L('Ses testi', 'Sound test')}</button>
-      <button type="button" id="keLangBtn" style="font-size:12px !important;padding:6px 14px !important;margin-left:6px;">🌐 ${_lang === 'tr' ? 'English' : 'Türkçe'}</button>
-      <div id="keSoundInfo" style="margin-top:6px;font-size:11.5px;color:var(--kb-chalk-dim);font-weight:700;"></div>
-      ${window.KE_STATIC ? `<div style="margin-top:8px;font-size:13px;font-weight:700;"><a href="privacy.html" style="color:var(--kb-chalk-dim);">${L('Gizlilik', 'Privacy')}</a> · <a href="https://github.com/aktapokus/kids-english/issues" target="_blank" rel="noopener noreferrer" style="color:var(--kb-chalk-dim);">${L('Sorun bildir', 'Report a problem')}</a></div>` : ''}
+    <div class="ke-carnival-hero">
+      <span class="ke-carnival-sparkle cs1">✦</span>
+      <span class="ke-carnival-sparkle cs2">★</span>
+      <span class="ke-carnival-sparkle cs3">✧</span>
+      <span class="ke-carnival-sparkle cs4">★</span>
+      <span class="ke-carnival-sparkle cs5">✦</span>
+      <h1 class="ke-title ke-carnival-title">${bubbleTitleHTML(L("Aktapokus'un Kelime Safarisi", "Aktapokus Word Safari"))}</h1>
+      <p class="ke-carnival-subtitle">${L('Ne öğrenmek istiyorsun? Bir bölüm seç!', 'What do you want to learn? Pick a section!')}</p>
+      <button type="button" class="ke-mascot-btn" id="keMascotBtn" aria-label="${L("Aktapokus'um ve ayarlar", 'My Aktapokus & settings')}" title="${L("Aktapokus'um", 'My Aktapokus')}">
+        <img class="ke-av-body" src="${avatarBodySrc('wave', Profiles.active().color)}" alt="Aktapokus" draggable="false" />
+        ${avatarHatHTML('wave', Profiles.active())}
+        <span class="ke-mascot-badge" id="keMascotBadge" ${hasBadge ? '' : 'hidden'}></span>
+      </button>
     </div>
     <div class="ke-category-grid" id="keSectionGrid"></div>
   `;
-  host.querySelector('#keSoundTest').addEventListener('click', () => runSoundTest(host.querySelector('#keSoundInfo')));
-  host.querySelector('#keLangBtn').addEventListener('click', () => { setLang(_lang === 'tr' ? 'en' : 'tr'); showSectionMenu(container, api, toolId, categories); });
-  host.querySelector('#keProfileBtn').addEventListener('click', () => showProfileScreen(container, api, toolId, categories, {}));
-  host.querySelector('#keStatsBtn').addEventListener('click', () => showStatsScreen(container, api, toolId, categories));
+  host.querySelector('#keMascotBtn').addEventListener('click', () => showProfileScreen(container, api, toolId, categories, {}));
   refreshGameBadge(container);
-  host.querySelector('#keGameBtn').addEventListener('click', () => {
-    if (PendingQuiz.get() > 0) {
-      showBonusQuiz(container, api, toolId, categories, () => refreshGameBadge(container));
-    } else if (GameTokens.get() > 0) {
-      showGamePicker(container, () => showSectionMenu(container, api, toolId, categories));
-    }
-  });
-  // Gecici test kisayolu: sifre girince kuyruk/sinav beklemeden 1 oyun
-  // hakki verir - "benim test edebilmem icin" istegi, kalici bir ozellik
-  // degil.
-  host.querySelector('#keGameTestBtn').addEventListener('click', () => {
-    const code = window.prompt(L('Test şifresi', 'Test code'));
-    if (code === '181078') {
-      GameTokens.add(1);
-      refreshGameBadge(container);
-    }
-  });
   const grid = host.querySelector('#keSectionGrid');
   SECTIONS.forEach((sec) => {
     const cats = categories.filter(sec.pick);
@@ -2351,6 +2393,18 @@ function showProfileScreen(container, api, toolId, categories, opts) {
         <div class="ke-pl-label" id="keProfileMsg">${msg || L(`Kazandığın yıldız: ${stars} ⭐ · Seri: ${streakDays} gün 🔥 — bölüm bitirdikçe ve art arda oynadıkça yeni renk/şapkalar açılır!`, `Stars: ${stars} ⭐ · Streak: ${streakDays} days 🔥 — finish episodes and keep your streak to unlock new colors/hats!`)}</div>
         <div style="margin-top:8px;"><button type="button" class="ke-btn-primary" id="keProfileSave" style="font-size:17px !important;padding:14px 26px !important;">${first ? L('Başla! 🚀', "Let's go! 🚀") : L('Kaydet ✓', 'Save ✓')}</button></div>
         ${switcher}
+        ${creating ? '' : `
+        <div class="ke-pl-label" style="margin-top:18px;">${L('Diğer', 'More')}</div>
+        <div class="ke-hub-links">
+          ${first ? '' : `<button type="button" class="ke-hub-link" id="keHubProgress">📊 ${L('İlerleme', 'Progress')}</button>
+          <button type="button" class="ke-hub-link" id="keHubGame" ${(GameTokens.get() > 0 || PendingQuiz.get() > 0) ? '' : 'disabled'}>🎮 ${L('Ödül Oyunu', 'Reward Game')}</button>`}
+          <button type="button" class="ke-hub-link" id="keHubSound">🔊 ${L('Ses testi', 'Sound test')}</button>
+          <button type="button" class="ke-hub-link" id="keHubLang">🌐 ${_lang === 'tr' ? 'English' : 'Türkçe'}</button>
+        </div>
+        <div id="keSoundInfo" style="margin-top:2px;font-size:11.5px;color:var(--kb-chalk-dim);font-weight:700;"></div>
+        ${window.KE_STATIC ? `<div style="margin-top:10px;font-size:13px;font-weight:700;"><a href="privacy.html" style="color:var(--kb-chalk-dim);">${L('Gizlilik', 'Privacy')}</a> · <a href="https://github.com/aktapokus/kids-english/issues" target="_blank" rel="noopener noreferrer" style="color:var(--kb-chalk-dim);">${L('Sorun bildir', 'Report a problem')}</a></div>` : ''}
+        <button type="button" id="keHubTestKey" style="margin-top:14px;font-size:11px !important;padding:4px 10px !important;opacity:.4;" title="test">🔑</button>
+        `}
       </div>`;
     const nameEl = host.querySelector('#keProfileName');
     nameEl.addEventListener('input', () => { draft.name = nameEl.value; });
@@ -2371,6 +2425,28 @@ function showProfileScreen(container, api, toolId, categories, opts) {
     });
     const back = host.querySelector('#keProfileBack');
     if (back) back.addEventListener('click', () => showSectionMenu(container, api, toolId, categories));
+    const hubProgress = host.querySelector('#keHubProgress');
+    if (hubProgress) hubProgress.addEventListener('click', () => showStatsScreen(container, api, toolId, categories));
+    const hubGame = host.querySelector('#keHubGame');
+    if (hubGame) hubGame.addEventListener('click', () => {
+      if (PendingQuiz.get() > 0) {
+        showBonusQuiz(container, api, toolId, categories, () => refreshGameBadge(container));
+      } else if (GameTokens.get() > 0) {
+        showGamePicker(container, () => showProfileScreen(container, api, toolId, categories, {}));
+      }
+    });
+    const hubSound = host.querySelector('#keHubSound');
+    if (hubSound) hubSound.addEventListener('click', () => runSoundTest(host.querySelector('#keSoundInfo')));
+    const hubLang = host.querySelector('#keHubLang');
+    if (hubLang) hubLang.addEventListener('click', () => { setLang(_lang === 'tr' ? 'en' : 'tr'); draw(); });
+    // Gecici test kisayolu: sifre girince kuyruk/sinav beklemeden 1 oyun
+    // hakki verir - "benim test edebilmem icin" istegi, kalici bir ozellik
+    // degil.
+    const hubTestKey = host.querySelector('#keHubTestKey');
+    if (hubTestKey) hubTestKey.addEventListener('click', () => {
+      const code = window.prompt(L('Test şifresi', 'Test code'));
+      if (code === '181078') { GameTokens.add(1); refreshGameBadge(container); }
+    });
     host.querySelectorAll('[data-profile]').forEach((b) => b.addEventListener('click', () => {
       Profiles.setActive(b.dataset.profile);
       showProfileScreen(container, api, toolId, categories, {});
