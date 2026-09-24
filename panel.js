@@ -907,26 +907,14 @@ ${FONT_FACES}
   .ke-carnival-sparkle.cs5{ top:40%; left:-6px; font-size:13px; animation-delay:1.6s; color:#fff; }
   @keyframes ke-sparkle-twinkle{ 0%,100%{ opacity:.35; transform:scale(.85) rotate(0deg); } 50%{ opacity:1; transform:scale(1.15) rotate(12deg); } }
 
-  .ke-carnival-title{
-    margin:0 0 6px; -webkit-text-stroke:0; text-shadow:none;
-    font-family:'Baloo 2','Fredoka',sans-serif; font-weight:700;
-    font-size:clamp(34px,8vw,56px); letter-spacing:0;
+  /* "logoyu direkt kullanır mısın" - CSS'le çizilen bubble başlık yerine
+     kullanıcının kendi ürettiği gerçek "Aktapokus Kids English" logosu
+     (bkz. ui/mascot/aktapokus_kids_english_logo.png - arka planı flood-fill
+     ile şeffaflaştırıldı, orijinali düz beyaz zeminliydi). */
+  .ke-carnival-logo{
+    display:block; margin:0 auto 6px; width:min(100%, 520px); height:auto;
+    filter: drop-shadow(0 6px 0 rgba(0,0,0,.25));
   }
-  /* Kalın karnaval konturu: tek bir text-stroke yerine 8 yönlü koyu
-     text-shadow yığını - "Çocuk Meclisi" referans görselindeki kalın,
-     çizgi-film çıkartması hissini text-stroke'tan çok daha güvenilir
-     veriyor (bazı tarayıcılarda stroke içeriği inceltir/kırpar). */
-  .ke-carnival-title .ke-tword{
-    display:inline-block; text-shadow:
-      -3px -3px 0 #2A1B00, 3px -3px 0 #2A1B00, -3px 3px 0 #2A1B00, 3px 3px 0 #2A1B00,
-      0 -3px 0 #2A1B00, 0 3px 0 #2A1B00, -3px 0 0 #2A1B00, 3px 0 0 #2A1B00,
-      0 6px 0 rgba(0,0,0,.35);
-    transform: rotate(-2deg);
-  }
-  .ke-carnival-title .ke-tword:nth-child(2n){ transform: rotate(2deg); }
-  .ke-carnival-title .ke-tword:nth-child(1){ color: var(--ke-yellow); }
-  .ke-carnival-title .ke-tword:nth-child(2){ color: #fff; }
-  .ke-carnival-title .ke-tword:nth-child(3){ color: var(--ke-green); }
   .ke-carnival-subtitle{
     margin:0 auto 18px; max-width:420px; color:var(--kb-chalk); font-size:15px; font-weight:800;
     text-shadow:0 2px 0 rgba(0,0,0,.4);
@@ -2133,7 +2121,7 @@ function showSectionMenu(container, api, toolId, categories) {
       <span class="ke-carnival-sparkle cs3">✧</span>
       <span class="ke-carnival-sparkle cs4">★</span>
       <span class="ke-carnival-sparkle cs5">✦</span>
-      <h1 class="ke-title ke-carnival-title">${bubbleTitleHTML(L("Aktapokus'un Kelime Safarisi", "Aktapokus Word Safari"))}</h1>
+      <img class="ke-carnival-logo" src="${new URL('mascot/aktapokus_kids_english_logo.png', ASSET_BASE_URL).href}" alt="Aktapokus Kids English" draggable="false" />
       <p class="ke-carnival-subtitle">${L('Ne öğrenmek istiyorsun? Bir bölüm seç!', 'What do you want to learn? Pick a section!')}</p>
       <button type="button" class="ke-mascot-btn" id="keMascotBtn" aria-label="${L("Aktapokus'um ve ayarlar", 'My Aktapokus & settings')}" title="${L("Aktapokus'um", 'My Aktapokus')}">
         <img class="ke-av-body" src="${avatarBodySrc('wave', Profiles.active().color)}" alt="Aktapokus" draggable="false" />
