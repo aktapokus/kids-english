@@ -1895,6 +1895,8 @@ ${FONT_FACES}
   .ke-story-card-title{ font-family:'Fredoka','Baloo 2',sans-serif; font-weight:700; font-size:20px; color:var(--kb-chalk); margin:0; }
   .ke-story-text{ font-size:16.5px; font-weight:600; color:var(--kb-chalk); line-height:1.5; }
   .ke-story-text p{ margin:0 0 6px; }
+  .ke-story-word{ border-radius:5px; padding:1px 2px; transition:background-color .1s ease, color .1s ease; }
+  .ke-story-word-active{ background:var(--kb-discover); color:var(--ke-ink); }
   .ke-story-glossary{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:10px; width:100%; }
   .ke-story-glossary-item{
     display:flex; flex-direction:column; gap:2px; background:rgba(255,255,255,.08);
@@ -3074,7 +3076,7 @@ async function showStoryReader(container, api, toolId, categories, storyId) {
       <div class="ke-story-reader">
         <img class="ke-story-page-img" src="${new URL(card.image, ASSET_BASE_URL).href}" alt="" draggable="false" />
         <h2 class="ke-story-card-title">${escapeProfileText(card.title)}</h2>
-        <div class="ke-story-text" id="keStoryText">${card.text.map((t) => `<p>${escapeProfileText(t)}</p>`).join('')}</div>
+        <div class="ke-story-text" id="keStoryText">${buildStoryLineHTML(card.text).html}</div>
         <button type="button" class="ke-btn-secondary" id="keStorySpeak">${ICON_SPEAKER} ${L('Sesli Oku', 'Read Aloud')}</button>
         <div class="ke-story-record-bar">
           <button type="button" class="ke-btn-secondary${recording ? ' ke-recording' : ''}" id="keStoryRecordBtn">${recording ? '⏹ ' + L('Kaydı Durdur', 'Stop Recording') : '🎙️ ' + L('Kendi Sesinle Oku', 'Record Yourself')}</button>
@@ -3096,8 +3098,7 @@ async function showStoryReader(container, api, toolId, categories, storyId) {
     host2.querySelector('#keStorySpeak').addEventListener('click', (e) => {
       const btn = e.currentTarget;
       btn.disabled = true;
-      const dummyMascot = { classList: { add() {}, remove() {} } };
-      speakWord(card.text.join('. '), dummyMascot, () => { btn.disabled = false; });
+      speakStoryText(card.text.join('. '), host2, () => { btn.disabled = false; });
     });
     host2.querySelector('#keStoryRecordBtn').addEventListener('click', toggleRecording);
     const shareBtn = host2.querySelector('#keStoryRecordShare');
@@ -3753,6 +3754,79 @@ function notifySoundProblem(reason) {
   t.style.cssText = 'position:fixed;left:12px;right:12px;bottom:14px;z-index:99999;background:#FFEDED;color:#5a1a1a;border:3px solid #FF8B82;border-radius:14px;padding:10px 14px;font:700 13px/1.35 sans-serif;text-align:center;';
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 9000);
+}
+
+// Story sayfasındaki metni, konuşmaya GÖNDERİLECEK dizgeyle (card.text.join
+// ('. ')) BİREBİR aynı ofsetlerle kelime kelime <span data-start> içine
+// sarar - speakStoryText'teki onboundary charIndex'i bu ofsetlerle
+// eşleştirip okunan kelimeyi karaoke gibi vurgulayabilsin diye. Boşluk
+// token'ları span'sız bırakılıyor (tıklanabilir/vurgulanabilir tek birim
+// hep bir "kelime").
+function buildStoryLineHTML(lines) {
+  let offset = 0;
+  const html = lines.map((line, li) => {
+    const tokens = line.split(/(\s+)/);
+    const lineHtml = tokens.map((tok) => {
+      if (tok === '') return '';
+      if (/^\s+$/.test(tok)) { offset += tok.length; return tok; }
+      const start = offset;
+      offset += tok.length;
+      return `<span class="ke-story-word" data-start="${start}">${escapeProfileText(tok)}</span>`;
+    }).join('');
+    if (li < lines.length - 1) offset += 2; // '. ' ayırıcı - join('. ') ile aynı uzunluk
+    return `<p>${lineHtml}</p>`;
+  }).join('');
+  return { html };
+}
+
+// Hikaye sayfasını sesli okurken kelime kelime vurgulama (karaoke tarzı)
+// - "okurken okuduğu kelimeyi highlight edebilir miyiz" isteği üzerine.
+// speakWord'den AYRI: o tek kelime/kısa ifadeler için 3.2s sabit
+// güvenlik zaman aşımı kullanıyor, bir hikaye sayfası (birkaç cümle) bu
+// sürede kesilirdi. onboundary olayı Android Chrome + masaüstü
+// tarayıcılarda güvenilir; desteklenmeyen tarayıcılarda vurgu sessizce
+// hiç tetiklenmez, ses yine de çalar.
+function speakStoryText(text, host, onDone) {
+  if (!('speechSynthesis' in window)) { notifySoundProblem(L('bu tarayıcı sesli okumayı desteklemiyor', 'this browser cannot read aloud')); if (onDone) onDone(); return; }
+  const synth = window.speechSynthesis;
+  const spans = [...host.querySelectorAll('.ke-story-word')]
+    .map((el) => ({ el, start: Number(el.dataset.start) }))
+    .sort((a, b) => a.start - b.start);
+  let current = null;
+  let done = false;
+  const clearHighlight = () => { if (current) { current.el.classList.remove('ke-story-word-active'); current = null; } };
+  const finish = () => {
+    if (done) return;
+    done = true;
+    clearHighlight();
+    if (onDone) onDone();
+  };
+  const doSpeak = () => {
+    if (synth.paused) synth.resume();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'en-US';
+    utter.rate = 0.78;
+    utter.pitch = 0.85;
+    utter.volume = 1;
+    const voice = pickMaleVoice();
+    if (voice && voice.lang && voice.lang.toLowerCase().startsWith('en')) utter.voice = voice;
+    window._keLastUtter = utter;
+    utter.onboundary = (e) => {
+      if (e.name && e.name !== 'word') return;
+      let match = null;
+      for (const s of spans) { if (s.start <= e.charIndex) match = s; else break; }
+      if (match && match !== current) { clearHighlight(); match.el.classList.add('ke-story-word-active'); current = match; }
+    };
+    utter.onend = finish;
+    utter.onerror = (e) => {
+      const err = e && e.error;
+      if (err && err !== 'canceled' && err !== 'interrupted') notifySoundProblem(err);
+      finish();
+    };
+    synth.speak(utter);
+  };
+  if (synth.speaking || synth.pending) { synth.cancel(); setTimeout(doSpeak, 90); } else { doSpeak(); }
+  setTimeout(finish, Math.max(6000, text.split(/\s+/).length * 700));
 }
 
 // Android Chrome'da sesin sessizce kaybolmasının bilinen nedenleri:
