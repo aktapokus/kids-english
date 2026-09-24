@@ -1257,7 +1257,7 @@ ${FONT_FACES}
   .ke-quiz.ke-show{ display:flex; }
   .ke-quiz-bubble{ position:static; transform:none; margin:0; }
   .ke-quiz-progress{ background:rgba(110,200,255,.1); border:2px dashed var(--kb-action); color:var(--kb-action); border-radius:10px 14px 10px 14px; padding:6px 16px; font-size:12.5px; font-weight:800; box-shadow:none; text-shadow:none; }
-  .ke-quiz-word{ font-family:'Fredericka the Great','Chewy','Fredoka',sans-serif; font-weight:400; font-size:26px; color:#F5F3EE; text-shadow:none; }
+  .ke-quiz-word{ font-family:'Baloo 2','Fredoka',sans-serif; font-weight:700; font-size:26px; color:#F5F3EE; text-shadow:none; }
   .ke-quiz-replay{
     position:absolute; top:16px; right:16px; width:44px; height:44px; border-radius:50% !important;
     background:var(--ke-surface-2); --btn-shadow:#7FA8D6; color:var(--ke-ink);
@@ -1319,7 +1319,7 @@ ${FONT_FACES}
      üzerinde değil. Tebeşir-beyazı renk burada kart üstünde neredeyse
      görünmez olurdu; "tebeşir hissi" fontun şekli üzerinden korunuyor,
      renk okunaklılık için koyu tahta rengine çekildi. */
-  .ke-speak-word{ font-family:'Fredericka the Great','Chewy','Fredoka',sans-serif; font-size:30px; font-weight:400; color:var(--kb-board); letter-spacing:.5px; text-align:center; }
+  .ke-speak-word{ font-family:'Baloo 2','Fredoka',sans-serif; font-size:30px; font-weight:700; color:var(--kb-board); letter-spacing:.5px; text-align:center; }
   .ke-speak-feedback{ min-height:20px; font-size:13.5px; font-weight:700; text-align:center; max-width:90%; color:#F3EEFF; text-shadow:none; }
   .ke-speak-mic{ display:inline-flex; align-items:center; gap:8px; background:var(--ke-blue); color:#fff; --btn-shadow:var(--ke-blue-dark); }
   /* Dinleme durumu kasıtlı olarak KIRMIZI değil — kırmızı bu uygulamada
@@ -1344,7 +1344,7 @@ ${FONT_FACES}
      zemininde önceki mavi-üstü-mavi (blue-dark metin + #7FA8D6 çizgi)
      kombinasyonu neredeyse görünmezdi ("mavi font görünmüyor" geri
      bildirimi). */
-  .ke-slot{ min-width:48px; height:44px; border-bottom:3px dashed rgba(245,240,223,.55); display:flex; align-items:center; justify-content:center; padding:0 6px; font-weight:400; font-family:'Fredericka the Great','Chewy',sans-serif; color:var(--kb-chalk); text-shadow:none; font-size:19px; }
+  .ke-slot{ min-width:48px; height:44px; border-bottom:3px dashed rgba(245,240,223,.55); display:flex; align-items:center; justify-content:center; padding:0 6px; font-weight:700; font-family:'Baloo 2','Fredoka',sans-serif; color:var(--kb-chalk); text-shadow:none; font-size:19px; }
   .ke-slot.ke-filled{ cursor:pointer; border-bottom-style:solid; }
   .ke-slot.ke-reveal{ color:var(--kb-correct); border-bottom-style:solid; }
   .ke-tile, .ke-slot{ touch-action:none; user-select:none; -webkit-user-select:none; }
