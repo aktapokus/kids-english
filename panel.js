@@ -882,36 +882,35 @@ ${FONT_FACES}
   .ke-title .ke-tword:first-child{ color: var(--kb-discover); }
   .ke-subtitle{ text-align:center; margin:0 0 20px; color:var(--kb-chalk-dim); font-size:14.5px; font-weight:700; text-shadow:none; }
 
-  /* GİRİŞ SAYFASI = LUNAPARK GİRİŞİ (v2): "burasi komple degissin, bir
-     lunapark girisi gibi eglenceli olsun" geri bildirimi - önceki tur
-     sadece eski satırı renklendirmişti, bu tur tüm bloğu (profil/ayar
-     çipleri dahil) kaldırıp yerine tek bir "karnaval tabelası" + büyük
-     tıklanabilir maskot koydu. Diğer ekranlardaki .ke-title kasıtlı
-     tebeşir kalıyor - bu stil SADECE .ke-carnival-title'a özel. */
+  /* GİRİŞ SAYFASI = LUNAPARK GİRİŞİ (v3): "arka plan istemiyorum ayrica
+     tebeşir yazı fontu istemiyorum, kocaman eğlenceli bir font" geri
+     bildirimi - v2'deki mavi/yeşil şeritli panel kaldırıldı, başlık ve
+     maskot doğrudan tahta zemininin üzerinde duruyor (sadece boşluk için
+     bir kapsayıcı, görsel bir "kutu" değil). Font, el yazısı/tebeşir
+     hissi veren Fredericka the Great yerine uygulamanın zaten yüklü
+     olan KALIN yuvarlak "oyuncak tuğla" fontuna (Baloo 2/Fredoka 700)
+     geçti - referans görseldeki "Aktapokus Kids English" logosunun
+     kocaman, dolgun harf hissi. */
   .ke-carnival-hero{
-    position:relative; max-width:640px; margin:6px auto 18px; padding:26px 20px 22px;
-    border-radius:28px; text-align:center; overflow:hidden;
-    background:
-      repeating-linear-gradient(135deg, rgba(255,255,255,.09) 0 18px, rgba(255,255,255,0) 18px 36px),
-      linear-gradient(160deg, #2B6CB0 0%, #1CB0F6 55%, #29C4A9 100%);
-    border:4px solid rgba(255,255,255,.85);
-    box-shadow: 0 10px 0 rgba(0,0,0,.22);
+    position:relative; max-width:640px; margin:10px auto 18px; padding:10px 20px 4px;
+    text-align:center;
   }
   .ke-carnival-sparkle{
-    position:absolute; color:#FFE97A; text-shadow:0 2px 0 rgba(0,0,0,.2);
+    position:absolute; color:#FFE97A; text-shadow:0 2px 0 rgba(0,0,0,.35);
     animation: ke-sparkle-twinkle 2.2s ease-in-out infinite;
     pointer-events:none; user-select:none;
   }
-  .ke-carnival-sparkle.cs1{ top:10px; left:18px; font-size:22px; animation-delay:0s; }
-  .ke-carnival-sparkle.cs2{ top:16px; right:26px; font-size:16px; animation-delay:.4s; color:#fff; }
-  .ke-carnival-sparkle.cs3{ bottom:14px; left:32px; font-size:15px; animation-delay:.8s; color:#fff; }
-  .ke-carnival-sparkle.cs4{ bottom:20px; right:20px; font-size:20px; animation-delay:1.2s; }
-  .ke-carnival-sparkle.cs5{ top:44%; left:8px; font-size:13px; animation-delay:1.6s; color:#fff; }
+  .ke-carnival-sparkle.cs1{ top:2px; left:8px; font-size:22px; animation-delay:0s; }
+  .ke-carnival-sparkle.cs2{ top:8px; right:14px; font-size:16px; animation-delay:.4s; color:#fff; }
+  .ke-carnival-sparkle.cs3{ bottom:36px; left:4px; font-size:15px; animation-delay:.8s; color:#fff; }
+  .ke-carnival-sparkle.cs4{ bottom:40px; right:8px; font-size:20px; animation-delay:1.2s; }
+  .ke-carnival-sparkle.cs5{ top:40%; left:-6px; font-size:13px; animation-delay:1.6s; color:#fff; }
   @keyframes ke-sparkle-twinkle{ 0%,100%{ opacity:.35; transform:scale(.85) rotate(0deg); } 50%{ opacity:1; transform:scale(1.15) rotate(12deg); } }
 
   .ke-carnival-title{
     margin:0 0 6px; -webkit-text-stroke:0; text-shadow:none;
-    font-size:clamp(30px,7vw,48px);
+    font-family:'Baloo 2','Fredoka',sans-serif; font-weight:700;
+    font-size:clamp(34px,8vw,56px); letter-spacing:0;
   }
   /* Kalın karnaval konturu: tek bir text-stroke yerine 8 yönlü koyu
      text-shadow yığını - "Çocuk Meclisi" referans görselindeki kalın,
@@ -919,9 +918,9 @@ ${FONT_FACES}
      veriyor (bazı tarayıcılarda stroke içeriği inceltir/kırpar). */
   .ke-carnival-title .ke-tword{
     display:inline-block; text-shadow:
-      -2px -2px 0 #2A1B00, 2px -2px 0 #2A1B00, -2px 2px 0 #2A1B00, 2px 2px 0 #2A1B00,
-      0 -2px 0 #2A1B00, 0 2px 0 #2A1B00, -2px 0 0 #2A1B00, 2px 0 0 #2A1B00,
-      0 5px 0 rgba(0,0,0,.28);
+      -3px -3px 0 #2A1B00, 3px -3px 0 #2A1B00, -3px 3px 0 #2A1B00, 3px 3px 0 #2A1B00,
+      0 -3px 0 #2A1B00, 0 3px 0 #2A1B00, -3px 0 0 #2A1B00, 3px 0 0 #2A1B00,
+      0 6px 0 rgba(0,0,0,.35);
     transform: rotate(-2deg);
   }
   .ke-carnival-title .ke-tword:nth-child(2n){ transform: rotate(2deg); }
@@ -929,8 +928,8 @@ ${FONT_FACES}
   .ke-carnival-title .ke-tword:nth-child(2){ color: #fff; }
   .ke-carnival-title .ke-tword:nth-child(3){ color: var(--ke-green); }
   .ke-carnival-subtitle{
-    margin:0 auto 18px; max-width:420px; color:#fff; font-size:15px; font-weight:800;
-    text-shadow:0 2px 0 rgba(0,0,0,.25);
+    margin:0 auto 18px; max-width:420px; color:var(--kb-chalk); font-size:15px; font-weight:800;
+    text-shadow:0 2px 0 rgba(0,0,0,.4);
   }
   .ke-mascot-btn{
     position:relative; display:inline-flex; align-items:center; justify-content:center;
@@ -950,7 +949,7 @@ ${FONT_FACES}
     font-size:16px; box-shadow:0 3px 0 rgba(0,0,0,.2);
   }
   .ke-mascot-badge-pulse{ animation: ke-chip-pulse 1.1s ease-in-out infinite; }
-  @media (max-width:480px){ .ke-carnival-hero{ padding:20px 14px 18px; } }
+  @media (max-width:480px){ .ke-carnival-hero{ padding:8px 14px 4px; } }
 
   /* Ayarlar/ayrıntılar artık maskota tıklayınca açılan hub sayfasında
      (showProfileScreen) - burada sade bir bağlantı satırı. */
@@ -2340,6 +2339,21 @@ async function showStatsScreen(container, api, toolId, categories) {
   }
 }
 
+// "hata bildirim calismiyor" - eski link dogrudan GitHub Issues listesine
+// aciliyordu; bir GitHub hesabi olmayan (buyuk cogunluk - ebeveyn/cocuk)
+// bir kullanici icin orada hicbir sey YAPAMIYORDU, "calismiyor" gibi
+// hissettiriyordu. mailto: hesap gerektirmiyor, her cihazda calisan bir
+// posta uygulamasina dogrudan, konu/govde onceden doldurulmus sekilde
+// aciliyor - gelistiriciye (bmenderes@gmail.com) direkt ulasiyor.
+function reportProblemHref() {
+  const subject = L('Aktapokus Kids English - Sorun Bildirimi', 'Aktapokus Kids English - Bug Report');
+  const body = L(
+    'Neredeydin (kategori/bölüm) ve ne oldu?\n\n\n---\nCihaz: ' + navigator.userAgent,
+    'Where were you (category/episode) and what happened?\n\n\n---\nDevice: ' + navigator.userAgent
+  );
+  return `mailto:bmenderes@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 function escapeProfileText(t) {
   return String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
@@ -2412,7 +2426,7 @@ function showProfileScreen(container, api, toolId, categories, opts) {
           <button type="button" class="ke-hub-link" id="keHubLang">🌐 ${_lang === 'tr' ? 'English' : 'Türkçe'}</button>
         </div>
         <div id="keSoundInfo" style="margin-top:2px;font-size:11.5px;color:var(--kb-chalk-dim);font-weight:700;"></div>
-        ${window.KE_STATIC ? `<div style="margin-top:10px;font-size:13px;font-weight:700;"><a href="privacy.html" style="color:var(--kb-chalk-dim);">${L('Gizlilik', 'Privacy')}</a> · <a href="https://github.com/aktapokus/kids-english/issues" target="_blank" rel="noopener noreferrer" style="color:var(--kb-chalk-dim);">${L('Sorun bildir', 'Report a problem')}</a></div>` : ''}
+        ${window.KE_STATIC ? `<div style="margin-top:10px;font-size:13px;font-weight:700;"><a href="privacy.html" style="color:var(--kb-chalk-dim);">${L('Gizlilik', 'Privacy')}</a> · <a href="${reportProblemHref()}" style="color:var(--kb-chalk-dim);">${L('Sorun bildir', 'Report a problem')}</a></div>` : ''}
         <button type="button" id="keHubTestKey" style="margin-top:14px;font-size:11px !important;padding:4px 10px !important;opacity:.4;" title="test">🔑</button>
         `}
       </div>`;
