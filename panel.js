@@ -1202,7 +1202,7 @@ ${FONT_FACES}
   .ke-mascot-wrap.ke-talking .ke-mouth-open{ display:block; }
 
   .ke-footer-row{ display:flex; justify-content:center; margin-top:18px; }
-  .ke-shell.ke-fs .ke-fullscreen-btn{ display:none !important; }
+  @media (display-mode: standalone), (display-mode: fullscreen){ .ke-shell.ke-fs .ke-fullscreen-btn{ display:none !important; } }
   .ke-help-btn{ display:none; }
   @media (max-width:640px){
     .ke-shell .ke-help-btn{ display:flex; align-items:center; justify-content:center; position:absolute; top:8px; left:8px; z-index:8; width:36px; height:36px; padding:0 !important; border-radius:50% !important; font-size:18px !important; }
