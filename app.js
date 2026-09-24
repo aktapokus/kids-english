@@ -35,25 +35,30 @@ mount(document.getElementById('app'), api, 'kids_english');
 
 if ('serviceWorker' in navigator) {
   // "her guncellemede kullanici elle onbellek temizlemek zorunda kalmasin"
-  // - UC PARCA: (1) sw.js'i her build'de degisen bir ?v= sorgu dizgesiyle
-  // kaydediyoruz (asagida f401953944 yer tutucusu, build_pwa.py build
-  // hash'iyle degistiriyor) - GitHub Pages TUM dosyalari CDN'de 10 dakika
+  // - sw.js'i her build'de degisen bir ?v= sorgu dizgesiyle kaydediyoruz
+  // (asagida a2fc6b86a8 yer tutucusu, build_pwa.py build hash'iyle
+  // degistiriyor) - GitHub Pages TUM dosyalari CDN'de 10 dakika
   // onbelleklediginden (Cache-Control: max-age=600, updateViaCache:'none'
   // SADECE tarayicinin KENDI HTTP onbellegini atlar, GitHub'in CDN edge
   // onbellegini DEGIL), URL'nin KENDISI her deploy'da degismezse yeni bir
-  // surum CDN'in 10 dakikalik penceresi doluncaya kadar fark edilmeyebilir
-  // - canli sitede gozlemlenen bir sorun buydu. Farkli bir sorgu dizgesi
-  // CDN'de HER ZAMAN ilk istekte cache MISS garantiler. (2) yeni bir SW
-  // devreye girince (skipWaiting+clients.claim zaten sw.js icinde) sayfayi
-  // KENDILIGINDEN bir kez yeniliyoruz - kullanici hicbir sey yapmadan bir
-  // sonraki acilista guncel icerigi goruyor.
-  navigator.serviceWorker.register('sw.js?v=f401953944', { updateViaCache: 'none' }).then((reg) => {
+  // surum CDN'in 10 dakikalik penceresi doluncaya kadar fark edilmeyebilir.
+  //
+  // ONEMLI: burada KASITLI OLARAK otomatik window.location.reload() YOK.
+  // Once vardi ("yeni SW devreye girince sayfayi kendiliginden yenile")
+  // ama GERCEK BIR REGRESYONA yol acti - "oyun oynarken bir sure sonra
+  // kendiliginden ana ekrana donuyor" seklinde bildirildi. Sebep: (1)
+  // controllerchange, controller'i hic olmayan bir istemcide (ILK KURULUM)
+  // bile null->worker gecisinde ateslenir, gercek bir "guncelleme" olmasa
+  // bile; (2) her reload() YENI bir app.js calistirmasi baslatiyor, o da
+  // kendi reg.update()'ini tetikliyor - CDN'in 10dk penceresi henuz her
+  // edge node'a yayilmamissa (deploy'dan hemen sonra) farkli istekler
+  // farkli icerik alabiliyor, bu da controllerchange'i TEKRAR tetikleyip
+  // kendi kendini besleyen bir reload donguisune donusebiliyor - cocuk
+  // bir bolumun ortasindayken beklenmedik sekilde ana ekrana atiliyordu.
+  // Guncel surum zaten BIR SONRAKI dogal sayfa acilisinda (?v= sayesinde)
+  // garantili yukleniyor - kullanicinin o an ortasinda oldugu bir oturumu
+  // riske atan otomatik reload'a gerek yok.
+  navigator.serviceWorker.register('sw.js?v=a2fc6b86a8', { updateViaCache: 'none' }).then((reg) => {
     reg.update().catch(() => {});
   }).catch(() => {});
-  let keRefreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (keRefreshing) return;
-    keRefreshing = true;
-    window.location.reload();
-  });
 }
