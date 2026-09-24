@@ -16,6 +16,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Aktapokus">
+<!-- iOS Safari cihaz dili Turkce iken bu sayfayi Ingilizce algilayip
+     "Turkceye cevir?" onerisi cikarabiliyor - kabul edilirse ogretilen
+     Ingilizce kelimeler de cevriliyor ("kelimeler turkceye cevirildi"
+     geri bildirimi). notranslate + translate="no" (bkz. ui/panel.js
+     .ke-shell) tarayici/isletim sistemi ceviri araclarini devre disi
+     birakiyor - uygulama zaten kendi ciftdilli L()/_lang sistemine sahip. -->
+<meta name="google" content="notranslate">
 <style>
   html,body{margin:0;height:100%;background:#10160f;overscroll-behavior:none}
   .ke-shell.ke-fs{position:fixed;inset:0;height:100dvh;width:100vw;z-index:1}

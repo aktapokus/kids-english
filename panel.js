@@ -1474,9 +1474,22 @@ ${FONT_FACES}
   .ke-river-fuel-wrap{ flex:1; max-width:220px; height:14px; margin:0 12px; border-radius:999px; background:rgba(0,0,0,.4); overflow:hidden; border:2px solid rgba(255,255,255,.3); }
   .ke-river-fuel-bar{ height:100%; width:100%; background:#6EC8FF; transition:width .15s linear, background .2s ease; }
   .ke-river-close{ background:rgba(0,0,0,.45) !important; color:#fff !important; border:none !important; width:34px; height:34px; border-radius:50% !important; font-size:16px !important; padding:0 !important; top:0 !important; box-shadow:none !important; }
-  .ke-river-controls{ position:absolute; bottom:18px; left:0; right:0; display:flex; align-items:center; justify-content:center; gap:22px; z-index:2; }
-  .ke-river-btn{ width:64px; height:64px; border-radius:50% !important; background:rgba(255,255,255,.16) !important; border:2px solid rgba(255,255,255,.5) !important; color:#fff !important; font-size:24px !important; padding:0 !important; box-shadow:none !important; top:0 !important; user-select:none; }
-  .ke-river-btn:active{ background:rgba(255,255,255,.32) !important; }
+  /* Onceki 3-kucuk-yuvarlak-dugme semasi ("cok kullanissiz", "basili
+     tutunca gitmiyor") kaldirildi - parmak, 64px'lik yuvarlak hedefin
+     disina cok kolay tasiyordu (ozellikle iOS'ta), pointerleave hemen
+     hareketi kesiyordu. Yerine TAM YUKSEKLIKTE iki buyuk dokunma
+     bolgesi: sol yari = surukle-yonlendir (parmak nereye giderse
+     tekne oraya gider, kacirma payi cok yuksek), sag yari = dokun-ates.
+     "tek parmakla ucak yonlenmeli diger parmakla ates edilmeli" istegi. */
+  .ke-river-touch-zones{ position:absolute; inset:0; display:flex; z-index:1; }
+  .ke-river-zone{ flex:1; display:flex; align-items:flex-end; justify-content:center; padding-bottom:14px; touch-action:none; }
+  .ke-river-zone-steer{ background:linear-gradient(180deg, transparent 70%, rgba(30,140,255,.14) 100%); }
+  .ke-river-zone-fire{ background:linear-gradient(180deg, transparent 70%, rgba(255,90,90,.14) 100%); }
+  .ke-river-zone-fire:active{ background:linear-gradient(180deg, transparent 55%, rgba(255,90,90,.28) 100%); }
+  .ke-river-zone-hint{
+    font-size:11px; font-weight:800; letter-spacing:.06em; color:rgba(255,255,255,.55);
+    background:rgba(0,0,0,.25); padding:5px 12px; border-radius:999px; pointer-events:none; user-select:none;
+  }
   .ke-river-shoot{ background:rgba(255,107,107,.5) !important; border-color:rgba(255,107,107,.9) !important; }
   .ke-river-overlay-msg{ position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center; background:rgba(10,20,30,.72); padding:20px; }
   .ke-river-msg-card{ background:#F5F0DF; color:var(--ke-ink); border-radius:20px; padding:26px 24px; text-align:center; max-width:340px; }
@@ -1987,7 +2000,7 @@ export async function mount(container, api, toolId) {
     });
   });
   container.innerHTML = STYLE + `
-    <div class="ke-shell">
+    <div class="ke-shell notranslate" translate="no">
       <button class="ke-fullscreen-btn" id="keFullscreenBtn" title="${L('Tam ekran', 'Full screen')}" aria-label="${L('Tam ekran', 'Full screen')}">${ICON_EXPAND}<span id="keFullscreenLabel">${L('Tam Ekran', 'Full screen')}</span></button>
       <div class="ke-screen-host" id="keScreenHost"></div>
     </div>
@@ -2002,9 +2015,6 @@ export async function mount(container, api, toolId) {
   };
   window.addEventListener('popstate', _popstateHandler);
   primeMicrophonePermission();
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.onvoiceschanged = () => { _voiceLookupDone = false; };
-  }
 
   let categories;
   try {
@@ -3142,21 +3152,23 @@ const MALE_VOICE_HINTS = [
   'Google UK English Male', 'Microsoft David', 'Microsoft Guy',
   'Daniel', 'Alex', 'Fred', 'Male',
 ];
-let _cachedMaleVoice = null;
-let _voiceLookupDone = false;
-
+// ESKIDEN sonuc bir kere hesaplanip (_voiceLookupDone) oturum boyunca
+// önbellekte tutulurdu - "bir anda dijital erkek sesine dönüyor" geri
+// bildirimi: iOS'ta bellek baskısı altında yuksek kaliteli/gelismis ses
+// motoru sessizce tahliye edilebiliyor, elde tutulan ESKİ voice nesnesi
+// gecersiz kalinca Safari sessizce jenerik/robotik bir yedek sese
+// düşüyor - ve önbellek asla yenilenmediği için bu durum kalıcı oluyordu.
+// getVoices() ucuz bir cagri (motorun zaten yukledigi listeyi dondurur),
+// bu yuzden her konusmada TAZE seciyoruz - kalici referans tutmuyoruz.
 function pickMaleVoice() {
-  if (_voiceLookupDone) return _cachedMaleVoice;
   const voices = window.speechSynthesis.getVoices();
   if (!voices.length) return null; // henüz yüklenmedi, bir sonraki çağrıda tekrar denenir
   const enVoices = voices.filter((v) => v.lang && v.lang.toLowerCase().startsWith('en'));
   // İngilizce ses YOKSA voices[0]'a düşmüyoruz: Android'de bu genelde
   // Türkçe/başka dilde bir ses oluyor ve utter.lang ile çelişince cihaz
   // SESSİZ kalıyordu.
-  _cachedMaleVoice = enVoices.find((v) => MALE_VOICE_HINTS.some((hint) => v.name.includes(hint)))
+  return enVoices.find((v) => MALE_VOICE_HINTS.some((hint) => v.name.includes(hint)))
     || enVoices[0] || null;
-  _voiceLookupDone = true;
-  return _cachedMaleVoice;
 }
 
 // Doğru cevap / kelime bulma / cümle tamamlama gibi olumlu anlarda
@@ -4457,6 +4469,13 @@ function startSlidePuzzle(container, onExit) {
     tileSize = Math.floor(boardSize / N);
     boardEl.style.width = boardSize + 'px';
     boardEl.style.height = boardSize + 'px';
+    // BUG: sizeTiles() (parca genislik/yukseklik'ini gunceller) burada
+    // eskiden cagrilmiyordu - sadece POZISYON (layoutTile) yeni tileSize
+    // ile guncelleniyordu, parcalarin kendi width/height'i ESKI tileSize'da
+    // kaliyordu. Ekran donunce/klavye acilinca (mobil resize event) yeni
+    // konum + eski boyut cakisiyor, kareler dikdortgene donusuyordu
+    // ("kareler ayni degil, bazilari dikdortgen" geri bildirimi).
+    sizeTiles();
     tileEls.forEach((el, orig) => { if (el) layoutTile(orig); });
   }
   window.addEventListener('resize', resize);
@@ -4483,7 +4502,10 @@ function startSlidePuzzle(container, onExit) {
       el.type = 'button';
       el.className = 'ke-puzzle-tile';
       el.style.backgroundImage = `url(${src})`;
-      el.addEventListener('click', () => tryMove(orig));
+      el.addEventListener('pointerdown', (e) => { e.preventDefault(); beginDrag(e, orig); });
+      el.addEventListener('pointermove', onDragMove);
+      el.addEventListener('pointerup', endDrag);
+      el.addEventListener('pointercancel', endDrag);
       boardEl.appendChild(el);
       tileEls.push(el);
     }
@@ -4528,6 +4550,52 @@ function startSlidePuzzle(container, onExit) {
     moves = 0;
     solved = false;
     overlay.querySelector('#kePuzzleMoves').textContent = moves;
+  }
+
+  // "istediğin yere sürüklenmiyor" - önceden bu sadece tıkla-kaydır'dı
+  // (gerçek sürükleme hiç yoktu). Parça boşluğa bitişikse parmakla
+  // gerçekten peşinden gelir; kısa bir dokunuş (hiç ya da çok az hareket)
+  // hâlâ eskisi gibi tam bir kaydırma sayılır, %35'i geçen bir sürükleme
+  // de tamamlanır, azı geri döner. setPointerCapture ile parmak parça
+  // sınırının dışına taşsa da takip kesilmiyor (river oyunundaki aynı
+  // iOS "basılı tutunca gitmiyor" sınıfı sorunun önlenmesi).
+  let dragState = null; // {orig, idx, axis, dir, startX, startY, moved}
+  function beginDrag(e, orig) {
+    const idx = cellIndexOf(orig);
+    if (!neighborsOfBlank().includes(idx)) return;
+    const br = Math.floor(blankIndex / N), bc = blankIndex % N;
+    const tr = Math.floor(idx / N), tc = idx % N;
+    let axis, dir;
+    if (tr === br) { axis = 'x'; dir = bc > tc ? 1 : -1; }
+    else { axis = 'y'; dir = br > tr ? 1 : -1; }
+    dragState = { orig, idx, axis, dir, startX: e.clientX, startY: e.clientY, totalMoved: 0, maxAlong: 0 };
+    try { tileEls[orig].setPointerCapture(e.pointerId); } catch (err) { /* yok say */ }
+  }
+  function onDragMove(e) {
+    if (!dragState) return;
+    const el = tileEls[dragState.orig];
+    const dx = e.clientX - dragState.startX, dy = e.clientY - dragState.startY;
+    let along = (dragState.axis === 'x' ? dx : dy) * dragState.dir;
+    along = Math.max(0, Math.min(tileSize, along));
+    dragState.totalMoved = Math.max(dragState.totalMoved, Math.hypot(dx, dy));
+    dragState.maxAlong = Math.max(dragState.maxAlong, along);
+    const row = Math.floor(dragState.idx / N), col = dragState.idx % N;
+    const offX = dragState.axis === 'x' ? along * dragState.dir : 0;
+    const offY = dragState.axis === 'y' ? along * dragState.dir : 0;
+    el.style.transition = 'none';
+    el.style.transform = `translate(${col * tileSize + offX}px, ${row * tileSize + offY}px)`;
+  }
+  function endDrag(e) {
+    if (!dragState) return;
+    const { orig, totalMoved, maxAlong } = dragState;
+    const el = tileEls[orig];
+    el.style.transition = '';
+    dragState = null;
+    // Duz bir dokunus (parmak hemen hemen hic kaymadi) eskisi gibi tam bir
+    // kaydirma sayilir; boslugun yonune dogru %35'i asan gercek bir
+    // surukleme de tamamlanir; yanlis yone veya yetersiz surukleme geri doner.
+    if (totalMoved < 8 || maxAlong > tileSize * 0.35) tryMove(orig);
+    else layoutTile(orig);
   }
 
   function tryMove(orig) {
@@ -4588,10 +4656,9 @@ function startRiverGame(container, onExit) {
       <div class="ke-river-fuel-wrap"><div class="ke-river-fuel-bar" id="keRiverFuelBar"></div></div>
       <button type="button" class="ke-river-close" id="keRiverClose" aria-label="${L('Kapat', 'Close')}">✕</button>
     </div>
-    <div class="ke-river-controls">
-      <button type="button" class="ke-river-btn" id="keRiverLeft">◀</button>
-      <button type="button" class="ke-river-btn ke-river-shoot" id="keRiverShoot">●</button>
-      <button type="button" class="ke-river-btn" id="keRiverRight">▶</button>
+    <div class="ke-river-touch-zones">
+      <div class="ke-river-zone ke-river-zone-steer" id="keRiverSteerZone"><span class="ke-river-zone-hint">◀ ${L('SÜRÜKLE', 'DRAG')} ▶</span></div>
+      <div class="ke-river-zone ke-river-zone-fire" id="keRiverFireZone"><span class="ke-river-zone-hint">● ${L('ATEŞ', 'FIRE')}</span></div>
     </div>
     <div class="ke-river-overlay-msg" id="keRiverStartMsg">
       <div class="ke-river-msg-card">
@@ -5035,18 +5102,37 @@ function startRiverGame(container, onExit) {
   document.addEventListener('keydown', onKeyDown);
   document.addEventListener('keyup', onKeyUp);
 
-  const leftBtn = overlay.querySelector('#keRiverLeft');
-  const rightBtn = overlay.querySelector('#keRiverRight');
-  const shootBtn = overlay.querySelector('#keRiverShoot');
-  const bindHold = (btn, onDown, onUp) => {
-    btn.addEventListener('pointerdown', (e) => { e.preventDefault(); onDown(); });
-    btn.addEventListener('pointerup', onUp);
-    btn.addEventListener('pointerleave', onUp);
-    btn.addEventListener('pointercancel', onUp);
-  };
-  bindHold(leftBtn, () => { keys.left = true; }, () => { keys.left = false; });
-  bindHold(rightBtn, () => { keys.right = true; }, () => { keys.right = false; });
-  shootBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); shoot(); });
+  // "tek parmakla ucak yonlenmeli diger parmakla ates edilmeli", "Apple
+  // versiyonunda basili tutunca gitmiyor" - eski uc-kucuk-yuvarlak-dugme
+  // semasi yerine tam yukseklikte iki gen dokunma bolgesi. Sol bolge:
+  // parmak SURUKLENDIGI kadar tekne kayar (mutlak konum degil, GORECELI
+  // delta - "parmagimin altinda" hissi verir, tek bir noktaya ziplama
+  // yok). setPointerCapture SAYESINDE parmak bolgenin disina tasa bile
+  // (kucuk dugmede oldugu gibi) hareket TAKIP EDILMEYE devam eder - eski
+  // pointerleave-ile-durma hatasi boylece ortadan kalkiyor.
+  const steerZone = overlay.querySelector('#keRiverSteerZone');
+  const fireZone = overlay.querySelector('#keRiverFireZone');
+  let steerPointerId = null;
+  let steerStartClientX = 0;
+  let steerStartPlayerX = 0;
+  const STEER_SENSITIVITY = 1.6;
+  steerZone.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    steerPointerId = e.pointerId;
+    steerStartClientX = e.clientX;
+    steerStartPlayerX = player.x;
+    try { steerZone.setPointerCapture(e.pointerId); } catch (err) { /* yok say */ }
+  });
+  steerZone.addEventListener('pointermove', (e) => {
+    if (steerPointerId !== e.pointerId) return;
+    const delta = (e.clientX - steerStartClientX) * STEER_SENSITIVITY;
+    player.x = Math.max(18, Math.min(W - 18, steerStartPlayerX + delta));
+    keys.left = false; keys.right = false; // dogrudan konum sürüyoruz, klavye hizi devre disi
+  });
+  const endSteer = (e) => { if (steerPointerId === e.pointerId) steerPointerId = null; };
+  steerZone.addEventListener('pointerup', endSteer);
+  steerZone.addEventListener('pointercancel', endSteer);
+  fireZone.addEventListener('pointerdown', (e) => { e.preventDefault(); shoot(); });
 
   function cleanup() {
     running = false;
