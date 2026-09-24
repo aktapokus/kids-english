@@ -41,35 +41,35 @@
   <p class="sub">Sınıflarını oluştur, öğrencilerinin Kids English ilerlemesini takip et.</p>
 
   <div class="card" id="authCard">
-    <div id="loginForm">
+    <form id="loginForm">
       <label>E-posta</label>
       <input id="authEmail" type="email" autocomplete="email" placeholder="ogretmen@okul.com" />
       <label>Şifre</label>
       <input id="authPass" type="password" autocomplete="current-password" placeholder="••••••••" />
       <div class="row">
-        <button id="signInBtn">Giriş Yap</button>
-        <button id="signUpBtn" class="secondary">Hesap Oluştur</button>
+        <button type="button" id="signInBtn">Giriş Yap</button>
+        <button type="button" id="signUpBtn" class="secondary">Hesap Oluştur</button>
       </div>
       <span class="toggle" id="forgotToggle">Şifremi unuttum</span>
       <div class="msg" id="authMsg"></div>
-    </div>
-    <div class="hidden" id="recoverForm">
+    </form>
+    <form class="hidden" id="recoverForm">
       <p style="font-size:13.5px;color:var(--ink-dim);margin:6px 0 0;">E-postana bir şifre sıfırlama linki gönderelim.</p>
       <label>E-posta</label>
       <input id="recoverEmail" type="email" autocomplete="email" placeholder="ogretmen@okul.com" />
       <div class="row">
-        <button id="sendRecoverBtn">Sıfırlama Linki Gönder</button>
+        <button type="button" id="sendRecoverBtn">Sıfırlama Linki Gönder</button>
         <span class="toggle" id="backToLoginToggle">Girişe dön</span>
       </div>
       <div class="msg" id="recoverMsg"></div>
-    </div>
-    <div class="hidden" id="newPasswordForm">
+    </form>
+    <form class="hidden" id="newPasswordForm">
       <p style="font-size:13.5px;color:var(--ink-dim);margin:6px 0 0;">Yeni şifreni belirle.</p>
       <label>Yeni şifre (en az 6 karakter)</label>
       <input id="newPassword" type="password" autocomplete="new-password" placeholder="••••••••" />
-      <button id="setNewPasswordBtn">Şifreyi Kaydet</button>
+      <button type="button" id="setNewPasswordBtn">Şifreyi Kaydet</button>
       <div class="msg" id="newPasswordMsg"></div>
-    </div>
+    </form>
   </div>
 
   <div class="hidden" id="dashboard">

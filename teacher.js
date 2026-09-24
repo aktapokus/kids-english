@@ -183,4 +183,13 @@ document.getElementById('backToLoginToggle').addEventListener('click', () => {
 });
 document.getElementById('sendRecoverBtn').addEventListener('click', sendRecoveryEmail);
 
+// input'lar artik gercek <form> icinde (tarayici/sifre yoneticisi
+// otomatik doldurmasi bunu gerektiriyor - "otomatik doldur calismiyor"
+// geri bildirimi). Enter'a basinca sayfa yeniden yuklenip state
+// kaybolmasin diye submit'i engelliyoruz, ve Enter'i o formun asil
+// eylemine bagliyoruz (giristeyse giris, sifirlamadaysa link gonder).
+document.getElementById('loginForm').addEventListener('submit', (e) => { e.preventDefault(); signIn(); });
+document.getElementById('recoverForm').addEventListener('submit', (e) => { e.preventDefault(); sendRecoveryEmail(); });
+document.getElementById('newPasswordForm').addEventListener('submit', (e) => e.preventDefault());
+
 if (!checkRecoveryLink() && loadSession()) showDashboard();
