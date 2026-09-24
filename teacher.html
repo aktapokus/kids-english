@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://wtrkfzmmhabcpoipaccf.supabase.co; object-src 'none'; base-uri 'self'; form-action 'none'">
+<title>Aktapokus - Öğretmen Paneli</title>
+<style>
+  :root{ --ink:#1A2233; --ink-dim:#5B6472; --bg:#F6F3EC; --card:#fff; --border:#DDD6C7; --accent:#1E4D8C; --accent-tint:#E4ECF7; --good:#2F7D4F; --bad:#C23B3B; }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:system-ui,-apple-system,sans-serif; padding:20px 16px 60px; }
+  .wrap{ max-width:640px; margin:0 auto; }
+  h1{ font-size:22px; margin:0 0 4px; }
+  .sub{ color:var(--ink-dim); font-size:13.5px; margin:0 0 24px; }
+  .card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:16px; }
+  label{ display:block; font-size:12.5px; font-weight:700; color:var(--ink-dim); margin:10px 0 4px; }
+  input{ width:100%; font-size:15px; padding:10px 12px; border-radius:10px; border:1.5px solid var(--border); font-family:inherit; }
+  button{ font-family:inherit; font-size:14px; font-weight:700; padding:11px 18px; border-radius:10px; border:none; background:var(--accent); color:#fff; cursor:pointer; margin-top:14px; }
+  button.secondary{ background:var(--accent-tint); color:var(--accent); }
+  button:disabled{ opacity:.5; cursor:not-allowed; }
+  .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .msg{ font-size:13px; font-weight:700; margin-top:10px; min-height:18px; }
+  .msg.err{ color:var(--bad); }
+  .msg.ok{ color:var(--good); }
+  .toggle{ font-size:13px; color:var(--accent); cursor:pointer; text-decoration:underline; margin-top:12px; display:inline-block; }
+  .class-item{ border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin-bottom:10px; }
+  .class-head{ display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+  .class-name{ font-weight:800; font-size:15px; }
+  .class-code{ font-family:ui-monospace,monospace; font-size:13px; background:var(--accent-tint); color:var(--accent); padding:3px 8px; border-radius:6px; }
+  table{ width:100%; border-collapse:collapse; margin-top:12px; font-size:13.5px; }
+  th,td{ text-align:left; padding:7px 6px; border-bottom:1px solid var(--border); }
+  th{ font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-dim); }
+  .empty{ color:var(--ink-dim); font-size:13px; padding:12px 0; }
+  #logoutBtn{ background:transparent; color:var(--ink-dim); border:1px solid var(--border); }
+  .hidden{ display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🏫 Aktapokus Öğretmen Paneli</h1>
+  <p class="sub">Sınıflarını oluştur, öğrencilerinin Kids English ilerlemesini takip et.</p>
+
+  <div class="card" id="authCard">
+    <div id="loginForm">
+      <label>E-posta</label>
+      <input id="authEmail" type="email" autocomplete="email" placeholder="ogretmen@okul.com" />
+      <label>Şifre</label>
+      <input id="authPass" type="password" autocomplete="current-password" placeholder="••••••••" />
+      <div class="row">
+        <button id="signInBtn">Giriş Yap</button>
+        <button id="signUpBtn" class="secondary">Hesap Oluştur</button>
+      </div>
+      <span class="toggle" id="forgotToggle">Şifremi unuttum</span>
+      <div class="msg" id="authMsg"></div>
+    </div>
+    <div class="hidden" id="recoverForm">
+      <p style="font-size:13.5px;color:var(--ink-dim);margin:6px 0 0;">E-postana bir şifre sıfırlama linki gönderelim.</p>
+      <label>E-posta</label>
+      <input id="recoverEmail" type="email" autocomplete="email" placeholder="ogretmen@okul.com" />
+      <div class="row">
+        <button id="sendRecoverBtn">Sıfırlama Linki Gönder</button>
+        <span class="toggle" id="backToLoginToggle">Girişe dön</span>
+      </div>
+      <div class="msg" id="recoverMsg"></div>
+    </div>
+    <div class="hidden" id="newPasswordForm">
+      <p style="font-size:13.5px;color:var(--ink-dim);margin:6px 0 0;">Yeni şifreni belirle.</p>
+      <label>Yeni şifre (en az 6 karakter)</label>
+      <input id="newPassword" type="password" autocomplete="new-password" placeholder="••••••••" />
+      <button id="setNewPasswordBtn">Şifreyi Kaydet</button>
+      <div class="msg" id="newPasswordMsg"></div>
+    </div>
+  </div>
+
+  <div class="hidden" id="dashboard">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <span id="whoAmI" style="font-weight:700;font-size:13.5px;"></span>
+        <button id="logoutBtn">Çıkış</button>
+      </div>
+    </div>
+    <div class="card">
+      <label>Yeni sınıf adı (örn. 5-A)</label>
+      <div class="row">
+        <input id="newClassName" placeholder="5-A" style="flex:1;min-width:120px;" />
+        <button id="createClassBtn">Sınıf Oluştur</button>
+      </div>
+      <div class="msg" id="createMsg"></div>
+    </div>
+    <div id="classList"></div>
+  </div>
+</div>
+
+<script src="teacher.js"></script>
+</body>
+</html>
