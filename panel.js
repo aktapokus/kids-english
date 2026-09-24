@@ -59,6 +59,27 @@ const CATEGORY_THEME = {
   tourist:                { c: '#8E44AD', dark: '#712E8C', tint: '#C990E0' },
   conversations:          { c: '#EF6C9C', dark: '#D14F80', tint: '#F7A9C6' },
   opposites:              { c: '#7E57C2', dark: '#6641A8', tint: '#B597E0' },
+  // "conversation kisminda hepsi tek bir listede yer aliyor bunlari
+  // ayirmak lazim" geri bildirimi - tek 'conversations' kategorisi 17
+  // konuya bolundu (bkz. scripts/split_conversations.py), her biri kendi
+  // rengini tasiyor.
+  conv_social_manners:      { c: '#EF6C9C', dark: '#D14F80', tint: '#F7A9C6' },
+  conv_family_home:         { c: '#FF9142', dark: '#E67A2E', tint: '#FFB877' },
+  conv_daily_routine:       { c: '#FFA000', dark: '#DB8A00', tint: '#FFCF66' },
+  conv_school:              { c: '#2ECC71', dark: '#25A85C', tint: '#6BE49A' },
+  conv_hobbies_sports:      { c: '#AB47BC', dark: '#8E38A0', tint: '#D584E4' },
+  conv_animals_nature:      { c: '#43A047', dark: '#357F38', tint: '#78CE7C' },
+  conv_food_drinks:         { c: '#FF6347', dark: '#E24E33', tint: '#FF9782' },
+  conv_shopping_clothes:    { c: '#EC407A', dark: '#D22C63', tint: '#F587AC' },
+  conv_weather_seasons:     { c: '#42A5F5', dark: '#2E8CDB', tint: '#8FCBFA' },
+  conv_city_transport:      { c: '#607D8B', dark: '#4C646F', tint: '#9BB3BE' },
+  conv_travel:              { c: '#29B6F6', dark: '#1D9AD4', tint: '#7DD6FB' },
+  conv_health:              { c: '#EF5350', dark: '#D53E3B', tint: '#F58C8A' },
+  conv_celebrations:        { c: '#FFCA28', dark: '#E0AC00', tint: '#FFE071' },
+  conv_feelings_preferences:{ c: '#FFCA28', dark: '#E0AC00', tint: '#FFE071' },
+  conv_technology:          { c: '#3F51B5', dark: '#32409A', tint: '#8993D6' },
+  conv_space:               { c: '#7C4DFF', dark: '#6435E0', tint: '#B39BFF' },
+  conv_jobs_safety:         { c: '#8D6E63', dark: '#715650', tint: '#B69A8F' },
 };
 
 // Bazı kategoriler için oyun sahnesine hafif saydam bir "dekor" katmanı
@@ -88,6 +109,12 @@ const CATEGORY_MOTIF = {
   emotions_personality: '😊', clothes_shopping: '👕', jobs_professions: '💼',
   science: '🔬', communication_internet: '💬',
   prepositions: '📦', question_words: '❓', get: '🔄', conversations: '💬', opposites: '↔️',
+  conv_social_manners: '👋', conv_family_home: '🏠', conv_daily_routine: '⏰',
+  conv_school: '📚', conv_hobbies_sports: '⚽', conv_animals_nature: '🐾',
+  conv_food_drinks: '🍽️', conv_shopping_clothes: '👕', conv_weather_seasons: '⛅',
+  conv_city_transport: '🚌', conv_travel: '✈️', conv_health: '❤️',
+  conv_celebrations: '🎂', conv_feelings_preferences: '😊', conv_technology: '💻',
+  conv_space: '🚀', conv_jobs_safety: '🚨',
 };
 
 // A2 kategorileri ('{kategori}_a2') A1'deki ayni temayi/motifi paylasir -
@@ -1923,7 +1950,13 @@ export async function mount(container, api, toolId) {
 const GRAMMAR_CATEGORY_IDS = ['prepositions'];
 const QA_CATEGORY_IDS = ['question_words'];
 const GET_CATEGORY_IDS = ['get'];
-const CONVERSATION_CATEGORY_IDS = ['conversations'];
+const CONVERSATION_CATEGORY_IDS = [
+  'conversations', 'conv_social_manners', 'conv_family_home', 'conv_daily_routine',
+  'conv_school', 'conv_hobbies_sports', 'conv_animals_nature', 'conv_food_drinks',
+  'conv_shopping_clothes', 'conv_weather_seasons', 'conv_city_transport', 'conv_travel',
+  'conv_health', 'conv_celebrations', 'conv_feelings_preferences', 'conv_technology',
+  'conv_space', 'conv_jobs_safety',
+];
 const OPPOSITE_CATEGORY_IDS = ['opposites'];
 const A2_CATEGORY_SUFFIX = '_a2';
 const SECTIONS = [
@@ -1947,11 +1980,14 @@ const SECTIONS = [
   { id: 'get', title: 'Get', sub: 'get up, get in, get on…', subTr: 'get up, get in, get on…', titleTr: 'Get', motif: '🔄',
     theme: { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
     pick: (c) => GET_CATEGORY_IDS.includes(c.id) },
-  { id: 'conversations', title: 'Conversations', sub: 'Airport, restaurant, and everyday chats', subTr: 'Havaalanı, restoran ve günlük sohbetler', titleTr: 'Konuşmalar', motif: '💬',
+  { id: 'conversations', title: 'Conversations', sub: 'Social chats, school, travel, and more', subTr: 'Sosyal sohbet, okul, seyahat ve daha fazlası', titleTr: 'Konuşmalar', motif: '💬',
     theme: { c: '#EF6C9C', dark: '#D14F80', tint: '#F7A9C6' },
-    // "Travel Talk" artik ayri bir kategori bile degil - episode'lari
-    // dogrudan 'conversations' kategorisinin kendi bolum listesine
-    // katildi (bkz. veri tarafindaki birlestirme), tek liste.
+    // "conversation kisminda hepsi tek bir listede yer aliyor bunlari
+    // ayirmak lazim" geri bildirimi - tek 'conversations' kategorisi
+    // (94 bolum) 17 konu-bazli alt kategoriye bolundu, bkz.
+    // scripts/split_conversations.py. Eski 'conversations' id'si veride
+    // artik yok ama CONVERSATION_CATEGORY_IDS'de geriye donuk uyumluluk
+    // icin duruyor.
     pick: (c) => CONVERSATION_CATEGORY_IDS.includes(c.id) },
 ];
 let _currentSection = null;
