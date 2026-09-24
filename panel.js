@@ -1493,7 +1493,11 @@ ${FONT_FACES}
   .ke-puzzle-moves{ background:rgba(0,0,0,.35); color:#FFD75A; font-weight:800; padding:6px 14px; border-radius:999px; font-size:14px; }
   .ke-puzzle-board-wrap{ flex:1; display:flex; align-items:center; justify-content:center; padding:16px; min-height:0; }
   .ke-puzzle-board{ position:relative; border-radius:12px; overflow:hidden; box-shadow:none; border:3px solid rgba(255,255,255,.4); background:rgba(0,0,0,.25); }
-  .ke-puzzle-tile{ position:absolute !important; display:block !important; top:0 !important; left:0 !important; margin:0; background-repeat:no-repeat; border:1px solid rgba(0,0,0,.35); box-shadow:none !important; padding:0 !important; border-radius:0 !important; transition:transform .16s ease; cursor:pointer; }
+  /* touch-action:none sart - yoksa parmakla bir parcayi surukleme
+     hareketi tarayici tarafindan SAYFA KAYDIRMA jesti sanilip
+     ".ke-shell"i (overflow-y:auto) yukari/asagi kaydiriyordu ("ekran
+     surekli yukari asagi kayiyor" geri bildirimi). */
+  .ke-puzzle-tile{ position:absolute !important; display:block !important; top:0 !important; left:0 !important; margin:0; background-repeat:no-repeat; border:1px solid rgba(0,0,0,.35); box-shadow:none !important; padding:0 !important; border-radius:0 !important; transition:transform .16s ease; cursor:pointer; touch-action:none; }
   .ke-puzzle-tile:active{ filter:brightness(1.08); }
   @keyframes ke-chip-pulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
   .ke-game-chip-pulse{ animation:ke-chip-pulse 1.1s ease-in-out infinite; background:rgba(255,215,90,.22) !important; border-color:var(--kb-discover) !important; }
