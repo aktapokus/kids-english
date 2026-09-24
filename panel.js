@@ -729,8 +729,8 @@ ${FONT_FACES}
      sorunu <details> kapalı başladığı için (bkz. aşağıdaki open
      kaldırıldı) zaten çözülmüş durumda - sadece tek satırlık özet
      görünür, tıklanınca açılıyor. */
-  .ke-shell.ke-fs .ke-fullscreen-btn{ position: fixed; top: 18px; left: 18px; }
-  .ke-shell.ke-fs .ke-back-btn{ position: fixed; top: 18px; right: 18px; }
+  .ke-shell.ke-fs .ke-fullscreen-btn{ position: fixed; top: calc(18px + env(safe-area-inset-top, 0px)); left: calc(18px + env(safe-area-inset-left, 0px)); }
+  .ke-shell.ke-fs .ke-back-btn{ position: fixed; top: calc(18px + env(safe-area-inset-top, 0px)); right: calc(18px + env(safe-area-inset-right, 0px)); }
 
   /* Duolingo tarzı "3D bas" düğme dili — üstteki yüzey + altında koyu bir
      "gölge kaide", basınca yüzey o kaidenin içine gömülür. */
@@ -769,14 +769,20 @@ ${FONT_FACES}
   .ke-btn-primary:disabled{ opacity:.4; cursor:not-allowed; top:0 !important; box-shadow:none; }
 
   .ke-fullscreen-btn{
-    position: absolute; top: 16px; left: 16px; z-index: 10;
+    /* iOS'ta gercek Fullscreen API yok - bu yuzden burasi (position:
+       absolute, normal mod) telefonlarda GERCEKTE kullanilan yol. Notch/
+       durum cubugu altinda kalip iOS'un kendi sistem hareketlerine
+       (Kontrol Merkezi vb.) tiklamayi kaptirmasin diye guvenli alan payi
+       ekleniyor - "geri butonu tiklanmiyor, wifi ayarlarina gidiyor"
+       geri bildirimi. */
+    position: absolute; top: calc(16px + env(safe-area-inset-top, 0px)); left: calc(16px + env(safe-area-inset-left, 0px)); z-index: 10;
     display: flex; align-items: center; gap: 7px;
     padding: 10px 18px !important; border-radius: 999px !important;
     background: var(--ke-blue); --btn-shadow:var(--ke-blue-dark);
     color: #fff; font-size: 13px;
   }
   .ke-back-btn{
-    position: absolute; top: 16px; right: 16px; z-index: 10;
+    position: absolute; top: calc(16px + env(safe-area-inset-top, 0px)); right: calc(16px + env(safe-area-inset-right, 0px)); z-index: 10;
     display: flex; align-items: center; gap: 6px;
     padding: 10px 16px !important; border-radius: 999px !important;
     background: var(--ke-surface-2); --btn-shadow:#7FA8D6;
@@ -1356,7 +1362,7 @@ ${FONT_FACES}
   .ke-game-toast.ke-show{ opacity:1; transform:translateX(-50%) translateY(0); }
   .ke-river-game{ position:absolute; inset:0; z-index:100; background:#1a3a5c; border-radius:inherit; overflow:hidden; }
   .ke-river-game canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; }
-  .ke-river-hud{ position:absolute; top:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between; padding:10px 14px; z-index:2; }
+  .ke-river-hud{ position:absolute; top:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between; padding:calc(10px + env(safe-area-inset-top, 0px)) calc(14px + env(safe-area-inset-right, 0px)) 10px calc(14px + env(safe-area-inset-left, 0px)); z-index:2; }
   .ke-river-score{ background:rgba(0,0,0,.4); color:#FFD75A; font-weight:800; padding:6px 14px; border-radius:999px; font-size:14px; display:flex; align-items:center; gap:8px; }
   .ke-river-best{ color:#FFF3C4; font-size:11.5px; font-weight:700; opacity:.85; }
   .ke-river-fuel-wrap{ flex:1; max-width:220px; height:14px; margin:0 12px; border-radius:999px; background:rgba(0,0,0,.4); overflow:hidden; border:2px solid rgba(255,255,255,.3); }
@@ -1377,7 +1383,7 @@ ${FONT_FACES}
   .ke-picker-btn:active{ background:#F5F0DF !important; }
   .ke-picker-emoji{ font-size:40px; }
   .ke-puzzle-game{ position:absolute; inset:0; z-index:100; background:#243b55; border-radius:inherit; overflow:hidden; display:flex; flex-direction:column; }
-  .ke-puzzle-hud{ display:flex; align-items:center; justify-content:space-between; padding:10px 14px; z-index:2; }
+  .ke-puzzle-hud{ display:flex; align-items:center; justify-content:space-between; padding:calc(10px + env(safe-area-inset-top, 0px)) calc(14px + env(safe-area-inset-right, 0px)) 10px calc(14px + env(safe-area-inset-left, 0px)); z-index:2; }
   .ke-puzzle-moves{ background:rgba(0,0,0,.35); color:#FFD75A; font-weight:800; padding:6px 14px; border-radius:999px; font-size:14px; }
   .ke-puzzle-board-wrap{ flex:1; display:flex; align-items:center; justify-content:center; padding:16px; min-height:0; }
   .ke-puzzle-board{ position:relative; border-radius:12px; overflow:hidden; box-shadow:none; border:3px solid rgba(255,255,255,.4); background:rgba(0,0,0,.25); }
