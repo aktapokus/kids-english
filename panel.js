@@ -367,6 +367,11 @@ function flushTimeTrack() {
   TimeTrack.add(sec);
   TodayTime.add(sec);
   _timeTrackStart = document.hidden ? null : Date.now();
+  // Bir sınıfa katılmışsa (bkz. Classroom.join), her akış anında
+  // öğretmenin gördüğü ilerlemeyi de tazeler - joined değilse sync()
+  // zaten hemen dönüyor, maliyetsiz.
+  const stars = Progress.totalStars();
+  Classroom.sync(stars, Streak.get(), stars * 6, Math.round(TimeTrack.total() / 60));
 }
 function startTimeTracking() {
   if (_timeTrackStarted) return;
@@ -468,6 +473,60 @@ const Leaderboard = {
     const res = await fetch(url, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
+  },
+};
+
+// "MEB'de ve sınıflarda kullanılabilmesi için öğretmen girişi
+// oluşması lazım, her öğrencinin durumu kontrol edilebilmeli" -
+// öğrenci tarafı: bir sınıf koduyla katılma + periyodik ilerleme
+// senkronu. Öğretmen SADECE kendi sınıfını görebiliyor (bkz.
+// classroom_schema.sql RLS politikaları) - bu genel skor tablosundan
+// FARKLI bir gizlilik modeli, herkese açık değil, sadece o sınıfın
+// öğretmenine.
+const CLASSROOM_KEY = 'ke_classroom_v1';
+function classroomKey() {
+  const id = Profiles.active().id;
+  return id === 'p1' ? CLASSROOM_KEY : CLASSROOM_KEY + '_' + id;
+}
+const Classroom = {
+  _load() {
+    try {
+      const raw = JSON.parse(window.localStorage.getItem(classroomKey()));
+      if (raw && raw.deviceId) return raw;
+    } catch (e) { /* yok say */ }
+    return { deviceId: (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`), className: null, code: null };
+  },
+  _save(d) { try { window.localStorage.setItem(classroomKey(), JSON.stringify(d)); } catch (e) { /* yok say */ } idbPut(classroomKey(), d); },
+  get() { return this._load(); },
+  async join(code, name) {
+    const d = this._load();
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/join_class`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify({ p_code: code.trim().toUpperCase(), p_device_id: d.deviceId, p_name: String(name || '').trim().slice(0, 20) || 'Friend' }),
+    });
+    if (!res.ok) throw new Error(res.status === 404 || res.status === 400 ? 'class-not-found' : `HTTP ${res.status}`);
+    const rows = await res.json();
+    d.className = rows[0] && rows[0].class_name;
+    d.code = code.trim().toUpperCase();
+    this._save(d);
+    return d.className;
+  },
+  leave() {
+    const d = this._load();
+    d.className = null; d.code = null;
+    this._save(d);
+  },
+  async sync(stars, streakDays, wordsLearned, minutesTotal) {
+    const d = this._load();
+    if (!d.code) return;
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/rpc/sync_progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+        body: JSON.stringify({ p_device_id: d.deviceId, p_stars: stars, p_streak_days: streakDays, p_words_learned: wordsLearned, p_minutes_total: minutesTotal }),
+      });
+    } catch (e) { /* sessiz basarisizlik - internet yoksa bir sonraki senkronda dener */ }
   },
 };
 
@@ -2050,6 +2109,8 @@ let _narrowChangeHandler = null;
 // geri basmak normal sekilde uygulamadan cikariyor.
 let _backHandler = null;
 let _popstateHandler = null;
+let _fullscreenExitAt = 0;
+const FULLSCREEN_POPSTATE_IGNORE_MS = 500;
 function pushBackState(handler) {
   _backHandler = handler;
   try { history.pushState({ keNav: true }, ''); } catch (e) { /* no-op */ }
@@ -2103,12 +2164,26 @@ export async function mount(container, api, toolId) {
       <div class="ke-screen-host" id="keScreenHost"></div>
     </div>
   `;
-
+  // window.KE_STATIC sadece statik PWA build'inde (app.js) set edilir -
+  // core icine gomulu surumde tanimsiz/falsy, bu satir zararsizca atlanir.
+  // Onceden bu satir build_pwa.py'de KIRILGAN bir string-replace ile
+  // enjekte ediliyordu (installTransitionGuard+setupFullscreen'in YANINA
+  // eklenmis olmasina bagliydi) - guard'i ilk render'dan SONRAYA tasiyinca
+  // o replace hedefi bozuldu ve build assert'i patlattı. Artik doğrudan
+  // kaynakta, hicbir build-time surgery'e bagli degil.
   if (window.KE_STATIC) container.querySelector('.ke-shell').classList.add('ke-fs');
-  installTransitionGuard(container);
+
   setupFullscreen(container);
   _backHandler = null;
   _popstateHandler = () => {
+    // Tam ekrandan az once cikildiysa (bkz. _fullscreenExitAt), bu
+    // popstate gercek bir "geri" niyeti degil, cikisin yan etkisi
+    // olabilir - yut, ve tukettigimiz history girdisini geri koy ki
+    // gercek geri tusu hala calissin.
+    if (performance.now() - _fullscreenExitAt < FULLSCREEN_POPSTATE_IGNORE_MS) {
+      if (_backHandler) { try { history.pushState({ keNav: true }, ''); } catch (e) { /* no-op */ } }
+      return;
+    }
     if (_backHandler) { const h = _backHandler; _backHandler = null; h(); }
   };
   window.addEventListener('popstate', _popstateHandler);
@@ -2127,6 +2202,13 @@ export async function mount(container, api, toolId) {
 
   if (Profiles.exists()) showSectionMenu(container, api, toolId, categories);
   else showProfileScreen(container, api, toolId, categories, { first: true });
+  // Guard, ILK render'DAN SONRA kuruluyor - once .ke-carnival-hero/
+  // .ke-profile-screen'in kendisi "yeni bir ekrana gecis" sanilip
+  // 350ms'lik dokunma-yutma penceresi aciliyordu, TAM DA kullanicinin
+  // uygulamayi ilk gordugu anda - "iOS'ta ilk acildiginda tusa
+  // basilmiyor" geri bildiriminin en olasi nedeni. Guard'in amaci
+  // EKRANLAR ARASI gecisleri korumak, ilk boyamayi degil.
+  installTransitionGuard(container);
 }
 
 // İlk sayfa: bölüm seçimi ("kelimeler, gramer, soru-cevap, get gibi
@@ -2280,7 +2362,7 @@ function showQuickMenu(container, api, toolId, categories) {
         <button type="button" class="ke-quickmenu-tile qm-rank" id="keQmRank"><span class="qm-ico">🏆</span>${L('Sıralama', 'Leaderboard')}</button>
       </div>
       <div id="keQmSoundInfo" style="margin-top:2px;font-size:11.5px;color:var(--kb-chalk-dim);font-weight:700;"></div>
-      ${window.KE_STATIC ? `<div style="margin-top:10px;font-size:12.5px;font-weight:700;"><a href="privacy.html" style="color:var(--kb-chalk-dim);">${L('Gizlilik', 'Privacy')}</a> · <a href="${reportProblemHref()}" style="color:var(--kb-chalk-dim);">${L('Sorun bildir', 'Report a problem')}</a></div>` : ''}
+      ${window.KE_STATIC ? `<div style="margin-top:10px;font-size:12.5px;font-weight:700;"><a href="privacy.html" style="color:var(--kb-chalk-dim);">${L('Gizlilik', 'Privacy')}</a> · <a href="${reportProblemHref()}" style="color:var(--kb-chalk-dim);">${L('Sorun bildir', 'Report a problem')}</a> · <a href="teacher.html" target="_blank" rel="noopener noreferrer" style="color:var(--kb-chalk-dim);">${L('Öğretmen Paneli', 'Teacher Portal')}</a></div>` : ''}
       <button type="button" class="ke-btn-secondary" id="keQmClose" style="margin-top:14px;">${L('Kapat', 'Close')}</button>
       <button type="button" id="keQmTestKey" style="margin-top:10px;font-size:11px !important;padding:4px 10px !important;opacity:.4;" title="test">🔑</button>
     </div>
@@ -2607,6 +2689,19 @@ function showProfileScreen(container, api, toolId, categories, opts) {
         <div class="ke-pl-label" id="keProfileMsg">${msg || L(`Kazandığın yıldız: ${stars} ⭐ · Seri: ${streakDays} gün 🔥 — bölüm bitirdikçe ve art arda oynadıkça yeni renk/şapkalar açılır!`, `Stars: ${stars} ⭐ · Streak: ${streakDays} days 🔥 — finish episodes and keep your streak to unlock new colors/hats!`)}</div>
         <div style="margin-top:8px;"><button type="button" class="ke-btn-primary" id="keProfileSave" style="font-size:17px !important;padding:14px 26px !important;">${first ? L('Başla! 🚀', "Let's go! 🚀") : L('Kaydet ✓', 'Save ✓')}</button></div>
         ${switcher}
+        ${creating ? '' : (() => {
+          const cls = Classroom.get();
+          return cls.code
+            ? `<div class="ke-pl-label" style="margin-top:16px;">${L('Sınıf', 'Class')}</div>
+               <p style="font-size:13.5px;font-weight:800;color:var(--kb-chalk);margin:2px 0 8px;">🏫 ${escapeProfileText(cls.className || cls.code)}</p>
+               <button type="button" class="ke-btn-secondary" id="keClassLeave" style="font-size:12px !important;padding:8px 14px !important;">${L('Sınıftan Ayrıl', 'Leave Class')}</button>`
+            : `<div class="ke-pl-label" style="margin-top:16px;">${L('Sınıf (öğretmenin varsa)', "Class (if your teacher has one)")}</div>
+               <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:4px;">
+                 <input id="keClassCode" class="ke-profile-name" style="width:140px;font-size:14px;padding:8px 10px;" maxlength="9" placeholder="${L('SINIF KODU', 'CLASS CODE')}" autocomplete="off" />
+                 <button type="button" class="ke-btn-primary" id="keClassJoin" style="font-size:13px !important;padding:9px 16px !important;">${L('Katıl', 'Join')}</button>
+               </div>
+               <div id="keClassMsg" style="min-height:16px;font-size:11.5px;font-weight:700;color:var(--kb-chalk-dim);margin-top:4px;"></div>`;
+        })()}
       </div>`;
     const nameEl = host.querySelector('#keProfileName');
     nameEl.addEventListener('input', () => { draft.name = nameEl.value; });
@@ -2627,6 +2722,26 @@ function showProfileScreen(container, api, toolId, categories, opts) {
     });
     const back = host.querySelector('#keProfileBack');
     if (back) back.addEventListener('click', () => showSectionMenu(container, api, toolId, categories));
+    const classJoinBtn = host.querySelector('#keClassJoin');
+    if (classJoinBtn) classJoinBtn.addEventListener('click', async () => {
+      const codeEl = host.querySelector('#keClassCode');
+      const msgEl = host.querySelector('#keClassMsg');
+      const code = (codeEl.value || '').trim();
+      if (!code) return;
+      classJoinBtn.disabled = true;
+      msgEl.textContent = L('Katılıyor...', 'Joining...');
+      try {
+        await Classroom.join(code, draft.name || Profiles.active().name);
+        draw();
+      } catch (e) {
+        classJoinBtn.disabled = false;
+        msgEl.textContent = e.message === 'class-not-found'
+          ? L('Bu kod bulunamadı, kontrol eder misin?', "That code wasn't found, can you check it?")
+          : L('Bağlanılamadı, internetini kontrol et.', "Couldn't connect, check your internet.");
+      }
+    });
+    const classLeaveBtn = host.querySelector('#keClassLeave');
+    if (classLeaveBtn) classLeaveBtn.addEventListener('click', () => { Classroom.leave(); draw(); });
     host.querySelectorAll('[data-profile]').forEach((b) => b.addEventListener('click', () => {
       Profiles.setActive(b.dataset.profile);
       showProfileScreen(container, api, toolId, categories, {});
@@ -3256,6 +3371,14 @@ function setupFullscreen(container) {
     btn.innerHTML = (isFs ? ICON_COMPRESS : ICON_EXPAND)
       + `<span id="keFullscreenLabel">${isFs ? L('Küçült', 'Exit') : L('Tam Ekran', 'Full screen')}</span>`;
     btn.title = isFs ? L('Tam ekrandan çık', 'Exit full screen') : L('Tam ekran', 'Full screen');
+    // Android Chrome'da tam ekrandan CIKMAK (butonla degil, kategori
+    // gecisi/OS UI kaynakli olsun) bazen kendiliginden bir popstate'i
+    // TETIKLIYOR - "word secerken kendi kendine ilk ekrana donuyor,
+    // sanki full screenden cikip basa donuyor" geri bildirimi tam
+    // olarak bu. O sahte popstate'i asagida _popstateHandler'da
+    // ELIYORUZ - gercek kullanici "geri" niyeti degil, tam ekrandan
+    // cikisin bir yan etkisi.
+    if (!isFs) _fullscreenExitAt = performance.now();
   };
   document.addEventListener('fullscreenchange', _fullscreenChangeHandler);
 }
