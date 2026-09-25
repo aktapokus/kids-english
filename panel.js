@@ -655,6 +655,14 @@ function startContinuousStudyTracking(onUnlocked) {
   }, 10000);
 }
 
+// Siradaki sinava kalan dakika (hizli menudeki kilitli "Odul Oyunu" karosu
+// icin - "oyun oynamak icin ne yapilmasi gerektigi" gorunsun).
+function continuousMinutesLeft() {
+  if (_continuousStart == null) return Math.ceil(CONTINUOUS_STUDY_SECONDS / 60);
+  const elapsed = (Date.now() - _continuousStart) / 1000;
+  return Math.max(1, Math.ceil((CONTINUOUS_STUDY_SECONDS - (elapsed % CONTINUOUS_STUDY_SECONDS)) / 60));
+}
+
 // Bekleyen bonus-sinav hakki: 15dk esigi gecilince burada birikir, kucuk
 // sinavi GECMEDEN GameTokens'a donusmez. Kapatilan toast/erteleme
 // yuzunden kaybolmasin diye kalici (localStorage) - profil degistirince
@@ -931,7 +939,12 @@ ${FONT_FACES}
        atiyor ("bir sonraki bolume gecemiyorum" / oyun ortasinda ana
        menuye donme bildirimleri) - masaustunde fare ile hic gorulmuyor. */
     overscroll-behavior: contain;
-    min-height: 640px;
+    /* min(640px, ekran): sabit 640px, gorunen yuksekligi 640'tan kisa
+       telefonlarda (adres cubugu + gezinme cubugu) position:fixed kabugu
+       ekrandan tasiriyordu - en alttaki kartlarin aciklamalari ve alt
+       gezinme "ekranin altinda kaliyor", kaydirilarak da ulasilamiyordu. */
+    min-height: min(640px, 100vh);
+    min-height: min(640px, 100dvh);
   }
   .ke-shell, .ke-shell *{ box-sizing: border-box; }
   .ke-fullscreen-btn, .ke-back-btn, .ke-screen-host{ position:relative; z-index:1; }
@@ -2033,6 +2046,14 @@ ${FONT_FACES}
   .ke-mx-lv-ic{ font-size:30px; } .ke-mx-level b{ font-size:15px; } .ke-mx-level small{ font-size:12px; opacity:.85; }
   .ke-mx-stars{ color:#FFD84D; font-size:18px; letter-spacing:2px; } .ke-mx-stars.big{ font-size:40px; }
   .ke-mx-top{ display:flex; justify-content:space-between; color:var(--kb-chalk,#fff); font-weight:800; font-size:14px; margin-top:6px; }
+  /* Sayi Yagmuru sureli tur: buyuk geri sayim + dogru/yanlis sayaci */
+  .ke-rain-hud{ display:flex; align-items:center; justify-content:center; gap:10px; margin:6px 0 0; flex-wrap:wrap; }
+  .ke-rain-hud span{ font-weight:900; font-size:18px; border-radius:999px; padding:4px 14px; background:rgba(255,255,255,.12); color:var(--kb-chalk,#fff); font-variant-numeric:tabular-nums; }
+  .ke-rain-hud .t{ font-size:24px; background:#FFD84D; color:#3a2a00; min-width:92px; text-align:center; }
+  .ke-rain-hud .t.low{ background:#FF8B82; color:#3a0000; animation:ke-bob 1s ease-in-out infinite; }
+  .ke-rain-timebar{ height:8px; border-radius:99px; background:rgba(255,255,255,.15); overflow:hidden; margin:8px 0 0; }
+  .ke-rain-timebar i{ display:block; height:100%; width:100%; background:#FFD84D; transform-origin:left; }
+  .ke-mx-done .ke-rain-sum{ display:flex; justify-content:center; gap:14px; font-size:20px; font-weight:900; margin:6px 0; }
   .ke-mx-bar{ height:8px; border-radius:99px; background:rgba(255,255,255,.14); overflow:hidden; margin:6px 0 12px; }
   .ke-mx-bar i{ display:block; height:100%; background:linear-gradient(90deg,#8E99E0,#FFD84D); }
   .ke-mx-card{ position:relative; background:#FFFDF4; color:#233; border-radius:24px; padding:18px 14px; box-shadow:0 6px 0 rgba(0,0,0,.25); min-height:150px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; }
@@ -3431,7 +3452,7 @@ function showQuickMenu(container, api, toolId, categories) {
       <div class="ke-quickmenu-grid">
         <button type="button" class="ke-quickmenu-tile qm-avatar" id="keQmAvatar"><span class="qm-ico">🎨</span>${L('Avatar', 'Avatar')}</button>
         <button type="button" class="ke-quickmenu-tile qm-progress" id="keQmProgress"><span class="qm-ico">📊</span>${L('İlerleme', 'Progress')}</button>
-        <button type="button" class="ke-quickmenu-tile qm-game" id="keQmGame" ${hasReward ? '' : 'disabled'}><span class="qm-ico">🎮</span>${L('Ödül Oyunu', 'Reward Game')}</button>
+        <button type="button" class="ke-quickmenu-tile qm-game${hasReward ? '' : ' qm-locked'}" id="keQmGame" aria-describedby="keQmSoundInfo"><span class="qm-ico">${hasReward ? '🎮' : '🔒'}</span>${L('Ödül Oyunu', 'Reward Game')}${hasReward ? '' : `<small style="display:block;font-size:10.5px;opacity:.8;">${L(`${continuousMinutesLeft()} dk kaldı`, `${continuousMinutesLeft()} min left`)}</small>`}</button>
         <button type="button" class="ke-quickmenu-tile qm-sound" id="keQmSound"><span class="qm-ico">🔊</span>${L('Ses Testi', 'Sound Test')}</button>
         <button type="button" class="ke-quickmenu-tile qm-lang" id="keQmLang"><span class="qm-ico">🌐</span>${_lang === 'tr' ? 'English' : 'Türkçe'}</button>
         <button type="button" class="ke-quickmenu-tile qm-rank" id="keQmRank"><span class="qm-ico">🏆</span>${L('Sıralama', 'Leaderboard')}</button>
@@ -3457,6 +3478,11 @@ function showQuickMenu(container, api, toolId, categories) {
     } else if (GameTokens.get() > 0) {
       close();
       showGamePicker(container, () => showSectionMenu(container, api, toolId, categories));
+    } else {
+      // Kilitliyken sessizce hicbir sey yapmamak yerine yolu anlat
+      overlay.querySelector('#keQmSoundInfo').innerHTML = L(
+        `🔒 Oyun hakkı iki yoldan kazanılır:<br>1) Uygulamadan çıkmadan <b>${continuousMinutesLeft()} dk</b> daha çalış, sonra 5 soruluk kısa sınavda 3 doğru yap.<br>2) Macera yolunda bir sonraki istasyona ulaş.`,
+        `🔒 Earn a game ticket in two ways:<br>1) Keep learning for <b>${continuousMinutesLeft()} more min</b> without leaving, then get 3 of 5 right in a short quiz.<br>2) Reach the next station on the Adventure path.`);
     }
   });
   overlay.querySelector('#keQmSound').addEventListener('click', () => runSoundTest(overlay.querySelector('#keQmSoundInfo')));
@@ -3756,7 +3782,11 @@ const A2_JOURNEY_IDS = {
 };
 const JOURNEY_SECTORS = [
   { id: 'moon', emoji: '🌙', tr: 'Ay İstasyonu', en: 'Moon Station', grade: 2, get level() { return L('2. Sınıf', 'Grade 2') + ' · A1.1'; },
-    planets: ['conv_social_manners', 'expressions', 'school_education', 'classroom_life', 'conv_school', 'body_health', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons', 'family_people', 'conv_family_home', 'home', 'animals', 'food_drinks', 'conv_food_drinks', 'math_numbers'] },
+    // "Macera direkt conversation ile basliyor, oyle olmamali": konusma turu
+    // cocuktan gormedigi kelimelerle cevap kurmasini istiyordu. Sira MEB
+    // 2. sinif unitelerine yakin (Words, Friends, In the Classroom, Numbers,
+    // Colours, Body, Pets/Animals, Fruit); her conv_* kendi kelimelerinden sonra.
+    planets: ['expressions', 'classroom_life', 'conv_social_manners', 'school_education', 'conv_school', 'math_numbers', 'family_people', 'conv_family_home', 'body_health', 'animals', 'food_drinks', 'conv_food_drinks', 'home', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons'] },
   { id: 'mars', emoji: '🔴', tr: 'Mars Üssü', en: 'Mars Base', grade: 3, get level() { return L('3. Sınıf', 'Grade 3') + ' · A1.2'; },
     planets: ['daily_life', 'conv_daily_routine', 'months_time', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes'] },
   { id: 'jupiter', emoji: '🟠', tr: 'Jüpiter İstasyonu', en: 'Jupiter Station', grade: 4, get level() { return L('4. Sınıf', 'Grade 4') + ' · A1.3'; },
@@ -4612,24 +4642,49 @@ function showMathChallenge(container, api, toolId, categories, onExit, start) {
   }
 
   // ---- Sayi Yagmuru: yukaridan dusen rakam/islem, altta 3 Ingilizce yazim ----
+  // Sureli tur ("bitmiyor, surekli devam ediyor - ya sure ya adet; sureyse
+  // yukarida gorunen bir sayac olsun, dogru/yanlis skorlansin"): 60 sn,
+  // ustte buyuk geri sayim + zaman cubugu + dogru/yanlis. Sure bitince
+  // ekrandaki sayi cevaplanir/duser, sonra sonuc ekrani. Sekme gizliyken
+  // sure ve dusus durur.
+  const RAIN_SECS = 60;
   function rain(st) {
-    const N = 15;
-    let qi = 0, score = 0, raf = 0, item = null, locked = false;
+    let score = 0, wrong = 0, raf = 0, clock = 0, item = null, locked = false, over = false;
     let fallMs = st.speed;
+    let left = RAIN_SECS * 1000, lastTs = performance.now();
     const dummy = document.createElement('div');
     host.innerHTML = `
       <button class="ke-back-btn" id="keMxBack">${ICON_BACK} ${L('Matematik Yolu', 'Maths Path')}</button>
       <div class="ke-mx ke-rain">
-        <div class="ke-mx-top"><span>${st.icon} ${st.title()}</span><span id="keRainHud">0 / ${N} · ✅ 0</span></div>
+        <div class="ke-mx-top"><span>${st.icon} ${st.title()}</span><span>${st.sub()}</span></div>
+        <div class="ke-rain-hud" aria-live="polite">
+          <span class="t" id="keRainTime">⏱ ${RAIN_SECS}</span>
+          <span id="keRainOk">✅ 0</span><span id="keRainBad">❌ 0</span>
+        </div>
+        <div class="ke-rain-timebar"><i id="keRainBar"></i></div>
         <div class="ke-rain-arena" id="keRainArena"><div class="ke-rain-drop" id="keRainDrop"></div><div class="ke-rain-ground"></div></div>
         <div class="ke-rain-choices" id="keRainChoices"></div>
-        <p class="ke-jr-hint">${L('Sayı yere düşmeden doğru İngilizce yazımı seç!', 'Pick the right English word before the number lands!')}</p>
+        <p class="ke-jr-hint">${L(`${RAIN_SECS} saniyede olabildiğince çok sayıyı yakala!`, `Catch as many numbers as you can in ${RAIN_SECS} seconds!`)}</p>
       </div>`;
     const arena = host.querySelector('#keRainArena');
     const drop = host.querySelector('#keRainDrop');
     const choicesEl = host.querySelector('#keRainChoices');
-    const hud = host.querySelector('#keRainHud');
-    const stop = () => { cancelAnimationFrame(raf); raf = 0; document.removeEventListener('keydown', onKey); };
+    const timeEl = host.querySelector('#keRainTime');
+    const barEl = host.querySelector('#keRainBar');
+    const okEl = host.querySelector('#keRainOk');
+    const badEl = host.querySelector('#keRainBad');
+    const stop = () => { cancelAnimationFrame(raf); raf = 0; clearInterval(clock); document.removeEventListener('keydown', onKey); };
+    clock = setInterval(() => {
+      if (!arena.isConnected) { stop(); return; }
+      const now = performance.now();
+      if (!document.hidden) left -= now - lastTs;
+      lastTs = now;
+      const secs = Math.max(0, Math.ceil(left / 1000));
+      timeEl.textContent = `⏱ ${secs}`;
+      timeEl.classList.toggle('low', secs <= 10);
+      barEl.style.transform = `scaleX(${Math.max(0, left / (RAIN_SECS * 1000))})`;
+      if (left <= 0) { over = true; clearInterval(clock); }
+    }, 200);
     host.querySelector('#keMxBack').addEventListener('click', () => { stop(); levelsScreen(); });
     function onKey(e) {
       const i = ['1', '2', '3'].indexOf(e.key);
@@ -4638,7 +4693,7 @@ function showMathChallenge(container, api, toolId, categories, onExit, start) {
     document.addEventListener('keydown', onKey);
     function next() {
       if (!arena.isConnected) { stop(); return; }
-      if (qi >= N) { stop(); finish(); return; }
+      if (over) { stop(); finish(); return; }
       item = st.make();
       locked = false;
       const opts = new Set([item.answer]);
@@ -4651,11 +4706,12 @@ function showMathChallenge(container, api, toolId, categories, onExit, start) {
       drop.style.left = rnd(8, 62) + '%';
       choicesEl.innerHTML = shuffle([...opts]).map((v, i) => `<button type="button" class="ke-rain-choice" data-v="${v}"><small>${i + 1}</small>${numWord(v)}</button>`).join('');
       choicesEl.querySelectorAll('.ke-rain-choice').forEach((b) => b.addEventListener('click', () => answer(Number(b.dataset.v), b)));
-      const t0 = performance.now();
+      let t0 = performance.now(), prev = t0;
       const H = arena.clientHeight - 70;
       const tick = (now) => {
         if (!arena.isConnected) { stop(); return; }
-        if (document.hidden) { raf = requestAnimationFrame(tick); return; }
+        if (document.hidden) { t0 += now - prev; prev = now; raf = requestAnimationFrame(tick); return; }
+        prev = now;
         const k = Math.min(1, (now - t0) / fallMs);
         drop.style.transform = `translateY(${Math.round(k * H)}px)`;
         if (k >= 1) { answer(null, null); return; }
@@ -4669,7 +4725,6 @@ function showMathChallenge(container, api, toolId, categories, onExit, start) {
       locked = true;
       cancelAnimationFrame(raf);
       const ok = v === item.answer;
-      qi++;
       if (ok) {
         score++;
         fallMs = Math.max(st.speed * 0.55, fallMs * 0.96);
@@ -4677,32 +4732,41 @@ function showMathChallenge(container, api, toolId, categories, onExit, start) {
         btn.classList.add('right');
         try { GameSfx.good(); } catch (e) { /* yok say */ }
       } else {
+        wrong++;
         drop.classList.add('miss');
         if (btn) btn.classList.add('wrong');
         choicesEl.querySelectorAll('.ke-rain-choice').forEach((b) => { if (Number(b.dataset.v) === item.answer) b.classList.add('right'); });
         try { GameSfx.bad(); } catch (e) { /* yok say */ }
       }
       speakWord(item.full || numWord(item.answer), dummy);
-      hud.textContent = `${qi} / ${N} · ✅ ${score}`;
+      okEl.textContent = `✅ ${score}`;
+      badEl.textContent = `❌ ${wrong}`;
       setTimeout(next, ok ? 900 : 1700);
     }
     function finish() {
-      const stars = score >= 14 ? 3 : score >= 11 ? 2 : score >= 8 ? 1 : 0;
+      // Yildiz: dogru sayisi + isabet (rastgele basmak odullenmesin)
+      const total = score + wrong;
+      const acc = total ? score / total : 0;
+      const stars = score >= 12 && acc >= 0.8 ? 3 : score >= 8 && acc >= 0.7 ? 2 : score >= 5 && acc >= 0.5 ? 1 : 0;
       MathBest.set(st.id, stars);
       if (stars >= 1) Progress.markComplete('math_path', MATH_PATH.indexOf(st));
       host.innerHTML = `
         <div class="ke-mx ke-mx-done">
           <div class="ke-jr-cp-emoji">${stars ? '🌟' : '💪'}</div>
-          <h2>${L(`Puanın: ${score} / ${N}`, `Your score: ${score} / ${N}`)}</h2>
+          <h2>${L('Süre bitti!', 'Time is up!')}</h2>
+          <div class="ke-rain-sum"><span>✅ ${L('Doğru', 'Right')}: ${score}</span><span>❌ ${L('Yanlış', 'Wrong')}: ${wrong}</span></div>
           <div class="ke-mx-stars big">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
-          <p>${stars ? L('Harika! Sıradaki adım açıldı.', 'Great! The next step is open.') : L('En az 8 doğru yaparsan 1 yıldız kazanırsın. Tekrar dene!', 'Get at least 8 right to earn a star. Try again!')}</p>
+          <p>${stars ? L('Harika! Sıradaki adım açıldı.', 'Great! The next step is open.') : L('1 yıldız için en az 5 doğru yap ve yanlışların doğrularından fazla olmasın. Acele etme, tekrar dene!', 'For a star, get at least 5 right with no more wrong than right answers. Take your time and try again!')}</p>
           <div class="ke-btn-row">
-            <button type="button" class="ke-btn-secondary" id="keMxLevels">${L('Matematik Yolu', 'Maths Path')}</button>
-            <button type="button" class="ke-btn-primary" id="keMxAgain">${L('Tekrar', 'Again')}</button>
+            <button type="button" class="ke-btn-secondary" id="keMxAgain" disabled>${L('Tekrar', 'Again')}</button>
+            <button type="button" class="ke-btn-primary" id="keMxLevels" disabled>${L('Matematik Yolu', 'Maths Path')}</button>
           </div>
         </div>`;
       host.querySelector('#keMxLevels').addEventListener('click', levelsScreen);
       host.querySelector('#keMxAgain').addEventListener('click', () => rain(st));
+      // Son soruya hizli hizli dokunurken sonuc ekranindaki dugmeye basilip tur
+      // kendiliginden yeniden basliyordu - dugmeler kisa sure kapali.
+      setTimeout(() => host.querySelectorAll('#keMxAgain, #keMxLevels').forEach((b) => { b.disabled = false; }), 1200);
     }
     next();
   }
@@ -4764,13 +4828,16 @@ function showMathChallenge(container, api, toolId, categories, onExit, start) {
           <div class="ke-mx-stars big">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
           <p>${stars ? L('Harika! Sıradaki seviye açıldı.', 'Great! The next level is open.') : L('En az 6 doğru yaparsan 1 yıldız kazanırsın. Tekrar dene!', 'Get at least 6 right to earn a star. Try again!')}</p>
           <div class="ke-btn-row">
-            <button type="button" class="ke-btn-secondary" id="keMxLevels">${L('Seviyeler', 'Levels')}</button>
-            <button type="button" class="ke-btn-primary" id="keMxAgain">${L('Tekrar oyna', 'Play again')}</button>
+            <button type="button" class="ke-btn-secondary" id="keMxAgain" disabled>${L('Tekrar oyna', 'Play again')}</button>
+            <button type="button" class="ke-btn-primary" id="keMxLevels" disabled>${L('Seviyeler', 'Levels')}</button>
           </div>
         </div>`;
       if (stars) { try { GameSfx.win(); } catch (e) { /* yok say */ } }
       host.querySelector('#keMxLevels').addEventListener('click', opts.table ? timesTable : levelsScreen);
       host.querySelector('#keMxAgain').addEventListener('click', () => play(lv, opts));
+      // Son soruya hizli hizli dokunurken sonuc ekranindaki dugmeye basilip tur
+      // kendiliginden yeniden basliyordu - dugmeler kisa sure kapali.
+      setTimeout(() => host.querySelectorAll('#keMxAgain, #keMxLevels').forEach((b) => { b.disabled = false; }), 1200);
     }
     ask();
   }
