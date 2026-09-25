@@ -2264,7 +2264,7 @@ export async function mount(container, api, toolId) {
     return;
   }
 
-  if (Profiles.exists()) showSectionMenu(container, api, toolId, categories);
+  if (Profiles.exists()) resumeLastScreen(container, api, toolId, categories);
   else showProfileScreen(container, api, toolId, categories, { first: true });
   // Guard, ILK render'DAN SONRA kuruluyor - once .ke-carnival-hero/
   // .ke-profile-screen'in kendisi "yeni bir ekrana gecis" sanilip
@@ -2333,6 +2333,42 @@ const SECTIONS = [
     pick: () => false },
 ];
 let _currentSection = null;
+
+// "Uygulamada bir yere girip çıkınca başa dönüyor, kaldığı yerden devam
+// etmiyor" - Android arka plana alınan TWA/sekmeyi bellek için sık sık
+// öldürüp baştan yüklüyor ve her yükleme bölüm menüsünden başlıyordu. Son
+// ekranı kaydedip açılışta oraya dönüyoruz. Bölüm içindeki aşama (keşif/
+// soru/konuşma) değil bölümün başı geri yükleniyor - yarım kalmış bir soru
+// durumunu yeniden kurmak kırılgan olurdu, bölüm zaten kısa.
+const RESUME_KEY = 'ke_resume_v1';
+const RESUME_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+const Resume = {
+  save(state) {
+    try { window.localStorage.setItem(RESUME_KEY, JSON.stringify({ ...state, profile: Profiles.active().id, ts: Date.now() })); } catch (e) { /* yok say */ }
+  },
+  load() {
+    try {
+      const s = JSON.parse(window.localStorage.getItem(RESUME_KEY));
+      if (!s || s.profile !== Profiles.active().id || Date.now() - s.ts > RESUME_MAX_AGE_MS) return null;
+      return s;
+    } catch (e) { return null; }
+  },
+};
+
+function resumeLastScreen(container, api, toolId, categories) {
+  const s = Resume.load();
+  if (s && s.screen === 'grid' && s.sectionId) { showCategoryGrid(container, api, toolId, categories, s.sectionId); return; }
+  const cat = s && s.screen === 'episode' && s.categoryId ? categories.find((c) => c.id === s.categoryId) : null;
+  if (cat) {
+    const sec = SECTIONS.find((x) => x.id === s.sectionId) || SECTIONS.find((x) => x.pick(cat));
+    _currentSection = sec ? sec.id : null;
+    enterCategory(container, api, toolId, categories, s.categoryId, s.episodeIndex || 0);
+    return;
+  }
+  if (s && s.screen === 'stories') { showStoryList(container, api, toolId, categories); return; }
+  if (s && s.screen === 'story' && s.storyId) { showStoryReader(container, api, toolId, categories, s.storyId, s.page); return; }
+  showSectionMenu(container, api, toolId, categories);
+}
 
 function showQuizUnlockToast(container, onClick) {
   const el = document.createElement('button');
@@ -2561,6 +2597,7 @@ function showGuide(container, api, toolId, categories) {
 function showSectionMenu(container, api, toolId, categories) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   _currentSection = null;
+  Resume.save({ screen: 'menu' });
   const host = container.querySelector('#keScreenHost');
   const waveSrc = new URL('mascot/mascot_wave.png', ASSET_BASE_URL).href;
   const hasBadge = GameTokens.get() > 0 || PendingQuiz.get() > 0;
@@ -2936,6 +2973,7 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
   const section = SECTIONS.find((s) => s.id === (sectionId || _currentSection));
   if (!section || section.locked) { showSectionMenu(container, api, toolId, categories); return; }
   _currentSection = section.id;
+  Resume.save({ screen: 'grid', sectionId: section.id });
   const shown = categories.filter(section.pick);
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   const host = container.querySelector('#keScreenHost');
@@ -3017,6 +3055,7 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
 // tek bir yıldız işleniyor (rozet/seri sistemiyle tutarlı kalsın diye).
 async function showStoryList(container, api, toolId, categories) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  Resume.save({ screen: 'stories' });
   const host = container.querySelector('#keScreenHost');
   host.innerHTML = `
     <button class="ke-back-btn" id="keSectionsBack">${ICON_BACK} ${L('Bölümler', 'Sections')}</button>
@@ -3058,7 +3097,7 @@ async function showStoryList(container, api, toolId, categories) {
   pushBackState(() => showSectionMenu(container, api, toolId, categories));
 }
 
-async function showStoryReader(container, api, toolId, categories, storyId) {
+async function showStoryReader(container, api, toolId, categories, storyId, initialPage) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   const host = container.querySelector('#keScreenHost');
   host.innerHTML = `<div style="padding:60px;text-align:center;color:rgba(245,247,250,.6);">${L('Yükleniyor...', 'Loading...')}</div>`;
@@ -3072,8 +3111,8 @@ async function showStoryReader(container, api, toolId, categories, storyId) {
     return;
   }
 
-  let page = -1; // -1 = kapak/giriş, 0..N-1 = kartlar, N = sözlük
   const lastPage = story.cards.length;
+  let page = Number.isInteger(initialPage) && initialPage >= -1 && initialPage <= lastPage ? initialPage : -1; // -1 = kapak/giriş, 0..N-1 = kartlar, N = sözlük
 
   // Kendi sesini kaydetme: BULUTA YÜKLEME YOK, bilinçli tercih (çocuk
   // sesi kaydı - KVKK/veli izni riski). Kayıt sadece tarayıcı belleğinde
@@ -3140,6 +3179,7 @@ async function showStoryReader(container, api, toolId, categories, storyId) {
 
   function render() {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    Resume.save({ screen: 'story', storyId, page });
     const host2 = container.querySelector('#keScreenHost');
     if (page === -1) {
       host2.innerHTML = `
@@ -3221,6 +3261,7 @@ async function showStoryReader(container, api, toolId, categories, storyId) {
 }
 
 async function enterCategory(container, api, toolId, categories, categoryId, episodeIndex) {
+  Resume.save({ screen: 'episode', sectionId: _currentSection, categoryId, episodeIndex });
   const host = container.querySelector('#keScreenHost');
   host.innerHTML = `<div style="padding:60px;text-align:center;color:rgba(245,247,250,.6);">${L('Yükleniyor...', 'Loading...')}</div>`;
   let episode;
@@ -3894,9 +3935,14 @@ function buildStoryLineHTML(lines) {
 // - "okurken okuduğu kelimeyi highlight edebilir miyiz" isteği üzerine.
 // speakWord'den AYRI: o tek kelime/kısa ifadeler için 3.2s sabit
 // güvenlik zaman aşımı kullanıyor, bir hikaye sayfası (birkaç cümle) bu
-// sürede kesilirdi. onboundary olayı Android Chrome + masaüstü
-// tarayıcılarda güvenilir; desteklenmeyen tarayıcılarda vurgu sessizce
-// hiç tetiklenmez, ses yine de çalar.
+// sürede kesilirdi. onboundary masaüstü tarayıcılarda güvenilir ama
+// Android Chrome'da (dolayısıyla APK/TWA'da da) HİÇ tetiklenmiyor - "APK'da
+// highlight çalışmadı" geri bildirimi. O yüzden gerçek boundary olayı
+// gelmezse, konuşma başladığı an kelime uzunluğu + noktalama duraklarına
+// göre tahmini bir zamanlamayla ilerleyen yedek vurgu devreye giriyor;
+// gerçek bir boundary olayı gelir gelmez yedek zamanlayıcı susuyor.
+const STORY_MS_PER_CHAR = 85;
+const STORY_WORD_GAP_MS = 120;
 function speakStoryText(text, host, onDone) {
   if (!('speechSynthesis' in window)) { notifySoundProblem(L('bu tarayıcı sesli okumayı desteklemiyor', 'this browser cannot read aloud')); if (onDone) onDone(); return; }
   const synth = window.speechSynthesis;
@@ -3905,10 +3951,31 @@ function speakStoryText(text, host, onDone) {
     .sort((a, b) => a.start - b.start);
   let current = null;
   let done = false;
+  let gotBoundary = false;
+  let fallbackTimer = null;
   const clearHighlight = () => { if (current) { current.el.classList.remove('ke-story-word-active'); current = null; } };
+  const highlight = (s) => { if (s !== current) { clearHighlight(); s.el.classList.add('ke-story-word-active'); current = s; } };
+  const stopFallback = () => { if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; } };
+  const startFallback = () => {
+    if (fallbackTimer || gotBoundary || done) return;
+    let i = 0;
+    const step = () => {
+      fallbackTimer = null;
+      if (done || gotBoundary || i >= spans.length) return;
+      const s = spans[i++];
+      highlight(s);
+      const w = s.el.textContent;
+      let ms = w.length * STORY_MS_PER_CHAR + STORY_WORD_GAP_MS;
+      if (/[.!?]["”']?$/.test(w)) ms += 380;
+      else if (/[,;:]$/.test(w)) ms += 180;
+      fallbackTimer = setTimeout(step, ms);
+    };
+    step();
+  };
   const finish = () => {
     if (done) return;
     done = true;
+    stopFallback();
     clearHighlight();
     if (onDone) onDone();
   };
@@ -3924,10 +3991,13 @@ function speakStoryText(text, host, onDone) {
     window._keLastUtter = utter;
     utter.onboundary = (e) => {
       if (e.name && e.name !== 'word') return;
+      gotBoundary = true;
+      stopFallback();
       let match = null;
       for (const s of spans) { if (s.start <= e.charIndex) match = s; else break; }
-      if (match && match !== current) { clearHighlight(); match.el.classList.add('ke-story-word-active'); current = match; }
+      if (match) highlight(match);
     };
+    utter.onstart = startFallback;
     utter.onend = finish;
     utter.onerror = (e) => {
       const err = e && e.error;
@@ -3935,9 +4005,11 @@ function speakStoryText(text, host, onDone) {
       finish();
     };
     synth.speak(utter);
+    // Bazı Android TTS motorlarında onstart da gecikiyor/gelmiyor - yedek.
+    setTimeout(startFallback, 700);
   };
   if (synth.speaking || synth.pending) { synth.cancel(); setTimeout(doSpeak, 90); } else { doSpeak(); }
-  setTimeout(finish, Math.max(6000, text.split(/\s+/).length * 700));
+  setTimeout(finish, Math.max(6000, text.split(/\s+/).length * 900 + 2000));
 }
 
 // Android Chrome'da sesin sessizce kaybolmasının bilinen nedenleri:
