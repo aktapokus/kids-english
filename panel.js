@@ -2227,6 +2227,7 @@ ${FONT_FACES}
   .ke-av > img.ke-av-body{ display:block; width:100%; height:100%; object-fit:contain; user-select:none; -webkit-user-drag:none; transition:opacity .15s; }
   .ke-av > img.ke-av-pending{ opacity:0; }
   .ke-av > .ke-mascot-hat{ animation:none; }
+  .ke-av > .ke-av-hatart{ position:absolute; z-index:2; left:0; top:-16.667%; width:100%; height:auto; pointer-events:none; user-select:none; }
   .ke-av-layer{
     position:absolute; z-index:2; line-height:1; pointer-events:none; user-select:none;
     font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
@@ -2764,15 +2765,15 @@ const avatarShirts = () => [
 // sistem emojisi. s = genişliğe oranla boyut, dx/dy = kafa çapasından kayma.
 const avatarHats = () => [
   { id: 'none', label: L('Yok', 'None'), need: 0, emoji: '🚫' },
-  { id: 'cap', label: L('Kep', 'Cap'), need: 1, emoji: '🧢', s: 0.5, dy: 0.03 },
-  { id: 'party', label: L('Parti', 'Party'), need: 3, emoji: '🎉', img: 'party' },
+  { id: 'cap', label: L('Kep', 'Cap'), need: 1, emoji: '🧢', s: 0.5, dy: 0.03, art: 'cap' },
+  { id: 'party', label: L('Parti', 'Party'), need: 3, emoji: '🎉', img: 'party', art: 'party' },
   { id: 'bow', label: L('Fiyonk', 'Bow'), need: 4, emoji: '🎀', s: 0.26, dx: 0.19, dy: 0.04, rot: 18 },
-  { id: 'crown', label: L('Taç', 'Crown'), need: 0, needStreak: 5, emoji: '👑', s: 0.4, dy: 0.01 },
+  { id: 'crown', label: L('Taç', 'Crown'), need: 0, needStreak: 5, emoji: '👑', s: 0.4, dy: 0.01, art: 'crown' },
   { id: 'flower', label: L('Çiçek', 'Flower'), need: 6, emoji: '🌸', s: 0.22, dx: -0.19, dy: 0.05 },
-  { id: 'grad', label: L('Mezuniyet', 'Graduate'), need: 8, emoji: '🎓', s: 0.52, dy: 0.02 },
-  { id: 'wizard', label: L('Büyücü', 'Wizard'), need: 10, emoji: '🧙', img: 'wizard' },
-  { id: 'sunhat', label: L('Hasır Şapka', 'Sun hat'), need: 11, emoji: '👒', s: 0.6, dy: 0.03 },
-  { id: 'tophat', label: L('Silindir', 'Top hat'), need: 14, emoji: '🎩', s: 0.5 },
+  { id: 'grad', label: L('Mezuniyet', 'Graduate'), need: 8, emoji: '🎓', s: 0.52, dy: 0.02, art: 'grad' },
+  { id: 'wizard', label: L('Büyücü', 'Wizard'), need: 10, emoji: '🧙', img: 'wizard', art: 'wizard' },
+  { id: 'sunhat', label: L('Hasır Şapka', 'Sun hat'), need: 11, emoji: '👒', s: 0.6, dy: 0.03, art: 'sunhat' },
+  { id: 'tophat', label: L('Silindir', 'Top hat'), need: 14, emoji: '🎩', s: 0.5, art: 'tophat' },
 ];
 const avatarItems = () => [
   { id: 'none', label: L('Yok', 'None'), need: 0, emoji: '🚫' },
@@ -3014,6 +3015,13 @@ function avatarHatHTML(pose, profile) {
   const p = profile || Profiles.active();
   const hat = avatarPart(avatarHats(), p.hat);
   if (hat.id === 'none') return '';
+  // v2: sapka taban gorselinin (600x900) koordinatlarinda cizili, saci
+  // tamamen orten tam genislik katman (scripts/compose_hats_v2.py) - tuval
+  // tabanin y=-150..250 araligi, bu yuzden top = -150/900.
+  if (hat.art) {
+    const src = new URL(`mascot/avatar/hat2_${hat.art}.png`, ASSET_BASE_URL).href;
+    return `<img class="ke-av-hatart" src="${src}" alt="" draggable="false" />`;
+  }
   if (hat.img) {
     const src = new URL(`mascot/avatar/hat_${hat.img}.png`, ASSET_BASE_URL).href;
     return `<img class="ke-mascot-hat" src="${src}" alt="" draggable="false" style="${avatarHatStyle()}" />`;
