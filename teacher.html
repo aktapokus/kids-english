@@ -33,12 +33,82 @@
   .empty{ color:var(--ink-dim); font-size:13px; padding:12px 0; }
   #logoutBtn{ background:transparent; color:var(--ink-dim); border:1px solid var(--border); }
   .hidden{ display:none; }
+  /* Kullanım kılavuzu - <details> ile JS'siz aç/kapa (CSP inline script'e izin vermiyor) */
+  .guide{ background:var(--card); border:1px solid var(--border); border-radius:14px; margin-bottom:16px; }
+  .guide > summary{ list-style:none; cursor:pointer; padding:16px 20px; font-weight:800; font-size:15px; display:flex; align-items:center; gap:8px; }
+  .guide > summary::-webkit-details-marker{ display:none; }
+  .guide > summary::after{ content:'▾'; margin-left:auto; color:var(--ink-dim); transition:transform .15s ease; }
+  .guide[open] > summary::after{ transform:rotate(180deg); }
+  .guide-body{ padding:0 20px 18px; font-size:14px; line-height:1.55; }
+  .step{ display:flex; gap:12px; margin:14px 0; }
+  .step-n{ flex:none; width:28px; height:28px; border-radius:50%; background:var(--accent); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center; font-size:14px; }
+  .step h3{ margin:2px 0 4px; font-size:14.5px; }
+  .step p{ margin:0; color:var(--ink); }
+  .guide-note{ background:var(--accent-tint); border-radius:10px; padding:10px 12px; margin:10px 0; font-size:13.5px; }
+  .student-card{ border:2px dashed var(--accent); border-radius:12px; padding:12px 14px; margin:10px 0; background:#FBFAF6; }
+  .student-card b{ color:var(--accent); }
+  .guide-legend{ width:100%; font-size:13px; margin:8px 0; }
+  .guide-legend td{ padding:5px 6px; border-bottom:1px solid var(--border); vertical-align:top; }
+  .faq dt{ font-weight:800; margin-top:10px; }
+  .faq dd{ margin:2px 0 0; color:var(--ink-dim); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>🏫 Aktapokus Öğretmen Paneli</h1>
   <p class="sub">Sınıflarını oluştur, öğrencilerinin Kids English ilerlemesini takip et.</p>
+
+  <details class="guide" id="guide">
+    <summary>📘 Nasıl kullanılır? (Öğretmen kılavuzu)</summary>
+    <div class="guide-body">
+      <div class="step"><div class="step-n">1</div><div>
+        <h3>Hesap oluştur</h3>
+        <p>E-posta ve en az 6 karakterli bir şifre yazıp <b>Hesap Oluştur</b>'a bas. E-postana gelen onay linkine tıkla, sonra bu sayfaya dönüp <b>Giriş Yap</b>. Şifreni unutursan "Şifremi unuttum" ile yeni şifre belirleyebilirsin.</p>
+      </div></div>
+      <div class="step"><div class="step-n">2</div><div>
+        <h3>Sınıf oluştur</h3>
+        <p>Sınıfına bir ad ver (örn. <b>5-A</b>) ve <b>Sınıf Oluştur</b>'a bas. Her sınıfa <b>ABCD-1234</b> biçiminde bir <b>sınıf kodu</b> verilir. Birden fazla şubeye girersen her şube için ayrı sınıf aç.</p>
+      </div></div>
+      <div class="step"><div class="step-n">3</div><div>
+        <h3>Kodu öğrencilerine ver</h3>
+        <p>Kodu tahtaya yaz ya da veli grubuna gönder. Öğrenciler Kids English uygulamasında şu adımları izler:</p>
+        <div class="student-card">
+          <b>Öğrenci için:</b><br>
+          1) Kids English'i aç, ekranın üstündeki <b>Aktapokus'a</b> dokun.<br>
+          2) <b>🎨 Avatar</b>'a dokun.<br>
+          3) Aşağıdaki <b>Sınıf</b> bölümüne öğretmeninin verdiği kodu yaz ve <b>Katıl</b>'a (İngilizce ekranda <b>Join</b>) bas.<br>
+          4) Adını profilde doğru yazdığından emin ol — öğretmenin seni bu adla görecek.
+        </div>
+      </div></div>
+      <div class="step"><div class="step-n">4</div><div>
+        <h3>İlerlemeyi takip et</h3>
+        <p>Sınıfın adına tıklayınca öğrenci listesi açılır. Sütunlar:</p>
+        <table class="guide-legend">
+          <tr><td>⭐</td><td>Tamamlanan bölüm sayısı (her bölüm ~6 kelime).</td></tr>
+          <tr><td>🔥</td><td>Üst üste çalışılan gün sayısı (seri).</td></tr>
+          <tr><td>Kelime</td><td>Öğrenilen kelime sayısı — <i>tamamlanan bölümlerden hesaplanan yaklaşık değer</i>.</td></tr>
+          <tr><td>Dakika</td><td>Uygulamada geçirilen toplam süre.</td></tr>
+        </table>
+        <div class="guide-note">Veriler öğrencinin cihazı internete bağlıyken, uygulama açık olduğu sürece yaklaşık <b>1 dakikada bir</b> güncellenir. Güncel veriyi görmek için sayfayı yenile.</div>
+      </div></div>
+      <div class="step"><div class="step-n">5</div><div>
+        <h3>Gizlilik</h3>
+        <p>Panelde sadece öğrencinin <b>yazdığı ad</b> ve yukarıdaki <b>ilerleme sayıları</b> bulunur. E-posta, telefon, konum, fotoğraf ya da ses kaydı toplanmaz; öğrencinin "kendi sesiyle okuma" kayıtları yalnızca kendi cihazında kalır. Öğretmenler yalnızca <b>kendi</b> sınıflarının öğrencilerini görebilir. Öğrenci profilinden <b>Sınıftan Ayrıl</b> derse cihazı artık veri göndermez (listedeki son hali kalır).</p>
+      </div></div>
+      <dl class="faq">
+        <dt>Öğrencim listede görünmüyor.</dt>
+        <dd>Kodu doğru yazdığından (tire dahil) ve cihazın internete bağlı olduğundan emin ol. Katılınca uygulamada sınıfın adı görünür.</dd>
+        <dt>Sayılar güncellenmiyor.</dt>
+        <dd>Öğrenci uygulamayı internet varken bir kez açıp birkaç dakika kullansın; veri o sırada gönderilir. Uygulama kapalıyken veri gönderilmez.</dd>
+        <dt>Aynı öğrenci iki kez görünüyor.</dt>
+        <dd>Öğrenci başka bir cihazdan (ya da uygulamayı silip yeniden kurarak) tekrar katılmış olabilir; her cihaz ayrı sayılır.</dd>
+        <dt>Öğrencinin adı yanlış görünüyor.</dt>
+        <dd>Ad, sınıfa katıldığı andaki profil adıdır. Öğrenci profilde adını düzeltip sınıftan ayrılıp aynı kodla tekrar katılırsa ad güncellenir.</dd>
+        <dt>Bir öğrenciyi listeden silmek istiyorum.</dt>
+        <dd>Panelden silme özelliği henüz yok; ihtiyaç olursa yöneticiden (bizden) talep edebilirsin.</dd>
+      </dl>
+    </div>
+  </details>
 
   <div class="card" id="authCard">
     <form id="loginForm">
