@@ -1377,7 +1377,11 @@ ${FONT_FACES}
   .ke-help-btn{ display:none; }
   @media (max-width:640px){
     .ke-shell .ke-help-btn{ display:flex; align-items:center; justify-content:center; position:absolute; top:8px; left:8px; z-index:8; width:36px; height:36px; padding:0 !important; border-radius:50% !important; font-size:18px !important; }
-    .ke-shell:not(.ke-show-help) .ke-hint, .ke-shell:not(.ke-show-help) .ke-jump-row{ display:none; }
+    /* .ke-jump-row burada bilerek YOK: telefonda sadece etiketsiz küçük
+       ⓘ ile açılınca görünüyordu, "sonraki aşamalara (harf/cümle) geçiş
+       butonu görünmüyor" geri bildirimi. Zaten kapalı bir <details>, tek
+       satır yer kaplıyor. */
+    .ke-shell:not(.ke-show-help) .ke-hint{ display:none; }
     .ke-shell .ke-scene-narrow ~ .ke-footer-row{ margin-top:6px; }
     .ke-shell.ke-fs .ke-subtitle{ display:none; }
     .ke-shell.ke-fs .ke-title{ font-size:clamp(22px,6vw,30px); margin:2px 0; }
