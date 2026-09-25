@@ -194,6 +194,32 @@ function studentDetail(s, catalog) {
     <div><b>Zorlandığı kelimeler</b><div class="chips">${hard || '<span class="empty">Henüz yok 👍</span>'}</div></div></div>`;
 }
 
+// Uygulamadaki Uzay Macerasi basamaklari (panel.js JOURNEY_SECTORS ile
+// ayni sira - MEB Maarif programi: 2. sinif = A1.1 ...). Iki yerde
+// tutuluyor; panel.js'te sira degisirse burasi da guncellenmeli.
+const GRADE_STEPS = [
+  ['2. Sınıf · A1.1', ['conv_social_manners', 'school_education', 'classroom_life', 'conv_school', 'body_health', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons', 'family_people', 'conv_family_home', 'home', 'animals', 'food_drinks', 'conv_food_drinks', 'math_numbers']],
+  ['3. Sınıf · A1.2', ['daily_life', 'conv_daily_routine', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes']],
+  ['4. Sınıf · A1.3', ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'get']],
+  ['Bonus · A1+', ['technology_computers', 'conv_technology', 'communication_internet', 'science', 'space_astronomy', 'conv_space']],
+  ['5. Sınıf · A2.1', ['daily_life', 'family_people', 'school_education', 'classroom_life', 'body_health', 'clothes_shopping', 'food_drinks', 'animals', 'nature_environment', 'city_places', 'hobbies_free_time'].map((x) => x + '_a2')],
+  ['6. Sınıf · A2.2', ['home', 'jobs_professions', 'travel_transportation', 'emotions_personality', 'weather_seasons', 'sports_exercise', 'technology_computers', 'science', 'communication_internet', 'space_astronomy'].map((x) => x + '_a2')],
+];
+// Ogrencinin bulundugu basamak: tum gezegenleri bitmis/atlanmis ilk
+// OLMAYAN basamak. Ilerleme verisi yoksa '—'.
+function gradeStep(s, catalog) {
+  const p = s.progress;
+  if (!p || !p.cats) return { label: '—', pct: null };
+  const skipped = new Set(p.skipped || []);
+  const cleared = (id) => skipped.has(id) || (catalog[id] && (p.cats[id] || []).length >= catalog[id].total);
+  for (const [label, ids] of GRADE_STEPS) {
+    const known = ids.filter((id) => catalog[id]);
+    const done = known.filter(cleared).length;
+    if (done < known.length) return { label, pct: Math.round(done * 100 / Math.max(1, known.length)) };
+  }
+  return { label: 'Tamamlandı 🏅', pct: 100 };
+}
+
 function exactWords(s, catalog) {
   const p = s.progress;
   if (!p || !p.cats) return s.words_learned;
@@ -230,10 +256,10 @@ async function renderRoster(classId) {
   }
   if (!students.length) { el.innerHTML = '<p class="empty">Henüz bu sınıfa katılan öğrenci yok. Sınıf kodunu öğrencilerinle paylaş.</p>'; return; }
   const catalog = await loadCatalog();
-  el.innerHTML = `<table><thead><tr><th>Öğrenci</th><th>⭐</th><th>🔥</th><th>Kelime</th><th>Dakika</th><th>Son görülme</th><th></th></tr></thead><tbody>
-    ${students.map((s) => `<tr class="srow" data-id="${s.id}"><td>${hasDetail ? '<span class="caret">▸</span> ' : ''}${escapeHtml(s.name)}</td><td>${s.stars}</td><td>${s.streak_days}</td><td>${exactWords(s, catalog)}</td><td>${s.minutes_total}</td><td>${timeAgo(s.updated_at)}</td>
+  el.innerHTML = `<table><thead><tr><th>Öğrenci</th><th>Basamak</th><th>⭐</th><th>🔥</th><th>Kelime</th><th>Dakika</th><th>Son görülme</th><th></th></tr></thead><tbody>
+    ${students.map((s) => { const g = gradeStep(s, catalog); return `<tr class="srow" data-id="${s.id}"><td>${hasDetail ? '<span class="caret">▸</span> ' : ''}${escapeHtml(s.name)}</td><td>${escapeHtml(g.label)}${g.pct != null && g.pct < 100 ? ` <small>%${g.pct}</small>` : ''}</td><td>${s.stars}</td><td>${s.streak_days}</td><td>${exactWords(s, catalog)}</td><td>${s.minutes_total}</td><td>${timeAgo(s.updated_at)}</td>
       <td><button type="button" class="del" data-id="${s.id}" data-name="${escapeHtml(s.name)}" title="Öğrenciyi sil" aria-label="Öğrenciyi sil">🗑</button></td></tr>
-      ${hasDetail ? `<tr class="drow hidden" id="d-${s.id}"><td colspan="7">${studentDetail(s, catalog)}</td></tr>` : ''}`).join('')}
+      ${hasDetail ? `<tr class="drow hidden" id="d-${s.id}"><td colspan="8">${studentDetail(s, catalog)}</td></tr>` : ''}`; }).join('')}
   </tbody></table>`;
   el.querySelectorAll('.srow').forEach((r) => r.addEventListener('click', (e) => {
     if (e.target.closest('.del')) return;

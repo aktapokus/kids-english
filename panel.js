@@ -550,7 +550,11 @@ const Classroom = {
       Object.keys(c.missed || {}).forEach((w) => hard.push([cid, w, (c.missed[w] && c.missed[w].count) || 1]));
     });
     hard.sort((a, b) => b[2] - a[2]);
-    return { v: 1, cats, hard: hard.slice(0, 12) };
+    // Atlama sinaviyla gecilen gezegenler (ogretmen portalinda sinif
+    // basamagi hesabi icin) - sadece id listesi.
+    let skipped = [];
+    try { skipped = Journey._load().skipped.slice(0, 80); } catch (e) { /* yok say */ }
+    return { v: 1, cats, hard: hard.slice(0, 12), skipped };
   },
   async sync(stars, streakDays, wordsLearned, minutesTotal, force) {
     const d = this._load();
@@ -1975,6 +1979,9 @@ ${FONT_FACES}
   .ke-jr-story{ display:flex; align-items:center; gap:10px; margin:0 auto 18px; max-width:300px; text-align:left; padding:8px 12px !important; border-radius:16px !important; background:linear-gradient(135deg,#8D6E63,#5D4037) !important; color:#fff !important; border:2px solid rgba(255,255,255,.5) !important; box-shadow:0 4px 0 rgba(0,0,0,.3) !important; top:0 !important; position:relative; }
   .ke-jr-story.locked{ opacity:.55; }
   .ke-jr-story-ic{ font-size:26px; } .ke-jr-story b{ display:block; font-size:13px; } .ke-jr-story small{ font-size:12px; font-weight:700; opacity:.9; }
+  .ke-jr-grade-head{ position:relative; display:inline-flex; align-items:center; gap:8px; margin:14px auto 10px; padding:6px 16px; border-radius:99px; background:rgba(255,255,255,.14); border:2px solid rgba(255,255,255,.35); color:#fff; font-weight:800; font-size:15px; }
+  .ke-jr-grade-head span{ font-size:20px; }
+  .ke-shell .ke-jr-gradeskip{ position:relative; display:block; margin:-10px auto 22px; padding:10px 16px !important; min-height:44px; border-radius:14px !important; background:#FFD84D !important; color:#3a2a00 !important; font-weight:800 !important; font-size:13.5px !important; box-shadow:0 4px 0 #C99A12 !important; border:none !important; top:0 !important; }
   /* ---- Uzay Yolculugu ---- */
   .ke-journey{ max-width:560px; margin:0 auto; text-align:center; position:relative; z-index:1; }
   .ke-jr-hint{ font-size:12.5px; font-weight:700; color:var(--kb-chalk-dim,#ccc); margin:0 auto 10px; max-width:420px; line-height:1.4; }
@@ -3594,18 +3601,27 @@ function importBackup(file) {
 // Siralama: somut/gunluk -> soyut, her kelime gezegeninden sonra ayni
 // konunun konusma gezegeni; A1 bitince A2 tekrari ayni konular uzerinden.
 // ============================================================
-const A2_JOURNEY_IDS = ['daily_life', 'family_people', 'school_education', 'classroom_life', 'home', 'food_drinks', 'nature_environment', 'space_astronomy', 'animals', 'sports_exercise', 'hobbies_free_time', 'technology_computers', 'travel_transportation', 'city_places', 'body_health', 'weather_seasons', 'emotions_personality', 'clothes_shopping', 'jobs_professions', 'science', 'communication_internet'].map((id) => id + '_a2');
+// Siralama MEB Maarif programina gore (2025, s.30-34; bkz.
+// meb_research/uyum_raporu_2026-09-25.html): A1 · 1 = 2. sinif (A1.1)
+// temalari, A1 · 2 = 3. sinif (A1.2), A1 · 3 = 4. sinif (A1.3); A2 · 1/2 =
+// 5./6. sinif. Kategoriler alt-tema bazinda bolunmedigi icin eslesme
+// "en yakin sinif"a gore - kesin degil. Seviye etiketleri uygulama ici
+// duraklardir, resmi CEFR sonucu degildir.
+const A2_JOURNEY_IDS = {
+  y5: ['daily_life', 'family_people', 'school_education', 'classroom_life', 'body_health', 'clothes_shopping', 'food_drinks', 'animals', 'nature_environment', 'city_places', 'hobbies_free_time'].map((id) => id + '_a2'),
+  y6: ['home', 'jobs_professions', 'travel_transportation', 'emotions_personality', 'weather_seasons', 'sports_exercise', 'technology_computers', 'science', 'communication_internet', 'space_astronomy'].map((id) => id + '_a2'),
+};
 const JOURNEY_SECTORS = [
-  { id: 'moon', emoji: '🌙', tr: 'Ay İstasyonu', en: 'Moon Station', level: 'A1 · 1',
-    planets: ['family_people', 'conv_family_home', 'home', 'animals', 'food_drinks', 'conv_food_drinks', 'conv_social_manners', 'classroom_life', 'math_numbers'] },
-  { id: 'mars', emoji: '🔴', tr: 'Mars Üssü', en: 'Mars Base', level: 'A1 · 2',
-    planets: ['body_health', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons', 'daily_life', 'conv_daily_routine', 'school_education', 'conv_school', 'math_shapes', 'question_words', 'prepositions'] },
-  { id: 'jupiter', emoji: '🟠', tr: 'Jüpiter İstasyonu', en: 'Jupiter Station', level: 'A1 · 3',
-    planets: ['sports_exercise', 'hobbies_free_time', 'conv_hobbies_sports', 'city_places', 'travel_transportation', 'conv_city_transport', 'nature_environment', 'conv_animals_nature', 'emotions_personality', 'conv_feelings_preferences', 'opposites', 'math_operations', 'conv_shopping_clothes', 'conv_health', 'conv_celebrations'] },
-  { id: 'saturn', emoji: '🪐', tr: 'Satürn Halkaları', en: 'Saturn Rings', level: 'A1 ✓',
-    planets: ['jobs_professions', 'conv_jobs_safety', 'technology_computers', 'conv_technology', 'communication_internet', 'science', 'space_astronomy', 'conv_space', 'get', 'conv_travel'] },
-  { id: 'neptune', emoji: '🔵', tr: 'Neptün Kapısı', en: 'Neptune Gate', level: 'A2 · 1', planets: A2_JOURNEY_IDS.slice(0, 10) },
-  { id: 'galaxy', emoji: '🌌', tr: 'Galaksi Merkezi', en: 'Galaxy Core', level: 'A2 ✓', planets: A2_JOURNEY_IDS.slice(10) },
+  { id: 'moon', emoji: '🌙', tr: 'Ay İstasyonu', en: 'Moon Station', grade: 2, get level() { return L('2. Sınıf', 'Grade 2') + ' · A1.1'; },
+    planets: ['conv_social_manners', 'school_education', 'classroom_life', 'conv_school', 'body_health', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons', 'family_people', 'conv_family_home', 'home', 'animals', 'food_drinks', 'conv_food_drinks', 'math_numbers'] },
+  { id: 'mars', emoji: '🔴', tr: 'Mars Üssü', en: 'Mars Base', grade: 3, get level() { return L('3. Sınıf', 'Grade 3') + ' · A1.2'; },
+    planets: ['daily_life', 'conv_daily_routine', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes'] },
+  { id: 'jupiter', emoji: '🟠', tr: 'Jüpiter İstasyonu', en: 'Jupiter Station', grade: 4, get level() { return L('4. Sınıf', 'Grade 4') + ' · A1.3'; },
+    planets: ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'get'] },
+  { id: 'saturn', emoji: '🪐', tr: 'Satürn Halkaları', en: 'Saturn Rings', grade: 0, get level() { return L('Bonus', 'Bonus') + ' · A1+'; },
+    planets: ['technology_computers', 'conv_technology', 'communication_internet', 'science', 'space_astronomy', 'conv_space'] },
+  { id: 'neptune', emoji: '🔵', tr: 'Neptün Kapısı', en: 'Neptune Gate', grade: 5, get level() { return L('5. Sınıf', 'Grade 5') + ' · A2.1'; }, planets: A2_JOURNEY_IDS.y5 },
+  { id: 'galaxy', emoji: '🌌', tr: 'Galaksi Merkezi', en: 'Galaxy Core', grade: 6, get level() { return L('6. Sınıf', 'Grade 6') + ' · A2.2'; }, planets: A2_JOURNEY_IDS.y6 },
 ];
 const SKIP_PASS_RATIO = 0.8;
 let _journeyMode = false;
@@ -3698,7 +3714,7 @@ function journeyHomeCardHTML(categories) {
       <div class="ke-jhome-top">
         <span class="ke-jhome-planet" style="--pc:${planetTheme(p.id).c}">${planetMotif(p.id)}</span>
         <div class="ke-jhome-text">
-          <div class="ke-jhome-kicker">🚀 ${L('Uzay Yolculuğu', 'Space Journey')} · ${sec.level}</div>
+          <div class="ke-jhome-kicker">🚀 ${L('Uzay Macerası', 'Space Adventure')} · ${sec.level}</div>
           <div class="ke-jhome-title">${planetName(p)}</div>
           <div class="ke-jhome-sub">${p.full ? L('Tüm gezegenleri gezdin! 🎉', 'You visited every planet! 🎉') : L(`Bölüm ${nextEp + 1} / ${p.cat.episode_count} · Sıradaki durak: ${sec.emoji} ${sec.tr}`, `Episode ${nextEp + 1} / ${p.cat.episode_count} · Next stop: ${sec.emoji} ${sec.en}`)}</div>
         </div>
@@ -3707,7 +3723,7 @@ function journeyHomeCardHTML(categories) {
       <div class="ke-jhome-meta">${L(`${st.cleared}/${st.list.length} gezegen`, `${st.cleared}/${st.list.length} planets`)}</div>
       <div class="ke-jhome-actions">
         <button type="button" class="ke-btn-primary ke-jhome-go" id="keJourneyGo">▶ ${L('Devam et', 'Continue')}</button>
-        <button type="button" class="ke-btn-secondary ke-jhome-map" id="keJourneyMap">🗺️ ${L('Harita', 'Map')}</button>
+        <button type="button" class="ke-btn-secondary ke-jhome-map" id="keJourneyMap">🚀 ${L('Macera', 'Adventure')}</button>
       </div>
     </div>`;
 }
@@ -3747,6 +3763,7 @@ function showJourney(container, api, toolId, categories) {
   const nodes = [];
   st.sectors.forEach((sx) => {
     if (!sx.planets.length) return;
+    nodes.push(`<div class="ke-jr-grade-head"><span>${sx.sec.emoji}</span>${sx.sec.level}</div>`);
     sx.planets.forEach((p) => {
       const th = planetTheme(p.id);
       const ring = Math.round(p.done / p.cat.episode_count * 360);
@@ -3763,18 +3780,25 @@ function showJourney(container, api, toolId, categories) {
         </div>`);
     });
     const reached = sx.cleared;
+    // "Sinif atlamak icin quiz" - bu sinifin gecilmemis gezegenlerinden
+    // atlama sinavi; gecince sonraki sinifin ilk gezegeni acilir.
+    const nextSec = st.sectors[sx.si + 1];
+    const nextFirst = nextSec && nextSec.planets[0];
+    const curSi = st.list[st.current] ? st.list[st.current].si : -1;
+    const canSkipGrade = !reached && nextFirst && !nextFirst.unlocked && sx.si === curSi;
     nodes.push(`
       <div class="ke-jr-station${reached ? ' ke-jr-reached' : ''}">
         <span class="ke-jr-st-emoji">${sx.sec.emoji}</span>
-        <div><b>${L(sx.sec.tr, sx.sec.en)}</b><span>${reached ? L(`${sx.sec.level} tamamlandı! 🏅`, `${sx.sec.level} complete! 🏅`) : L(`Seviye durağı · ${sx.sec.level}`, `Level stop · ${sx.sec.level}`)}</span></div>
+        <div><b>${L(sx.sec.tr, sx.sec.en)}</b><span>${reached ? L(`${sx.sec.level} tamamlandı! 🏅`, `${sx.sec.level} complete! 🏅`) : L(`Sınıf durağı · ${sx.sec.level}`, `Grade stop · ${sx.sec.level}`)}</span></div>
         <span class="ke-jr-st-medal">${reached ? '🏅' : '🔒'}</span>
       </div>
+      ${canSkipGrade ? `<button type="button" class="ke-jr-gradeskip" data-grade-skip="${nextFirst.index}">⏭ ${L(`Sınıf atlama sınavı → ${nextSec.sec.level}`, `Grade jump test → ${nextSec.sec.level}`)}</button>` : ''}
       <div class="ke-jr-story-slot" data-story-slot="${sx.si + 1}"></div>`);
   });
   host.innerHTML = `
     <button class="ke-back-btn" id="keJourneyBack">${ICON_BACK} ${L('Ana Ekran', 'Home')}</button>
     <div class="ke-journey">
-      <h1 class="ke-title">${bubbleTitleHTML(L('Uzay Yolculuğum', 'My Space Journey'))}</h1>
+      <h1 class="ke-title">${bubbleTitleHTML(L('Uzay Macerası', 'Space Adventure'))}</h1>
       <p class="ke-subtitle">${L(`${st.cleared}/${st.list.length} gezegen · ${st.sectors.filter((s) => s.cleared).length}/${st.sectors.length} istasyon`, `${st.cleared}/${st.list.length} planets · ${st.sectors.filter((s) => s.cleared).length}/${st.sectors.length} stations`)}</p>
       <p class="ke-jr-hint">${L('Geçtiğin gezegenlere dokunup tekrar oynayabilirsin. Kilitli bir gezegene atlamak için atlama sınavını geçebilirsin.', 'Tap any planet you have visited to play it again. To jump to a locked planet, pass the jump test.')}</p>
       <div class="ke-jr-path" id="keJrPath">
@@ -3789,6 +3813,9 @@ function showJourney(container, api, toolId, categories) {
   host.querySelector('#keJourneyBack').addEventListener('click', () => { _journeyMode = false; showSectionMenu(container, api, toolId, categories); });
   pushBackState(() => { _journeyMode = false; showSectionMenu(container, api, toolId, categories); });
 
+  host.querySelectorAll('[data-grade-skip]').forEach((b) => b.addEventListener('click', () => {
+    startSkipTest(container, api, toolId, categories, st.list[Number(b.dataset.gradeSkip)], st);
+  }));
   host.querySelectorAll('[data-planet]').forEach((b) => b.addEventListener('click', () => {
     const p = st.list[Number(b.dataset.planet)];
     showPlanetSheet(container, api, toolId, categories, p, st);
@@ -3878,7 +3905,7 @@ function showCheckpointCelebration(container, sec) {
       <h2>${L(`${sec.tr}'na ulaştın!`, `You reached ${sec.en}!`)}</h2>
       <p>${L(`${sec.level} seviye durağını tamamladın. Harika bir yolculuk! 🏅`, `You completed the ${sec.level} level stop. What a journey! 🏅`)}</p>
       <p class="ke-jr-cp-gift">🎁 ${L('Ödül: 1 oyun hakkı 🎮', 'Reward: 1 game token 🎮')}</p>
-      <button type="button" class="ke-btn-primary" id="keCpOk">${L('Yolculuğa devam! 🚀', 'Keep flying! 🚀')}</button>
+      <button type="button" class="ke-btn-primary" id="keCpOk">${L('Maceraya devam! 🚀', 'Keep flying! 🚀')}</button>
     </div>`;
   shell.appendChild(ov);
   try { launchConfetti(ov.querySelector('#keCpConfetti')); } catch (e) { /* yok say */ }
@@ -4045,7 +4072,7 @@ async function startSkipTest(container, api, toolId, categories, target, st) {
         <div class="ke-bonus-icon" style="font-size:54px;">🚀</div>
         <p><b>${L(`${correct}/${qs.length} doğru — atlama başarılı!`, `${correct}/${qs.length} correct — jump successful!`)}</b></p>
         <p>${L(`${planetName(target)} gezegenine uçtun. Geçtiğin gezegenleri istediğin zaman oynayıp yıldız toplayabilirsin.`, `You flew to ${planetName(target)}. You can still play the planets you skipped to collect stars.`)}</p>
-        <button type="button" class="ke-btn-primary" id="keSkipDone">${L('Haritaya dön', 'Back to the map')}</button>`;
+        <button type="button" class="ke-btn-primary" id="keSkipDone">${L('Maceraya dön', 'Back to the adventure')}</button>`;
       bodyEl.querySelector('#keSkipDone').addEventListener('click', () => { close(); showJourney(container, api, toolId, categories); });
     } else {
       progEl.textContent = L('Sonuç', 'Result');
@@ -4072,7 +4099,7 @@ async function startSkipTest(container, api, toolId, categories, target, st) {
 function bottomNavHTML(active) {
   const items = [
     ['home', '🏠', L('Ana', 'Home')],
-    ['map', '🗺️', L('Harita', 'Map')],
+    ['map', '🚀', L('Macera', 'Adventure')],
     ['avatar', '🎨', L('Avatar', 'Avatar')],
     ['stats', '📊', L('İlerleme', 'Progress')],
   ];
@@ -4307,10 +4334,10 @@ async function showStatsScreen(container, api, toolId, categories) {
   const jst = Journey.state(categories);
   const journeyHTML = `
     <div class="ke-week-card ke-jr-summary">
-      <div class="ke-kpi-lbl">🚀 ${L('Uzay Yolculuğum', 'My Space Journey')}</div>
+      <div class="ke-kpi-lbl">🚀 ${L('Uzay Macerası', 'Space Adventure')}</div>
       <div class="ke-kpi-val">${jst.cleared}<span style="font-size:15px;font-weight:700;"> / ${jst.list.length} ${L('gezegen', 'planets')}</span></div>
       <div class="ke-jr-medals">${jst.sectors.map((sx) => `<div class="ke-jr-medal${sx.cleared ? ' got' : ''}" title="${L(sx.sec.tr, sx.sec.en)}"><span>${sx.cleared ? sx.sec.emoji : '🔒'}</span><small>${sx.sec.level}</small></div>`).join('')}</div>
-      <button type="button" class="ke-btn-primary" id="keStatsJourney" style="margin-top:10px;">🗺️ ${L('Haritayı aç — geçmiş gezegenleri tekrar oyna', 'Open the map — replay past planets')}</button>
+      <button type="button" class="ke-btn-primary" id="keStatsJourney" style="margin-top:10px;">🚀 ${L('Macerayı aç — geçmiş gezegenleri tekrar oyna', 'Open the adventure — replay past planets')}</button>
     </div>`;
   const body = host.querySelector('#keStatsBody');
   if (body) {
@@ -5015,7 +5042,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
   const motif = SCENE_MOTIF[baseCatId(episode.category_id)];
 
   host.innerHTML = `
-    <button class="ke-back-btn" id="keBackBtn">${ICON_BACK} ${_journeyMode ? '🗺️ ' + L('Harita', 'Map') : L('Kategoriler', 'Categories')}</button>
+    <button class="ke-back-btn" id="keBackBtn">${ICON_BACK} ${_journeyMode ? '🚀 ' + L('Macera', 'Adventure') : L('Kategoriler', 'Categories')}</button>
     <details class="ke-map-details" id="keMapDetails"${isNarrowLayout() ? '' : ' open'}>
       <summary class="ke-map-summary">🗺️ ${L('Bölüm', 'Episode')} <span id="keMapSummaryNum">${episode.episode_index + 1}</span> / <span id="keMapSummaryTotal">${episode.episode_count}</span></summary>
       <div class="ke-map" id="keMap"></div>
@@ -5364,7 +5391,7 @@ function renderConversationEpisodeScene(container, api, toolId, categories, epis
   const topicTitle = _lang === 'tr' ? (episode.title_tr || episode.title_en) : episode.title_en;
 
   host.innerHTML = `
-    <button class="ke-back-btn" id="keBackBtn">${ICON_BACK} ${_journeyMode ? '🗺️ ' + L('Harita', 'Map') : L('Kategoriler', 'Categories')}</button>
+    <button class="ke-back-btn" id="keBackBtn">${ICON_BACK} ${_journeyMode ? '🚀 ' + L('Macera', 'Adventure') : L('Kategoriler', 'Categories')}</button>
     <details class="ke-map-details" id="keMapDetails"${isNarrowLayout() ? '' : ' open'}>
       <summary class="ke-map-summary">🗺️ ${L('Konu', 'Topic')} <span id="keMapSummaryNum">${episode.episode_index + 1}</span> / <span id="keMapSummaryTotal">${episode.episode_count}</span></summary>
       <div class="ke-map" id="keMap"></div>
