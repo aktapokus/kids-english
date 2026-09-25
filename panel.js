@@ -1213,6 +1213,11 @@ ${FONT_FACES}
      overflow:hidden'ı, kutu İÇERİĞE göre büyüdüğü için hiçbir şeyi
      kesmiyor — sadece sabit boyutu aşan içerik kesilirdi). */
   .ke-scene-narrow{ height:auto !important; min-height:280px; padding-bottom:8px; }
+  /* Koyu tahta (soru/konuşma/cümle) açıkken bu 8px, tahtanın altında
+     .ke-scene-wrap'ın kategori renkli degradesini şerit olarak
+     gösteriyordu ("tahtanın arkasında hâlâ arka plan görünüyor" -
+     Family & Home'da turuncu, Animals & Nature'da yeşil). */
+  .ke-scene-narrow:has(.ke-quiz.ke-show, .ke-speak.ke-show, .ke-sentence.ke-show){ padding-bottom:0; }
   /* "hiç kaydırma olmamalı" — tek ekrana sığdırmak için koordineli bir
      alan bütçesi: 2 sütun yerine 3 sütun (6 kelimelik bölümlerde 3 satır
      yerine 2 satır - ~110px kazanç), ikonlar küçültüldü, üstteki
