@@ -517,15 +517,26 @@ const Classroom = {
     d.className = null; d.code = null;
     this._save(d);
   },
+  // flushTimeTrack her 20 sn'de bir çağırıyor - değişmeyen veriyi tekrar
+  // tekrar göndermemek için (okul ağında 30 cihaz x 3/dk gereksiz istek)
+  // aynı yük 5 dakikadan kısa sürede tekrar gönderilmiyor. keepalive:
+  // uygulama arka plana alınırken başlayan istek sayfa dondurulsa da
+  // tamamlansın (Android'de son senkronun kaybolmaması için).
+  _lastSent: '',
+  _lastSentAt: 0,
   async sync(stars, streakDays, wordsLearned, minutesTotal) {
     const d = this._load();
     if (!d.code) return;
+    const body = JSON.stringify({ p_device_id: d.deviceId, p_stars: stars, p_streak_days: streakDays, p_words_learned: wordsLearned, p_minutes_total: minutesTotal });
+    if (body === this._lastSent && Date.now() - this._lastSentAt < 5 * 60 * 1000) return;
     try {
-      await fetch(`${SUPABASE_URL}/rest/v1/rpc/sync_progress`, {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/sync_progress`, {
         method: 'POST',
+        keepalive: true,
         headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
-        body: JSON.stringify({ p_device_id: d.deviceId, p_stars: stars, p_streak_days: streakDays, p_words_learned: wordsLearned, p_minutes_total: minutesTotal }),
+        body,
       });
+      if (res.ok) { this._lastSent = body; this._lastSentAt = Date.now(); }
     } catch (e) { /* sessiz basarisizlik - internet yoksa bir sonraki senkronda dener */ }
   },
 };
@@ -3632,7 +3643,7 @@ async function showStoryReader(container, api, toolId, categories, storyId, init
     host2.querySelector('#keStorySpeak').addEventListener('click', (e) => {
       const btn = e.currentTarget;
       btn.disabled = true;
-      speakStoryText(card.text.join('. '), host2, () => { btn.disabled = false; });
+      speakStoryText(card.text, host2, () => { btn.disabled = false; });
     });
     host2.querySelector('#keStoryRecordBtn').addEventListener('click', toggleRecording);
     const shareBtn = host2.querySelector('#keStoryRecordShare');
@@ -4292,67 +4303,76 @@ function notifySoundProblem(reason) {
   setTimeout(() => t.remove(), 9000);
 }
 
-// Story sayfasındaki metni, konuşmaya GÖNDERİLECEK dizgeyle (card.text.join
-// ('. ')) BİREBİR aynı ofsetlerle kelime kelime <span data-start> içine
-// sarar - speakStoryText'teki onboundary charIndex'i bu ofsetlerle
-// eşleştirip okunan kelimeyi karaoke gibi vurgulayabilsin diye. Boşluk
-// token'ları span'sız bırakılıyor (tıklanabilir/vurgulanabilir tek birim
-// hep bir "kelime").
+// Story sayfasının her satırı <p>, her kelimesi <span data-local> (satır
+// içi karakter ofseti). speakStoryText her satırı AYRI bir konuşma olarak
+// okuyor; onboundary'nin charIndex'i o satırın metnine göre geldiği için
+// data-local ile birebir eşleşiyor.
 function buildStoryLineHTML(lines) {
-  let offset = 0;
-  const html = lines.map((line, li) => {
-    const tokens = line.split(/(\s+)/);
-    const lineHtml = tokens.map((tok) => {
+  const html = lines.map((line) => {
+    let offset = 0;
+    const lineHtml = line.split(/(\s+)/).map((tok) => {
       if (tok === '') return '';
       if (/^\s+$/.test(tok)) { offset += tok.length; return tok; }
       const start = offset;
       offset += tok.length;
-      return `<span class="ke-story-word" data-start="${start}">${escapeProfileText(tok)}</span>`;
+      return `<span class="ke-story-word" data-local="${start}">${escapeProfileText(tok)}</span>`;
     }).join('');
-    if (li < lines.length - 1) offset += 2; // '. ' ayırıcı - join('. ') ile aynı uzunluk
     return `<p>${lineHtml}</p>`;
   }).join('');
   return { html };
 }
 
-// Hikaye sayfasını sesli okurken kelime kelime vurgulama (karaoke tarzı)
-// - "okurken okuduğu kelimeyi highlight edebilir miyiz" isteği üzerine.
-// speakWord'den AYRI: o tek kelime/kısa ifadeler için 3.2s sabit
-// güvenlik zaman aşımı kullanıyor, bir hikaye sayfası (birkaç cümle) bu
-// sürede kesilirdi. onboundary masaüstü tarayıcılarda güvenilir ama
-// Android Chrome'da (dolayısıyla APK/TWA'da da) HİÇ tetiklenmiyor - "APK'da
-// highlight çalışmadı" geri bildirimi. O yüzden gerçek boundary olayı
-// gelmezse, konuşma başladığı an kelime uzunluğu + noktalama duraklarına
-// göre tahmini bir zamanlamayla ilerleyen yedek vurgu devreye giriyor;
-// gerçek bir boundary olayı gelir gelmez yedek zamanlayıcı susuyor.
-const STORY_MS_PER_CHAR = 85;
-const STORY_WORD_GAP_MS = 120;
-function speakStoryText(text, host, onDone) {
+// Hikaye sayfasını sesli okurken kelime kelime vurgulama (karaoke tarzı).
+// onboundary masaüstünde güvenilir ama Android Chrome'da (APK/TWA dahil)
+// HİÇ tetiklenmiyor. Tüm sayfayı tek seferde okuyup tahmini zamanlamayla
+// vurgulamak sayfa boyunca kayma biriktiriyordu ("kitapta highlight
+// senkronizasyonu" geri bildirimi). Şimdi her satır ayrı bir konuşma:
+// her satırın onstart'ı vurguyu o satırın İLK kelimesine yeniden
+// hizalıyor, tahmin sadece kısa bir satır içinde yürüyor - kayma satır
+// başında sıfırlanıyor. Gerçek boundary olayı gelirse tahmin susuyor.
+const STORY_MS_PER_CHAR = 80;
+const STORY_WORD_GAP_MS = 110;
+// Cihazın TTS sesi tahminden hızlı/yavaş olabilir - her satır bitince
+// gerçek süre / tahmini süre oranıyla tempo katsayısını düzeltiyoruz ve
+// sonraki sayfalar için saklıyoruz (masaüstü testte ilk tahmin ~%30 hızlıydı).
+const STORY_PACE_KEY = 'ke_tts_pace_v1';
+const StoryPace = {
+  get() { try { const v = parseFloat(window.localStorage.getItem(STORY_PACE_KEY)); return v > 0.5 && v < 2.5 ? v : 1.25; } catch (e) { return 1.25; } },
+  learn(ratio) {
+    const next = Math.max(0.6, Math.min(2.2, this.get() * 0.5 + this.get() * ratio * 0.5));
+    try { window.localStorage.setItem(STORY_PACE_KEY, String(next)); } catch (e) { /* yok say */ }
+  },
+};
+function storyWordMs(w) {
+  let ms = w.length * STORY_MS_PER_CHAR + STORY_WORD_GAP_MS;
+  if (/[.!?]["”']?$/.test(w)) ms += 300;
+  else if (/[,;:]$/.test(w)) ms += 160;
+  return ms;
+}
+function speakStoryText(lines, host, onDone) {
   if (!('speechSynthesis' in window)) { notifySoundProblem(L('bu tarayıcı sesli okumayı desteklemiyor', 'this browser cannot read aloud')); if (onDone) onDone(); return; }
   const synth = window.speechSynthesis;
-  const spans = [...host.querySelectorAll('.ke-story-word')]
-    .map((el) => ({ el, start: Number(el.dataset.start) }))
-    .sort((a, b) => a.start - b.start);
+  const paras = [...host.querySelectorAll('.ke-story-text p')]
+    .map((p) => [...p.querySelectorAll('.ke-story-word')].map((el) => ({ el, start: Number(el.dataset.local) })));
   let current = null;
   let done = false;
   let gotBoundary = false;
   let fallbackTimer = null;
+  let lineIdx = -1;
+  const pace = StoryPace.get();
   const clearHighlight = () => { if (current) { current.el.classList.remove('ke-story-word-active'); current = null; } };
-  const highlight = (s) => { if (s !== current) { clearHighlight(); s.el.classList.add('ke-story-word-active'); current = s; } };
+  const highlight = (s) => { if (s && s !== current) { clearHighlight(); s.el.classList.add('ke-story-word-active'); current = s; } };
   const stopFallback = () => { if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; } };
-  const startFallback = () => {
-    if (fallbackTimer || gotBoundary || done) return;
+  const startFallback = (words) => {
+    stopFallback();
+    if (gotBoundary || done) return;
     let i = 0;
     const step = () => {
       fallbackTimer = null;
-      if (done || gotBoundary || i >= spans.length) return;
-      const s = spans[i++];
+      if (done || gotBoundary || i >= words.length) return;
+      const s = words[i++];
       highlight(s);
-      const w = s.el.textContent;
-      let ms = w.length * STORY_MS_PER_CHAR + STORY_WORD_GAP_MS;
-      if (/[.!?]["”']?$/.test(w)) ms += 380;
-      else if (/[,;:]$/.test(w)) ms += 180;
-      fallbackTimer = setTimeout(step, ms);
+      fallbackTimer = setTimeout(step, storyWordMs(s.el.textContent) * pace);
     };
     step();
   };
@@ -4363,9 +4383,13 @@ function speakStoryText(text, host, onDone) {
     clearHighlight();
     if (onDone) onDone();
   };
-  const doSpeak = () => {
-    if (synth.paused) synth.resume();
-    const utter = new SpeechSynthesisUtterance(text);
+  const speakLine = (i) => {
+    if (done) return;
+    if (i >= lines.length) { finish(); return; }
+    lineIdx = i;
+    const words = paras[i] || [];
+    let started = false;
+    const utter = new SpeechSynthesisUtterance(lines[i]);
     utter.lang = 'en-US';
     utter.rate = 0.78;
     utter.pitch = 0.85;
@@ -4373,27 +4397,38 @@ function speakStoryText(text, host, onDone) {
     const voice = pickMaleVoice();
     if (voice && voice.lang && voice.lang.toLowerCase().startsWith('en')) utter.voice = voice;
     window._keLastUtter = utter;
+    let startedAt = 0;
+    utter.onstart = () => { started = true; startedAt = performance.now(); startFallback(words); };
     utter.onboundary = (e) => {
       if (e.name && e.name !== 'word') return;
       gotBoundary = true;
       stopFallback();
       let match = null;
-      for (const s of spans) { if (s.start <= e.charIndex) match = s; else break; }
-      if (match) highlight(match);
+      for (const s of words) { if (s.start <= e.charIndex) match = s; else break; }
+      highlight(match);
     };
-    utter.onstart = startFallback;
-    utter.onend = finish;
+    utter.onend = () => {
+      if (lineIdx !== i) return;
+      if (!gotBoundary && startedAt && words.length >= 3) {
+        const est = words.reduce((sum, s) => sum + storyWordMs(s.el.textContent), 0);
+        const actual = performance.now() - startedAt;
+        if (est > 0 && actual > 300) StoryPace.learn(actual / (est * pace));
+      }
+      stopFallback();
+      speakLine(i + 1);
+    };
     utter.onerror = (e) => {
       const err = e && e.error;
       if (err && err !== 'canceled' && err !== 'interrupted') notifySoundProblem(err);
       finish();
     };
     synth.speak(utter);
-    // Bazı Android TTS motorlarında onstart da gecikiyor/gelmiyor - yedek.
-    setTimeout(startFallback, 700);
+    // Bazı Android TTS motorlarında onstart gecikiyor/gelmiyor - yedek.
+    setTimeout(() => { if (!started && lineIdx === i && !done) startFallback(words); }, 700);
   };
-  if (synth.speaking || synth.pending) { synth.cancel(); setTimeout(doSpeak, 90); } else { doSpeak(); }
-  setTimeout(finish, Math.max(6000, text.split(/\s+/).length * 900 + 2000));
+  if (synth.speaking || synth.pending) { synth.cancel(); setTimeout(() => speakLine(0), 90); } else { speakLine(0); }
+  const totalWords = lines.join(' ').split(/\s+/).length;
+  setTimeout(finish, Math.max(8000, totalWords * 900 + lines.length * 1500));
 }
 
 // Android Chrome'da sesin sessizce kaybolmasının bilinen nedenleri:
