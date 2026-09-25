@@ -2844,7 +2844,9 @@ const AvatarPaint = {
       }
       const c = document.createElement('canvas'); c.width = s.w; c.height = s.h;
       c.getContext('2d').putImageData(new ImageData(d, s.w, s.h), 0, 0);
-      return new Promise((res) => c.toBlob((blob) => res(blob ? URL.createObjectURL(blob) : c.toDataURL())));
+      // data: URL (blob: degil) - telefonda onbellekteki eski index.html'in
+      // CSP'si blob: resme izin vermiyordu, avatar "kayboluyordu".
+      return c.toDataURL('image/png');
     }).then((url) => { this.cache.set(k, url); this.pending.delete(k); return url; },
       () => { this.pending.delete(k); return this.legacySrc({ color: LEGACY_AVATAR_COLORS.includes(p.color) ? p.color : 'yellow' }); });
     this.pending.set(k, job);
