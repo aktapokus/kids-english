@@ -1935,6 +1935,131 @@ ${FONT_FACES}
   @keyframes ke-rec-pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.7; } }
   .ke-story-record-bar audio{ border-radius:999px; }
 
+  /* --- Kitap görünümü (Story Time okuyucu) --- */
+  .ke-book-stage{
+    --paper:#FBF3E1; --ink:#3B2A1A; --ink-soft:#6B5237;
+    --edge-a:#E9DCC0; --edge-b:#F6ECD5;
+    --paper-img:radial-gradient(ellipse at 30% 0%, rgba(255,255,255,.55), transparent 60%), repeating-linear-gradient(0deg, rgba(120,90,40,.05) 0 1px, transparent 1px 4px);
+    position:relative; z-index:1; max-width:880px; margin:52px auto 0; padding:0 6px 10px;
+    touch-action:pan-y; user-select:none; -webkit-user-select:none;
+  }
+  .ke-book{ position:relative; margin:0 auto; }
+  .ke-page{ position:relative; background-color:var(--paper); background-image:var(--paper-img); color:var(--ink); }
+  /* Telefonda iki yarı tek kağıt: kağıt dokusu kitabın kendisinde, yoksa
+     ikinci yarının üst parlaklığı ortada bir dikiş çizgisi gibi görünüyordu. */
+  .ke-book-spread{ background-color:var(--paper); background-image:var(--paper-img); }
+  .ke-book-spread > .ke-page{ background:none; }
+  .ke-book-spread, .ke-book-single{
+    border-radius:4px 14px 14px 4px;
+    box-shadow:1px 1px 0 var(--edge-a), 2px 2px 0 var(--edge-b), 3px 3px 0 var(--edge-a), 4px 4px 0 var(--edge-b), 5px 5px 0 var(--edge-a), 0 18px 34px rgba(0,0,0,.5);
+  }
+  .ke-book-spread > .ke-page:first-child, .ke-book-single > .ke-page{ border-radius:4px 0 0 4px; }
+  .ke-book-spread > .ke-page:last-child, .ke-book-single > .ke-page{ border-top-right-radius:14px; border-bottom-right-radius:14px; }
+  /* Telefonda tek sayfa: resim üstte, metin altta, sol kenarda cilt gölgesi */
+  .ke-book-spread{ display:flex; flex-direction:column; max-width:460px; }
+  .ke-book-spread > .ke-page-left{ border-radius:4px 14px 0 0; padding:22px 20px 6px 30px; }
+  .ke-book-spread > .ke-page-right{ border-radius:0 0 14px 4px; padding:4px 20px 44px 30px; }
+  .ke-book-spread::before, .ke-book-single::before{
+    content:''; position:absolute; top:0; bottom:0; left:0; width:26px; z-index:2; pointer-events:none;
+    background:linear-gradient(90deg, rgba(60,40,10,.30), rgba(90,60,20,.10) 55%, transparent);
+    border-radius:4px 0 0 4px;
+  }
+  .ke-page-illo{ display:flex; justify-content:center; }
+  .ke-page-illo img{
+    width:min(240px, 62vw); aspect-ratio:1; object-fit:cover; background:#fff;
+    border:6px solid #fff; border-radius:4px; box-shadow:0 2px 8px rgba(60,40,10,.35);
+    transform:rotate(-1.5deg);
+  }
+  .ke-page-inner{ text-align:center; }
+  .ke-chapter-orn{ color:#B08718; font-size:18px; line-height:1; margin:10px 0 2px; }
+  .ke-book .ke-story-card-title{ color:var(--ink); font-size:21px; margin:0 0 10px; text-shadow:none; }
+  .ke-book .ke-story-text{ color:var(--ink); font-size:18px; font-weight:600; line-height:1.65; }
+  .ke-book .ke-story-text p{ margin:0 0 4px; }
+  .ke-book .ke-story-word-active{ background:#FFE066; color:var(--ink); box-shadow:0 0 0 2px #FFE066; }
+  .ke-page-num{ position:absolute; left:0; right:0; bottom:14px; text-align:center; font-size:13px; font-weight:700; color:var(--ink-soft); letter-spacing:.06em; }
+  /* Sağ alt kıvrık köşe - dokununca sonraki sayfa */
+  /* .ke-shell button tabanı position:relative veriyor (daha yüksek
+     özgüllük) - köşe sol alta kayıyordu, bu yüzden !important. */
+  .ke-shell .ke-page-curl{
+    position:absolute !important; left:auto !important; top:auto !important; right:0 !important; bottom:0 !important;
+    width:46px; height:46px; padding:0 !important; border:none !important; margin:0 !important;
+    border-radius:0 0 14px 0 !important; cursor:pointer; box-shadow:none !important; --btn-shadow:transparent !important;
+    background:linear-gradient(315deg, #14231A 0 50%, #D9C59C 50%, #F3E7CC 76%, #E6D6B3 100%) !important;
+    filter:drop-shadow(-2px -2px 2px rgba(60,40,10,.25));
+    transition:width .15s ease, height .15s ease;
+  }
+  .ke-shell .ke-page-curl:hover, .ke-shell .ke-page-curl:focus-visible{ width:56px; height:56px; }
+  .ke-page-curl:focus-visible{ outline:2px solid var(--kb-action); outline-offset:2px; }
+
+  /* Kapak */
+  .ke-book-cover{
+    width:min(300px, 76vw); aspect-ratio:3/4.1; cursor:pointer;
+    border-radius:6px 16px 16px 6px; padding:18px 18px 18px 34px;
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+    background:
+      linear-gradient(90deg, rgba(0,0,0,.35) 0 18px, rgba(255,255,255,.08) 18px 21px, transparent 21px),
+      radial-gradient(ellipse at 40% 20%, #9C7A6B, #6D4C41 60%, #4E342E);
+    box-shadow:3px 3px 0 #E9DCC0, 5px 5px 0 #F6ECD5, 6px 6px 0 #E9DCC0, 0 20px 36px rgba(0,0,0,.55);
+  }
+  .ke-book-cover:focus-visible{ outline:3px solid var(--kb-action); outline-offset:4px; }
+  .ke-cover-frame{ flex:1; min-height:0; width:100%; border:4px solid #D4AF37; border-radius:6px; overflow:hidden; box-shadow:0 0 0 3px rgba(0,0,0,.25), inset 0 0 12px rgba(0,0,0,.4); background:#000; }
+  .ke-cover-frame img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .ke-cover-plate{
+    width:100%; text-align:center; padding:8px 10px; border-radius:6px;
+    background:linear-gradient(#FBF3E1, #EFE1C0); border:2px solid #D4AF37; color:#3B2A1A;
+    display:flex; flex-direction:column; gap:1px;
+  }
+  .ke-cover-ep{ font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#8A6A2A; }
+  .ke-cover-title{ font-family:'Fredoka','Baloo 2',sans-serif; font-weight:700; font-size:20px; line-height:1.15; }
+  .ke-cover-author{ font-size:10.5px; font-weight:700; color:#8A6A2A; }
+  .ke-book-intro{ text-align:center; max-width:420px; margin:18px auto 0; color:var(--kb-chalk-dim); font-size:14.5px; font-weight:700; position:relative; z-index:1; }
+
+  /* Son sayfa: kelime listesi */
+  .ke-book-single{ max-width:520px; }
+  .ke-book-single > .ke-page{ padding:10px 22px 26px 34px; }
+  .ke-gloss-sub{ margin:0 0 12px; font-size:14px; font-weight:700; color:var(--ink-soft); }
+  .ke-book .ke-story-glossary{ grid-template-columns:repeat(2, 1fr); gap:6px 14px; text-align:left; }
+  .ke-book .ke-story-glossary-item{ background:transparent; border:none; border-bottom:1.5px dotted rgba(107,82,55,.45); border-radius:0; padding:5px 2px; flex-direction:row; justify-content:space-between; align-items:baseline; gap:8px; }
+  .ke-book .ke-story-glossary-item b{ color:var(--ink); font-size:15px; }
+  .ke-book .ke-story-glossary-item span{ color:var(--ink-soft); font-size:13px; text-align:right; }
+  .ke-book-end{ margin-top:18px; font-family:'Fredoka','Baloo 2',sans-serif; font-weight:700; font-size:17px; color:#B08718; letter-spacing:.08em; }
+
+  /* Kontroller (kitabın dışında, tahtada) */
+  .ke-book-controls{ position:relative; z-index:1; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:10px; max-width:560px; margin:16px auto 0; }
+  .ke-book-controls-center{ display:flex; justify-content:center; }
+  .ke-book-actions{ display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
+  .ke-book-actions .ke-recording{ background:var(--kb-wrong) !important; color:#fff !important; animation:ke-rec-pulse 1s ease-in-out infinite; }
+  .ke-book-nav{
+    width:48px; height:48px; padding:0 !important; border-radius:50% !important; font-size:18px !important;
+    background:var(--kb-chalk) !important; color:#3B2A1A !important;
+  }
+  .ke-book-nav:disabled{ opacity:.35; }
+  .ke-book-nav-spacer{ width:48px; }
+
+  /* Sayfa çevirme: eski sayfanın kopyası ciltten dönerek kalkar */
+  .ke-flip{ position:absolute !important; margin:0 !important; z-index:5; pointer-events:none; backface-visibility:hidden; -webkit-backface-visibility:hidden; will-change:transform; max-width:none !important; }
+  .ke-flip-next{ transform-origin:left center; animation:ke-page-next .7s cubic-bezier(.45,.05,.35,1) forwards; }
+  .ke-flip-prev{ transform-origin:right center; animation:ke-page-prev .7s cubic-bezier(.45,.05,.35,1) forwards; }
+  @keyframes ke-page-next{ from{ transform:perspective(1800px) rotateY(0); filter:brightness(1); } to{ transform:perspective(1800px) rotateY(-180deg); filter:brightness(.65); } }
+  @keyframes ke-page-prev{ from{ transform:perspective(1800px) rotateY(0); filter:brightness(1); } to{ transform:perspective(1800px) rotateY(180deg); filter:brightness(.65); } }
+
+  /* Genişte iki sayfalık açılım: solda resim, sağda metin, ortada cilt */
+  @media (min-width:700px){
+    .ke-book-spread{ flex-direction:row; max-width:860px; min-height:430px; }
+    .ke-book-spread > .ke-page{ flex:1 1 50%; display:flex; flex-direction:column; justify-content:center; background-color:var(--paper); background-image:var(--paper-img); }
+    .ke-book-spread > .ke-page-left{ border-radius:14px 0 0 14px; padding:30px 26px; }
+    .ke-book-spread > .ke-page-right{ border-radius:0 14px 14px 0; padding:30px 34px 52px; }
+    .ke-book-spread{ border-radius:14px; }
+    .ke-book-spread::before{
+      left:50%; width:70px; transform:translateX(-50%); border-radius:0;
+      background:linear-gradient(90deg, transparent, rgba(90,60,20,.14) 40%, rgba(50,30,5,.34) 50%, rgba(90,60,20,.14) 60%, transparent);
+    }
+    .ke-page-illo img{ width:min(300px, 100%); }
+    .ke-book .ke-story-text{ font-size:20px; }
+    .ke-book-cover{ width:320px; }
+  }
+  @media (prefers-reduced-motion: reduce){ .ke-flip{ display:none; } }
+
   /* Eskiden burada "WELCOME panosu" tarzı renkli eğik bayrakçık başlık
      vardı (.ke-banner/.ke-flag) — parlak/candy-app hissi verip tebeşir
      temasıyla çelişiyordu ("hiç chalk havası yok" geri bildirimi
@@ -3186,75 +3311,184 @@ async function showStoryReader(container, api, toolId, categories, storyId, init
     showStoryList(container, api, toolId, categories);
   };
 
+  // "Story kısmında kitap gibi yapabilir misin, tam bir kitap hissi yok" -
+  // kapak (deri ciltli, sırtlı), krem kağıt sayfalar, genişte iki sayfalık
+  // açılım (solda resim, sağda metin, ortada cilt gölgesi), telefonda tek
+  // sayfa. Sayfa çevirme: eski sayfanın bir kopyası yeni sayfanın üstüne
+  // konup ciltten dönerek kalkıyor, altından yeni sayfa görünüyor. Kaydırma
+  // (swipe) ve sağ alttaki kıvrık köşe ile de çevrilir.
+  let turning = false;
+  const isWideBook = () => window.matchMedia('(min-width: 700px)').matches;
+
+  function goTo(newPage) {
+    if (turning || newPage === page || newPage < -1 || newPage > lastPage) return;
+    const dir = newPage > page ? 1 : -1;
+    const oldStage = container.querySelector('#keScreenHost .ke-book-stage');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let snap = null;
+    if (oldStage && !reduce) {
+      const book = oldStage.querySelector('.ke-book');
+      const spread = isWideBook() && book.classList.contains('ke-book-spread');
+      const src = spread ? book.querySelector(dir > 0 ? '.ke-page-right' : '.ke-page-left') : book;
+      if (src) {
+        const sr = oldStage.getBoundingClientRect();
+        const r = src.getBoundingClientRect();
+        const cs = getComputedStyle(src);
+        snap = {
+          el: src.cloneNode(true), left: r.left - sr.left, top: r.top - sr.top, w: r.width, h: r.height,
+          style: { padding: cs.padding, borderRadius: cs.borderRadius, display: cs.display, flexDirection: cs.flexDirection, justifyContent: cs.justifyContent },
+        };
+      }
+    }
+    page = newPage;
+    render();
+    const stage = container.querySelector('#keScreenHost .ke-book-stage');
+    if (!snap || !stage) return;
+    const flip = snap.el;
+    flip.removeAttribute('id');
+    flip.querySelectorAll('[id]').forEach((e) => e.removeAttribute('id'));
+    flip.classList.add('ke-flip', dir > 0 ? 'ke-flip-next' : 'ke-flip-prev');
+    Object.assign(flip.style, snap.style, { left: `${snap.left}px`, top: `${snap.top}px`, width: `${snap.w}px`, height: `${snap.h}px` });
+    stage.appendChild(flip);
+    turning = true;
+    const done = () => { if (flip.isConnected) flip.remove(); turning = false; };
+    flip.addEventListener('animationend', done, { once: true });
+    setTimeout(done, 1000);
+  }
+
+  function wireSwipe(stage) {
+    let sx = null;
+    let sy = null;
+    stage.addEventListener('dragstart', (e) => e.preventDefault());
+    stage.addEventListener('pointerdown', (e) => {
+      sx = e.clientX;
+      sy = e.clientY;
+      if (e.pointerType === 'mouse' && !e.target.closest('button')) { try { stage.setPointerCapture(e.pointerId); } catch (err) { /* no-op */ } }
+    });
+    stage.addEventListener('pointerup', (e) => {
+      if (sx === null) return;
+      const dx = e.clientX - sx;
+      const dy = e.clientY - sy;
+      sx = null;
+      if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+      goTo(dx < 0 ? page + 1 : page - 1);
+    });
+    stage.addEventListener('pointercancel', () => { sx = null; });
+  }
+
+  const backBtnHTML = `<button class="ke-back-btn" id="keStoryExit">${ICON_BACK} ${L('Hikayeler', 'Stories')}</button>`;
+  const navBtn = (id, dirLabel, arrow, disabled) => `<button type="button" class="ke-book-nav" id="${id}" aria-label="${dirLabel}" ${disabled ? 'disabled' : ''}>${arrow}</button>`;
+
   function render() {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     Resume.save({ screen: 'story', storyId, page });
     const host2 = container.querySelector('#keScreenHost');
+    const storyTitle = escapeProfileText(_lang === 'tr' ? story.title_tr : story.title);
+
     if (page === -1) {
       host2.innerHTML = `
-        <button class="ke-back-btn" id="keStoryExit">${ICON_BACK} ${L('Hikayeler', 'Stories')}</button>
-        <div class="ke-story-reader ke-story-cover-page">
-          <img class="ke-story-cover-big" src="${new URL(story.cover, ASSET_BASE_URL).href}" alt="" draggable="false" />
-          <h1 class="ke-title">${bubbleTitleHTML(_lang === 'tr' ? story.title_tr : story.title)}</h1>
-          <p class="ke-subtitle">${escapeProfileText(story.intro)}</p>
-          <button type="button" class="ke-btn-primary" id="keStoryStart" style="font-size:16px !important;padding:14px 28px !important;">${L('Başla', 'Start')} 📖</button>
+        ${backBtnHTML}
+        <div class="ke-book-stage">
+          <div class="ke-book ke-book-cover" id="keBook" role="button" tabindex="0" aria-label="${L('Kitabı aç', 'Open the book')}">
+            <div class="ke-cover-frame"><img src="${new URL(story.cover, ASSET_BASE_URL).href}" alt="" draggable="false" /></div>
+            <div class="ke-cover-plate">
+              <span class="ke-cover-ep">${escapeProfileText(story.episode_label)}</span>
+              <span class="ke-cover-title">${storyTitle}</span>
+              <span class="ke-cover-author">Aktapokus Kids English</span>
+            </div>
+          </div>
+        </div>
+        <p class="ke-book-intro">${escapeProfileText(story.intro)}</p>
+        <div class="ke-book-controls ke-book-controls-center">
+          <button type="button" class="ke-btn-primary" id="keStoryStart">📖 ${L('Kitabı Aç', 'Open the Book')}</button>
         </div>
       `;
       host2.querySelector('#keStoryExit').addEventListener('click', exit);
-      host2.querySelector('#keStoryStart').addEventListener('click', () => { page = 0; render(); });
+      host2.querySelector('#keStoryStart').addEventListener('click', () => goTo(0));
+      const cover = host2.querySelector('#keBook');
+      cover.addEventListener('click', () => goTo(0));
+      cover.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goTo(0); } });
+      wireSwipe(host2.querySelector('.ke-book-stage'));
       return;
     }
+
     if (page === lastPage) {
       host2.innerHTML = `
-        <button class="ke-back-btn" id="keStoryExit">${ICON_BACK} ${L('Hikayeler', 'Stories')}</button>
+        ${backBtnHTML}
         <div id="keConfettiHost"></div>
-        <div class="ke-story-reader">
-          <h1 class="ke-title">${bubbleTitleHTML(L('Yeni Kelimeler', 'New Words'))}</h1>
-          <p class="ke-subtitle">${L('Bu hikayede öğrendiğin kelimeler:', 'Words you learned in this story:')}</p>
-          <div class="ke-story-glossary">
-            ${story.glossary.map((g) => `<div class="ke-story-glossary-item"><b>${escapeProfileText(g.word)}</b><span>${escapeProfileText(g.tr)}</span></div>`).join('')}
+        <div class="ke-book-stage">
+          <div class="ke-book ke-book-single" id="keBook">
+            <div class="ke-page">
+              <div class="ke-page-inner">
+                <div class="ke-chapter-orn">❦</div>
+                <h2 class="ke-story-card-title">${L('Yeni Kelimeler', 'New Words')}</h2>
+                <p class="ke-gloss-sub">${L('Bu hikayede öğrendiğin kelimeler:', 'Words you learned in this story:')}</p>
+                <div class="ke-story-glossary">
+                  ${story.glossary.map((g) => `<div class="ke-story-glossary-item"><b>${escapeProfileText(g.word)}</b><span>${escapeProfileText(g.tr)}</span></div>`).join('')}
+                </div>
+                <div class="ke-book-end">✦ ${L('Son', 'The End')} ✦</div>
+              </div>
+            </div>
           </div>
-          <div class="ke-btn-row" style="margin-top:18px;">
-            <button type="button" class="ke-btn-secondary" id="keStoryPrev">${L('Geri', 'Back')}</button>
+        </div>
+        <div class="ke-book-controls">
+          ${navBtn('keStoryPrev', L('Önceki sayfa', 'Previous page'), '◀', false)}
+          <div class="ke-book-actions">
             <button type="button" class="ke-btn-primary" id="keStoryFinish">${L('Bitir', 'Finish')} ⭐</button>
           </div>
+          <span class="ke-book-nav-spacer"></span>
         </div>
       `;
       host2.querySelector('#keStoryExit').addEventListener('click', exit);
-      host2.querySelector('#keStoryPrev').addEventListener('click', () => { page--; render(); });
+      host2.querySelector('#keStoryPrev').addEventListener('click', () => goTo(page - 1));
       host2.querySelector('#keStoryFinish').addEventListener('click', () => {
         Progress.markComplete('story_' + story.id, 0);
         launchConfetti(host2);
         setTimeout(exit, 900);
       });
+      wireSwipe(host2.querySelector('.ke-book-stage'));
       return;
     }
+
     const card = story.cards[page];
     host2.innerHTML = `
-      <button class="ke-back-btn" id="keStoryExit">${ICON_BACK} ${L('Hikayeler', 'Stories')}</button>
-      <details class="ke-map-details" open><summary class="ke-map-summary">📖 ${L('Sayfa', 'Page')} <span>${page + 1}</span> / <span>${story.cards.length}</span></summary></details>
-      <div class="ke-story-reader">
-        <img class="ke-story-page-img" src="${new URL(card.image, ASSET_BASE_URL).href}" alt="" draggable="false" />
-        <h2 class="ke-story-card-title">${escapeProfileText(card.title)}</h2>
-        <div class="ke-story-text" id="keStoryText">${buildStoryLineHTML(card.text).html}</div>
-        <button type="button" class="ke-btn-secondary" id="keStorySpeak">${ICON_SPEAKER} ${L('Sesli Oku', 'Read Aloud')}</button>
-        <div class="ke-story-record-bar">
-          <button type="button" class="ke-btn-secondary${recording ? ' ke-recording' : ''}" id="keStoryRecordBtn">${recording ? '⏹ ' + L('Kaydı Durdur', 'Stop Recording') : '🎙️ ' + L('Kendi Sesinle Oku', 'Record Yourself')}</button>
-          ${recordedBlobUrl ? `
-            <audio controls src="${recordedBlobUrl}" style="width:100%;margin-top:8px;"></audio>
-            <button type="button" class="ke-btn-secondary" id="keStoryRecordShare" style="margin-top:8px;">📤 ${L('Paylaş / İndir', 'Share / Download')}</button>
-            <p class="ke-story-meta" style="margin-top:4px;">${L('Kayıt sadece bu cihazda — hiçbir yere yüklenmiyor.', 'Recording stays on this device only — nothing is uploaded.')}</p>
-          ` : ''}
-        </div>
-        <div class="ke-btn-row" style="margin-top:14px;">
-          <button type="button" class="ke-btn-secondary" id="keStoryPrev" ${page === 0 ? 'disabled' : ''}>${L('Geri', 'Back')}</button>
-          <button type="button" class="ke-btn-primary" id="keStoryNext">${L('İleri', 'Next')} ▶</button>
+      ${backBtnHTML}
+      <div class="ke-book-stage">
+        <div class="ke-book ke-book-spread" id="keBook">
+          <div class="ke-page ke-page-left">
+            <div class="ke-page-illo"><img src="${new URL(card.image, ASSET_BASE_URL).href}" alt="" draggable="false" /></div>
+          </div>
+          <div class="ke-page ke-page-right">
+            <div class="ke-page-inner">
+              <div class="ke-chapter-orn">❦</div>
+              <h2 class="ke-story-card-title">${escapeProfileText(card.title)}</h2>
+              <div class="ke-story-text" id="keStoryText">${buildStoryLineHTML(card.text).html}</div>
+            </div>
+            <div class="ke-page-num">${page + 1} / ${story.cards.length}</div>
+            <button type="button" class="ke-page-curl" id="keStoryCurl" aria-label="${L('Sonraki sayfa', 'Next page')}"></button>
+          </div>
         </div>
       </div>
+      <div class="ke-book-controls">
+        ${navBtn('keStoryPrev', L('Önceki sayfa', 'Previous page'), '◀', false)}
+        <div class="ke-book-actions">
+          <button type="button" class="ke-btn-secondary" id="keStorySpeak">${ICON_SPEAKER} ${L('Sesli Oku', 'Read Aloud')}</button>
+          <button type="button" class="ke-btn-secondary${recording ? ' ke-recording' : ''}" id="keStoryRecordBtn">${recording ? '⏹ ' + L('Kaydı Durdur', 'Stop Recording') : '🎙️ ' + L('Kendi Sesinle Oku', 'Record Yourself')}</button>
+        </div>
+        ${navBtn('keStoryNext', L('Sonraki sayfa', 'Next page'), '▶', false)}
+      </div>
+      ${recordedBlobUrl ? `
+        <div class="ke-story-record-bar">
+          <audio controls src="${recordedBlobUrl}" style="width:100%;"></audio>
+          <button type="button" class="ke-btn-secondary" id="keStoryRecordShare" style="margin-top:8px;">📤 ${L('Paylaş / İndir', 'Share / Download')}</button>
+          <p class="ke-story-meta" style="margin-top:4px;">${L('Kayıt sadece bu cihazda — hiçbir yere yüklenmiyor.', 'Recording stays on this device only — nothing is uploaded.')}</p>
+        </div>
+      ` : ''}
     `;
     host2.querySelector('#keStoryExit').addEventListener('click', exit);
-    host2.querySelector('#keStoryPrev').addEventListener('click', () => { page--; render(); });
-    host2.querySelector('#keStoryNext').addEventListener('click', () => { page++; render(); });
+    host2.querySelector('#keStoryPrev').addEventListener('click', () => goTo(page - 1));
+    host2.querySelector('#keStoryNext').addEventListener('click', () => goTo(page + 1));
+    host2.querySelector('#keStoryCurl').addEventListener('click', () => goTo(page + 1));
     host2.querySelector('#keStorySpeak').addEventListener('click', (e) => {
       const btn = e.currentTarget;
       btn.disabled = true;
@@ -3263,6 +3497,7 @@ async function showStoryReader(container, api, toolId, categories, storyId, init
     host2.querySelector('#keStoryRecordBtn').addEventListener('click', toggleRecording);
     const shareBtn = host2.querySelector('#keStoryRecordShare');
     if (shareBtn) shareBtn.addEventListener('click', shareRecording);
+    wireSwipe(host2.querySelector('.ke-book-stage'));
   }
 
   render();
