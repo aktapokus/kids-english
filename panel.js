@@ -4481,7 +4481,7 @@ function makeMathQuestion(level, opts) {
   return q;
 }
 
-function showMathChallenge(container, api, toolId, categories, onExit) {
+function showMathChallenge(container, api, toolId, categories, onExit, start) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   const host = container.querySelector('#keScreenHost');
   const exit = onExit || (() => showSectionMenu(container, api, toolId, categories));
@@ -4715,7 +4715,7 @@ function showMathChallenge(container, api, toolId, categories, onExit) {
     }
     ask();
   }
-  levelsScreen();
+  if (start === 'tt') timesTable(); else levelsScreen();
   pushBackState(exit);
 }
 
@@ -5057,8 +5057,22 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
     const best = MathBest.get();
     const got = MATH_PATH.reduce((n, st) => n + (best[st.id] || 0), 0);
     mc.innerHTML = `<div class="ke-category-icon" style="color:#3949AB">🧮</div><div class="ke-category-text"><div class="ke-category-title">${L('Matematik Yolu', 'Math Path')}</div><div class="ke-category-meta">${L('Sayı yağmuru, işlemler, çarpım tablosu, problemler', 'Number rain, sums, times tables, word problems')}</div><div class="ke-category-meta">★ ${got} / ${MATH_PATH.length * 3}</div></div>`;
-    mc.addEventListener('click', () => showMathChallenge(container, api, toolId, categories, () => showCategoryGrid(container, api, toolId, categories, 'math')));
+    const back = () => showCategoryGrid(container, api, toolId, categories, 'math');
+    mc.addEventListener('click', () => showMathChallenge(container, api, toolId, categories, back));
     grid.appendChild(mc);
+    // "Math kisminda ekledigimiz yerleri goremiyorum" - Sayi Yagmuru ve
+    // Carpim Tablosu tek kartin icinde kayboluyordu; ayri, belirgin kartlar.
+    const extra = [
+      { ic: '🌧️', t: L('Sayı Yağmuru', 'Number Rain'), m: L('Düşen sayının İngilizcesini yakala!', 'Catch the English word for the falling number!'), go: () => showMathChallenge(container, api, toolId, categories, back) },
+      { ic: '✖️', t: L('Çarpım Tablosu', 'Times Tables'), m: L('1–10 tabloları, sesli okuma ve alıştırma', 'Tables 1–10, read aloud and practise'), go: () => showMathChallenge(container, api, toolId, categories, back, 'tt') },
+    ];
+    extra.forEach((x) => {
+      const b = document.createElement('button');
+      b.className = 'ke-category-card ke-mx-entry';
+      b.innerHTML = `<div class="ke-category-icon" style="color:#3949AB">${x.ic}</div><div class="ke-category-text"><div class="ke-category-title">${x.t}</div><div class="ke-category-meta">${x.m}</div></div>`;
+      b.addEventListener('click', x.go);
+      grid.appendChild(b);
+    });
   }
   shown.forEach((c) => {
     const card = document.createElement('button');
@@ -5068,6 +5082,7 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
     const theme = CATEGORY_THEME[baseCatId(c.id)] || { c: '#4A90E2', dark: '#3A78C2', tint: '#E9F1FC' };
     card.style.setProperty('--cc-tint', theme.tint);
     card.style.setProperty('--cc-dark', theme.dark);
+    card.style.setProperty('--cc-c', theme.c);  // eksikti: kartlar renksiz/seffaf gorunuyordu
     card.setAttribute('data-initial', initial);
 
     const prog = Progress.getCategory(c.id);
