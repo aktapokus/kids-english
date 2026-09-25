@@ -913,7 +913,7 @@ ${FONT_FACES}
   .ke-shell, .ke-shell *{ box-sizing: border-box; }
   .ke-fullscreen-btn, .ke-back-btn, .ke-screen-host{ position:relative; z-index:1; }
   .ke-shell.ke-fs{
-    width: 100vw; height: 100vh; max-width: none;
+    width: 100vw; height: 100vh; height: 100dvh; max-width: none;
     /* justify-content:center + taşan içerik = üst kısmın kaydırılamayan,
        görünmez bir alana taşması ("üst taraf görünmez hale gelmiş" geri
        bildirimi) — içerik viewport'tan uzun olunca üstten normal akışla
@@ -938,7 +938,7 @@ ${FONT_FACES}
      gözükmüyor") — sahneyi biraz küçültüp alttaki geliştirme amaçlı
      "Başlangıç noktası" atlama satırını tam ekranda tamamen gizliyoruz
      (çocuk kullanıcı için gerekli değil, sadece yer kaplıyordu). */
-  .ke-shell.ke-fs .ke-scene{ height: 70vh; }
+  .ke-shell.ke-fs .ke-scene{ height: 70vh; height: 70dvh; }
   /* Gercek telefonda (fullscreen = gercek Fullscreen API, sandbox'ta
      test edilemiyordu) bu sabit 220px, dar ekran icin olan
      @media(max-width:520px) .ke-mascot-wrap{width:130px} kuralini HER
@@ -1356,7 +1356,7 @@ ${FONT_FACES}
     display:flex; align-items:center; justify-content:center; overflow:hidden;
   }
   .ke-icon-hex-inner:not(.ke-chip-photo){ padding:18px; }
-  .ke-icon-hex-inner .ke-photo-img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .ke-icon-hex-inner .ke-photo-img{ width:100%; height:100%; object-fit:cover; object-position:50% 18%; display:block; }
   .ke-icon-hex-inner .ke-icon-img{ width:100%; height:100%; object-fit:contain; }
   .ke-icon-hex-inner .ke-emoji-icon{ font-size:52px; line-height:1; }
   .ke-icon-hex-inner .ke-letter-badge-text{ font-size:13px; font-weight:800; color:#fff; text-align:center; line-height:1.15; text-shadow:none; }
@@ -1909,6 +1909,16 @@ ${FONT_FACES}
   .ke-bonus-choice.ke-bonus-wrong{ background:#FFEDED !important; border-color:#E5484D !important; opacity:.7; }
   .ke-bonus-card p{ font-size:14.5px; font-weight:700; margin:0 0 14px; }
   .ke-profile-chip .ke-avatar-mini{ position:relative; width:34px; height:34px; flex:none; }
+  .ke-phasebar{ display:flex; justify-content:center; gap:4px; margin:0 auto 8px; max-width:520px; position:relative; z-index:2; }
+  .ke-shell .ke-phase{
+    flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:0; min-height:46px; padding:3px 2px !important;
+    border-radius:12px !important; font-size:10.5px !important; font-weight:800 !important; top:0 !important; box-shadow:none !important;
+    background:rgba(255,255,255,.08) !important; color:var(--kb-chalk-dim,#bbb) !important; border:2px solid rgba(255,255,255,.15) !important;
+  }
+  .ke-phase span{ font-size:17px; line-height:1.15; }
+  .ke-shell .ke-phase.done{ background:rgba(76,175,80,.25) !important; color:#fff !important; border-color:rgba(120,210,120,.6) !important; cursor:pointer; }
+  .ke-shell .ke-phase.cur{ background:#FFD84D !important; color:#3a2a00 !important; border-color:#FFD84D !important; opacity:1; }
+  .ke-shell .ke-phase:disabled:not(.cur){ opacity:.45; }
   /* ---- UX paketi: alt gezinme, karsilama, ebeveyn, tepki, sohbet ---- */
   .ke-bnav{
     position:sticky; bottom:0; z-index:40; display:grid; grid-template-columns:repeat(4,1fr); gap:4px;
@@ -2233,7 +2243,7 @@ ${FONT_FACES}
   .ke-shell .ke-scene.ke-scene-narrow #keObjects{ align-content:space-evenly; }
   @media (max-width:640px) and (orientation:portrait){
     .ke-shell .ke-scene.ke-scene-narrow #keObjects{ grid-template-columns:repeat(2, minmax(0,1fr)); padding:70px 6px 56px; gap:10px 6px; }
-    .ke-shell .ke-scene.ke-scene-narrow .ke-obj .ke-icon-hex{ max-width:min(190px, calc((100vh - 335px) / 3)); }
+    .ke-shell .ke-scene.ke-scene-narrow .ke-obj .ke-icon-hex{ max-width:min(190px, calc((100vh - 335px) / 3)); max-width:min(190px, calc((100dvh - 335px) / 3)); }
     .ke-shell.ke-fs{ padding:10px 10px; }
     .ke-shell .ke-scene.ke-scene-narrow .ke-quiz.ke-show,
     .ke-shell .ke-scene.ke-scene-narrow .ke-speak.ke-show,
@@ -5012,6 +5022,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
     </details>
     <h1 class="ke-title">${bubbleTitleHTML(L('Aktapokus ile ', 'Aktapokus: ') + titleTr)}</h1>
     <p class="ke-subtitle" id="keSubtitle">${L('Bölüm', 'Episode')} ${episode.episode_index + 1} / ${episode.episode_count} — ${L('Kelime Keşfi', 'Word Discovery')}</p>
+    ${episode.isReview ? '' : phaseBarHTML()}
 
     <div class="ke-scene-wrap" style="--cc-tint:${theme.tint};--cc-c:${theme.c}">
       <div class="ke-scene" id="keScene">
@@ -5098,6 +5109,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
   const completedSet = new Set(Progress.getCategory(episode.category_id).completed);
   renderMap(host, episode.episode_index, episode.episode_count, jumpToEpisode, completedSet, journeyEpisodeGate(categories, episode));
   ['#keBubble', '#keQuizBubble', '#keSentenceBubble'].forEach((sel) => addSpeakButton(host.querySelector(sel)));
+  wirePhaseBar(host);
 
   const leaveEpisode = () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -5315,6 +5327,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
   host.querySelector('#keJumpDiscovery').addEventListener('click', () => {
     hideAllOverlays();
     resetDiscovery();
+    setEpisodePhase(host, 'discover');
   });
   host.querySelector('#keJumpQuiz').addEventListener('click', () => {
     hideAllOverlays();
@@ -5400,6 +5413,7 @@ function renderConversationEpisodeScene(container, api, toolId, categories, epis
   const completedSet = new Set(Progress.getCategory(episode.category_id).completed);
   renderMap(host, episode.episode_index, episode.episode_count, jumpToEpisode, completedSet, journeyEpisodeGate(categories, episode));
   ['#keBubble', '#keQuizBubble', '#keSentenceBubble'].forEach((sel) => addSpeakButton(host.querySelector(sel)));
+  wirePhaseBar(host);
 
   const leaveEpisode = () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -5611,6 +5625,43 @@ function mascotReact(mascotEl, good) {
   scene.appendChild(el);
   setTimeout(() => el.classList.add('out'), 1100);
   setTimeout(() => el.remove(), 1500);
+}
+
+// "Quiz kismina gectim, geri donebilmek icin bir tus olmali" - bolum
+// icindeki asamalar gorunur bir cubukta; ulasilan onceki bir asamaya
+// dokununca oraya donuluyor (ileri atlama yok - ileri gitmek oynayarak).
+const EPISODE_PHASES = [
+  ['discover', '👀', () => L('Keşif', 'Discover'), '#keJumpDiscovery'],
+  ['quiz', '❓', () => L('Soru', 'Quiz'), '#keJumpQuiz'],
+  ['speak', '🎤', () => L('Konuş', 'Speak'), '#keJumpSpeak'],
+  ['sentence', '🧩', () => L('Cümle', 'Sentence'), '#keJumpSentence'],
+  ['letters', '🔤', () => L('Harf', 'Letters'), '#keJumpLetters'],
+];
+function phaseBarHTML() {
+  return `<div class="ke-phasebar" id="kePhaseBar" data-max="0" role="navigation" aria-label="${L('Bölüm aşamaları', 'Episode steps')}">${EPISODE_PHASES.map(([id, ic, lb], i) => `<button type="button" class="ke-phase${i === 0 ? ' cur' : ''}" data-phase="${id}" data-i="${i}" ${i === 0 ? '' : 'disabled'}><span>${ic}</span>${lb()}</button>`).join('')}</div>`;
+}
+function setEpisodePhase(host, id) {
+  const bar = host && host.querySelector('#kePhaseBar');
+  if (!bar) return;
+  const i = EPISODE_PHASES.findIndex((x) => x[0] === id);
+  if (i < 0) return;
+  const max = Math.max(Number(bar.dataset.max) || 0, i);
+  bar.dataset.max = String(max);
+  bar.querySelectorAll('.ke-phase').forEach((b) => {
+    const bi = Number(b.dataset.i);
+    b.classList.toggle('cur', bi === i);
+    b.classList.toggle('done', bi < i || (bi <= max && bi !== i));
+    b.disabled = bi > max || bi === i;
+  });
+}
+function wirePhaseBar(host) {
+  const bar = host.querySelector('#kePhaseBar');
+  if (!bar) return;
+  bar.querySelectorAll('.ke-phase').forEach((b) => b.addEventListener('click', () => {
+    const ph = EPISODE_PHASES.find((x) => x[0] === b.dataset.phase);
+    const jump = ph && host.querySelector(ph[3]);
+    if (jump) jump.click();
+  }));
 }
 
 function celebrateBounce(mascotEl) {
@@ -5845,6 +5896,7 @@ function shuffle(arr) {
 // tanınır. Çocuk 2 FARKLI kelimede ilk denemesinde hata yaparsa, bölüm
 // baştan başlatılır (henüz emin değil demektir).
 function startQuiz(host, container, episode, wordList, mascotEl, restartEpisode, onDone) {
+  setEpisodePhase(host, 'quiz');
   const quizEl = host.querySelector('#keQuiz');
   const progressChip = host.querySelector('#keProgress');
   const mainBubbleEl = host.querySelector('#keBubble');
@@ -5979,6 +6031,7 @@ function startQuiz(host, container, episode, wordList, mascotEl, restartEpisode,
 // tarayıcıda yoksa (ör. Firefox) akış hiç kilitlenmiyor — çocuk kendi
 // kendine yüksek sesle tekrar eder, "Devam Et" ile ilerler.
 function startSpeakRound(host, container, episode, wordList, mascotEl, score, onDone) {
+  setEpisodePhase(host, 'speak');
   const speakEl = host.querySelector('#keSpeak');
   const progressChip = host.querySelector('#keProgress');
   const mainBubbleEl = host.querySelector('#keBubble');
@@ -6189,6 +6242,7 @@ function pickDistractorWord(tokens, wordList, currentWord) {
 // ettirmiyoruz, sadece gercek harfleri. #keSentence overlay'ini
 // (startSentenceRound ile AYNI DOM/CSS) yeniden kullanir.
 function startLetterRound(host, container, episode, wordList, mascotEl, score, onDone) {
+  setEpisodePhase(host, 'letters');
   const sEl = host.querySelector('#keSentence');
   const progressChip = host.querySelector('#keProgress');
   const mainBubbleEl = host.querySelector('#keBubble');
@@ -6347,6 +6401,7 @@ function startLetterRound(host, container, episode, wordList, mascotEl, score, o
 }
 
 function startSentenceRound(host, container, episode, wordList, mascotEl, score, onDone) {
+  setEpisodePhase(host, 'sentence');
   const sEl = host.querySelector('#keSentence');
   const progressChip = host.querySelector('#keProgress');
   const mainBubbleEl = host.querySelector('#keBubble');
