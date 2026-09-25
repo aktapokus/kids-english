@@ -1146,8 +1146,12 @@ ${FONT_FACES}
     animation: ke-bob 2.6s ease-in-out infinite;
   }
   .ke-mascot-btn:active{ top:0 !important; filter:brightness(.96); }
-  .ke-mascot-btn img.ke-av-body{ width:78%; height:78%; object-fit:contain; position:relative; z-index:1; }
-  .ke-mascot-btn .ke-mascot-hat{ z-index:2; }
+  .ke-mascot-btn > .ke-av-circle{ position:absolute; inset:0; width:100%; height:100%; }
+  .ke-mascot-edit{
+    position:absolute; bottom:-2px; right:-2px; z-index:3; width:30px; height:30px; border-radius:50%;
+    background:#fff; display:flex; align-items:center; justify-content:center; font-size:14px;
+    box-shadow:0 2px 0 rgba(0,0,0,.25);
+  }
   .ke-mascot-badge{
     position:absolute; top:-4px; right:-4px; z-index:3;
     width:32px; height:32px; border-radius:50%; background:#fff;
@@ -1163,7 +1167,7 @@ ${FONT_FACES}
      kategorilerle progress, reward game, sound test, turkish ve avatar
      gelmeli" istegi. showGamePicker ile ayni kart-overlay deseni. */
   .ke-quickmenu-who{ display:flex; align-items:center; justify-content:center; gap:8px; font-weight:800; font-size:14.5px; color:var(--ke-ink); margin-bottom:4px; }
-  .ke-quickmenu-avatar{ width:36px; height:36px; border-radius:50%; object-fit:cover; background:var(--ke-yellow); }
+  .ke-quickmenu-avatar{ width:44px; height:44px; }
   .ke-quickmenu-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
   .ke-quickmenu-tile{
     display:flex; flex-direction:column; align-items:center; gap:5px;
@@ -1658,7 +1662,6 @@ ${FONT_FACES}
   .ke-mascot-hat{ position:absolute; z-index:2; pointer-events:none; height:auto; animation:ke-bob 2.6s ease-in-out infinite; }
   .ke-mascot-wrap.ke-celebrate .ke-mascot-hat{ animation:ke-mascot-jump .6s ease; }
   .ke-mascot-wrap.ke-mascot-narrow .ke-mascot-hat{ animation:none; }
-  .ke-landing-mascot img{ display:block; width:100%; height:auto; }
   .ke-landing-mascot .ke-mascot-hat{ animation:none; }
   .ke-profile-chip{ display:inline-flex; align-items:center; gap:8px; margin:0 0 10px; padding:4px 14px 4px 6px !important; border-radius:999px !important; font-size:13px !important; }
   .ke-stat-row{ font-size:16px; font-weight:700; margin:10px auto; text-align:left; max-width:340px; color:var(--kb-chalk); }
@@ -1905,11 +1908,77 @@ ${FONT_FACES}
   .ke-bonus-choice.ke-bonus-wrong{ background:#FFEDED !important; border-color:#E5484D !important; opacity:.7; }
   .ke-bonus-card p{ font-size:14.5px; font-weight:700; margin:0 0 14px; }
   .ke-profile-chip .ke-avatar-mini{ position:relative; width:34px; height:34px; flex:none; }
-  .ke-avatar-mini img.ke-av-body{ width:100%; height:100%; object-fit:cover; object-position:50% 12%; border-radius:50%; background:rgba(255,255,255,.15); }
-  .ke-profile-screen{ max-width:640px; margin:0 auto; text-align:center; position:relative; z-index:1; }
-  .ke-avatar-stage{ position:relative; width:min(170px,24vh); margin:30px auto 4px; }
-  .ke-avatar-stage img.ke-av-body{ display:block; width:100%; height:auto; }
-  .ke-avatar-stage .ke-mascot-hat{ animation:none; }
+  .ke-profile-screen{ max-width:760px; margin:0 auto; text-align:center; position:relative; z-index:1; }
+  /* ---- Avatar v2 ----
+     .ke-av = govde gorselinin kendi 2:3 kutusu; tum katmanlar (sapka,
+     esya, dost) bu kutuya gore cqw ile konumlaniyor, boylece her boyutta
+     ayni yere oturuyor. */
+  .ke-av{ position:relative; width:100%; aspect-ratio:2/3; container-type:inline-size; }
+  .ke-av > img.ke-av-body{ display:block; width:100%; height:100%; object-fit:contain; user-select:none; -webkit-user-drag:none; transition:opacity .15s; }
+  .ke-av > img.ke-av-pending{ opacity:0; }
+  .ke-av > .ke-mascot-hat{ animation:none; }
+  .ke-av-layer{
+    position:absolute; z-index:2; line-height:1; pointer-events:none; user-select:none;
+    font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
+    filter:drop-shadow(0 0 .02em #fff) drop-shadow(0 .03em .03em rgba(0,0,0,.3));
+  }
+  .ke-av-pet{ z-index:3; }
+  .ke-av.ke-av-pop{ animation:ke-av-pop .45s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes ke-av-pop{ 0%{ transform:scale(.92); } 60%{ transform:scale(1.05); } 100%{ transform:none; } }
+  /* Yuvarlak rozet: bas-omuz kadraji. Sapka varsa kadraj biraz asagi
+     kayiyor ki sapka kesilmesin. */
+  .ke-av-circle{ position:relative; display:inline-block; flex:none; border-radius:50%; overflow:hidden; vertical-align:middle; box-shadow:inset 0 -3px 0 rgba(0,0,0,.12); }
+  .ke-av-circle > .ke-av{ position:absolute; width:135%; left:-17.5%; top:-2%; }
+  .ke-av-circle > .ke-av.ke-av-hashat{ width:118%; left:-9%; top:14%; }
+  .ke-avatar-stage{
+    position:relative; width:min(250px,62vw); aspect-ratio:5/6; margin:14px auto 4px; border-radius:26px;
+    overflow:hidden; border:4px solid rgba(255,255,255,.85); box-shadow:0 6px 0 rgba(0,0,0,.25);
+  }
+  .ke-avatar-stage > .ke-av{ position:absolute; width:60%; left:20%; bottom:-1%; transition:left .25s; }
+  .ke-avatar-stage.ke-has-pet > .ke-av{ left:11%; }
+  .ke-av-deco{ position:absolute; font-size:clamp(18px,6vw,28px); opacity:.85; pointer-events:none; animation:ke-bob 3.4s ease-in-out infinite; }
+  .ke-av-deco.d0{ top:8%; left:8%; } .ke-av-deco.d1{ top:14%; right:9%; animation-delay:-1.2s; } .ke-av-deco.d2{ top:46%; left:5%; animation-delay:-2.1s; }
+  .ke-av-preview{ position:relative; }
+  .ke-shell .ke-av-dice{
+    position:absolute; top:22px; right:calc(50% - min(125px,31vw) + 8px); z-index:4;
+    width:44px; height:44px; padding:0 !important; border-radius:50% !important; font-size:22px !important;
+    background:#fff !important; box-shadow:0 3px 0 rgba(0,0,0,.25) !important;
+  }
+  .ke-av-studio{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .ke-av-controls{ width:100%; display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .ke-av-tabs{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:5px; width:100%; max-width:440px; padding:4px 0 6px; }
+  .ke-shell .ke-av-tab{
+    display:flex; flex-direction:column; align-items:center; gap:1px; min-width:0; min-height:48px;
+    padding:6px 2px !important; border-radius:14px !important; font-size:11.5px !important; font-weight:800 !important;
+    background:rgba(255,255,255,.1) !important; color:var(--kb-chalk,#fff) !important; box-shadow:none !important; top:0 !important;
+    border:2px solid rgba(255,255,255,.18) !important;
+  }
+  .ke-av-tab span{ font-size:19px; }
+  .ke-shell .ke-av-tab.ke-sel{ background:#FFD84D !important; color:#3a2a00 !important; border-color:#FFD84D !important; }
+  .ke-av-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(74px,1fr)); gap:8px; width:100%; max-width:440px; }
+  .ke-shell .ke-pick-tile{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-height:74px;
+    padding:6px 4px !important; background:rgba(255,255,255,.1) !important; color:var(--kb-chalk,#fff) !important;
+    border:2px solid rgba(255,255,255,.18) !important; box-shadow:none !important; top:0 !important;
+  }
+  .ke-pick-emo{ font-size:28px; line-height:1; }
+  .ke-pick-name{ font-size:10.5px; font-weight:800; line-height:1.15; }
+  .ke-pick-tile .ke-sw{ width:30px; height:30px; }
+  .ke-pick-tile .ke-sw-shirt{ border-radius:8px; background-image:repeating-linear-gradient(180deg, transparent 0 5px, rgba(255,255,255,.9) 5px 9px) !important; }
+  .ke-pick-tile .ke-sw-scene{ width:40px; height:30px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-size:16px; }
+  .ke-shell .ke-pick-tile.ke-sel{ background:rgba(255,216,77,.22) !important; border-color:#FFD84D !important; outline:none; }
+  /* Kilitli parca rengini/seklini gosteriyor (hedef gorunsun), sadece soluk */
+  .ke-shell .ke-pick-tile.ke-lock{ opacity:.62; border-style:dashed !important; }
+  .ke-av-unlock{ width:100%; max-width:440px; font-size:12px; font-weight:800; color:var(--kb-chalk-dim,#ccc); line-height:1.5; }
+  .ke-av-unlock-bar{ height:8px; border-radius:99px; background:rgba(255,255,255,.12); overflow:hidden; margin-bottom:4px; }
+  .ke-av-unlock-bar i{ display:block; height:100%; background:linear-gradient(90deg,#FFD84D,#FF9A1F); border-radius:99px; }
+  @media (min-width:700px){
+    .ke-av-studio{ flex-direction:row; align-items:flex-start; justify-content:center; gap:22px; }
+    .ke-av-preview{ flex:none; }
+    .ke-avatar-stage{ width:260px; margin-top:6px; }
+    .ke-shell .ke-av-dice{ top:14px; right:10px; }
+    .ke-av-controls{ max-width:440px; }
+  }
   .ke-pick-row{ display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:6px 0 10px; }
   .ke-pick{ min-width:52px; min-height:44px; padding:6px 10px !important; border-radius:14px !important; font-size:13px !important; position:relative; }
   .ke-pick.ke-sel{ outline:3px solid #FFD84D; outline-offset:2px; }
@@ -2349,20 +2418,89 @@ function rewardLabel(t) {
 }
 
 const AVATAR_ANCHORS = {"idle": {"x": 0.4521, "y": 0.2078, "w": 0.5858}, "wave": {"x": 0.5, "y": 0.2302, "w": 0.585}, "think": {"x": 0.4531, "y": 0.2015, "w": 0.5516}, "wink": {"x": 0.4751, "y": 0.224, "w": 0.5722}, "point": {"x": 0.5556, "y": 0.2447, "w": 0.5222}, "read": {"x": 0.4765, "y": 0.3211, "w": 0.5962}, "write": {"x": 0.5351, "y": 0.3379, "w": 0.6}, "kick": {"x": 0.4912, "y": 0.2424, "w": 0.5628}, "celebrate": {"x": 0.4561, "y": 0.0842, "w": 0.5444}};
+// Avatar v2 ("daha güzel customize edebilmeli" geri bildirimi): 5 renk +
+// 4 şapkadan; deri rengi, tişört, şapka, elde eşya, evcil dost ve sahne
+// eksenlerine çıktı. Renk/tişört tarayıcıda tek taban görselden canvas ile
+// boyanıyor (AvatarPaint) - kombinasyon başına PNG gerekmiyor. Kilitler
+// bilerek 0-35 yıldız ve 3-10 gün seriye yayıldı: her birkaç bölümde bir
+// yeni şey açılsın.
 const avatarColors = () => [
-  { id: 'yellow', label: L('Sarı', 'Yellow'), need: 0, swatch: '#FFC800' },
-  { id: 'blue', label: L('Mavi', 'Blue'), need: 2, swatch: '#3B8BEB' },
-  { id: 'green', label: L('Yeşil', 'Green'), need: 4, swatch: '#3ED04A' },
-  { id: 'pink', label: L('Pembe', 'Pink'), need: 0, needStreak: 3, swatch: '#E63AA0' },
-  { id: 'purple', label: L('Mor', 'Purple'), need: 12, swatch: '#8A3FE0' },
+  { id: 'yellow', label: L('Sarı', 'Yellow'), need: 0, swatch: '#FFC800', hue: 0 },
+  { id: 'orange', label: L('Turuncu', 'Orange'), need: 1, swatch: '#FF9A1F', hue: -16 },
+  { id: 'blue', label: L('Mavi', 'Blue'), need: 2, swatch: '#3B8BEB', hue: 165 },
+  { id: 'green', label: L('Yeşil', 'Green'), need: 4, swatch: '#3ED04A', hue: 90 },
+  { id: 'pink', label: L('Pembe', 'Pink'), need: 0, needStreak: 3, swatch: '#E63AA0', hue: 290 },
+  { id: 'teal', label: L('Turkuaz', 'Teal'), need: 6, swatch: '#1CC6B8', hue: 125 },
+  { id: 'red', label: L('Kırmızı', 'Red'), need: 9, swatch: '#E8453C', hue: -40 },
+  { id: 'purple', label: L('Mor', 'Purple'), need: 12, swatch: '#8A3FE0', hue: 235 },
+  { id: 'silver', label: L('Gümüş', 'Silver'), need: 20, swatch: '#B8C2CC', sat: 0.08 },
 ];
+const avatarShirts = () => [
+  { id: 'red', label: L('Kırmızı', 'Red'), need: 0, swatch: '#E23B3B' },
+  { id: 'blue', label: L('Mavi', 'Blue'), need: 0, swatch: '#2F6FE0', hue: 220 },
+  { id: 'green', label: L('Yeşil', 'Green'), need: 2, swatch: '#2FB34A', hue: 130 },
+  { id: 'purple', label: L('Mor', 'Purple'), need: 5, swatch: '#8A3FE0', hue: 275 },
+  { id: 'orange', label: L('Turuncu', 'Orange'), need: 7, swatch: '#FF8A1F', hue: 28 },
+  { id: 'pink', label: L('Pembe', 'Pink'), need: 10, swatch: '#FF5FB0', hue: 325 },
+  { id: 'black', label: L('Siyah', 'Black'), need: 15, swatch: '#2B2B33', dark: true },
+];
+// img: eski PIL çizimi PNG şapka (emoji karşılığı olmayanlar); diğerleri
+// sistem emojisi. s = genişliğe oranla boyut, dx/dy = kafa çapasından kayma.
 const avatarHats = () => [
   { id: 'none', label: L('Yok', 'None'), need: 0, emoji: '🚫' },
-  { id: 'cap', label: L('Kep', 'Cap'), need: 1, emoji: '🧢' },
-  { id: 'party', label: L('Parti', 'Party'), need: 3, emoji: '🎉' },
-  { id: 'crown', label: L('Taç', 'Crown'), need: 0, needStreak: 5, emoji: '👑' },
-  { id: 'wizard', label: L('Büyücü', 'Wizard'), need: 10, emoji: '🧙' },
+  { id: 'cap', label: L('Kep', 'Cap'), need: 1, emoji: '🧢', s: 0.5, dy: 0.03 },
+  { id: 'party', label: L('Parti', 'Party'), need: 3, emoji: '🎉', img: 'party' },
+  { id: 'bow', label: L('Fiyonk', 'Bow'), need: 4, emoji: '🎀', s: 0.26, dx: 0.19, dy: 0.04, rot: 18 },
+  { id: 'crown', label: L('Taç', 'Crown'), need: 0, needStreak: 5, emoji: '👑', s: 0.4, dy: 0.01 },
+  { id: 'flower', label: L('Çiçek', 'Flower'), need: 6, emoji: '🌸', s: 0.22, dx: -0.19, dy: 0.05 },
+  { id: 'grad', label: L('Mezuniyet', 'Graduate'), need: 8, emoji: '🎓', s: 0.52, dy: 0.02 },
+  { id: 'wizard', label: L('Büyücü', 'Wizard'), need: 10, emoji: '🧙', img: 'wizard' },
+  { id: 'sunhat', label: L('Hasır Şapka', 'Sun hat'), need: 11, emoji: '👒', s: 0.6, dy: 0.03 },
+  { id: 'tophat', label: L('Silindir', 'Top hat'), need: 14, emoji: '🎩', s: 0.5 },
 ];
+const avatarItems = () => [
+  { id: 'none', label: L('Yok', 'None'), need: 0, emoji: '🚫' },
+  { id: 'balloon', label: L('Balon', 'Balloon'), need: 2, emoji: '🎈', y: 0.18 },
+  { id: 'ball', label: L('Top', 'Ball'), need: 3, emoji: '⚽' },
+  { id: 'book', label: L('Kitap', 'Books'), need: 5, emoji: '📚' },
+  { id: 'icecream', label: L('Dondurma', 'Ice cream'), need: 7, emoji: '🍦' },
+  { id: 'wand', label: L('Sihirli Değnek', 'Magic wand'), need: 9, emoji: '🪄' },
+  { id: 'lolly', label: L('Lolipop', 'Lollipop'), need: 12, emoji: '🍭' },
+  { id: 'star', label: L('Yıldız', 'Star'), need: 0, needStreak: 10, emoji: '🌟' },
+  { id: 'trophy', label: L('Kupa', 'Trophy'), need: 25, emoji: '🏆' },
+];
+const avatarPets = () => [
+  { id: 'none', label: L('Yok', 'None'), need: 0, emoji: '🚫' },
+  { id: 'dog', label: L('Köpek', 'Dog'), need: 3, emoji: '🐕' },
+  { id: 'cat', label: L('Kedi', 'Cat'), need: 5, emoji: '🐈' },
+  { id: 'bunny', label: L('Tavşan', 'Bunny'), need: 8, emoji: '🐇' },
+  { id: 'turtle', label: L('Kaplumbağa', 'Turtle'), need: 11, emoji: '🐢' },
+  { id: 'parrot', label: L('Papağan', 'Parrot'), need: 14, emoji: '🦜' },
+  { id: 'penguin', label: L('Penguen', 'Penguin'), need: 18, emoji: '🐧' },
+  { id: 'unicorn', label: L('Tek Boynuzlu At', 'Unicorn'), need: 24, emoji: '🦄' },
+  { id: 'dragon', label: L('Ejderha', 'Dragon'), need: 35, emoji: '🐉' },
+];
+const avatarScenes = () => [
+  { id: 'sky', label: L('Gökyüzü', 'Sky'), need: 0, emoji: '☁️', bg: 'radial-gradient(circle at 50% 35%, #F2FBFF 0%, #A9DDFF 62%, #5DB2EE 100%)', deco: ['☁️', '☀️'] },
+  { id: 'sun', label: L('Güneş', 'Sunny'), need: 0, emoji: '☀️', bg: 'radial-gradient(circle at 50% 40%, #FFE97A 0%, #FFC20E 70%, #E0A500 100%)', deco: [] },
+  { id: 'ocean', label: L('Okyanus', 'Ocean'), need: 2, emoji: '🌊', bg: 'radial-gradient(circle at 50% 35%, #9BE7FF 0%, #2FA7E0 60%, #1167A8 100%)', deco: ['🫧', '🐠', '🫧'] },
+  { id: 'jungle', label: L('Orman', 'Jungle'), need: 6, emoji: '🌴', bg: 'radial-gradient(circle at 50% 35%, #C4F59A 0%, #3FAE4A 62%, #1F6E2E 100%)', deco: ['🌿', '🦋', '🌴'] },
+  { id: 'space', label: L('Uzay', 'Space'), need: 10, emoji: '🚀', bg: 'radial-gradient(circle at 50% 35%, #7666E0 0%, #2A1F6B 60%, #0E0A2E 100%)', deco: ['✨', '🪐', '⭐'] },
+  { id: 'candy', label: L('Şeker Diyarı', 'Candy Land'), need: 0, needStreak: 7, emoji: '🍬', bg: 'radial-gradient(circle at 50% 35%, #FFE0F0 0%, #FF8CC6 62%, #D94C97 100%)', deco: ['🍬', '🧁', '🍭'] },
+  { id: 'sunset', label: L('Gün Batımı', 'Sunset'), need: 15, emoji: '🌅', bg: 'linear-gradient(180deg, #FFC27A 0%, #FF6F91 55%, #7A4BC2 100%)', deco: ['☁️', '🐦', '☁️'] },
+  { id: 'snow', label: L('Kar', 'Snow'), need: 20, emoji: '❄️', bg: 'radial-gradient(circle at 50% 35%, #FFFFFF 0%, #CFE8FF 60%, #8DB8E8 100%)', deco: ['❄️', '⛄', '❄️'] },
+];
+// Özelleştirme sekmeleri: profil alanı + katalog + sekme başlığı
+const AVATAR_SLOTS = () => [
+  { key: 'color', list: avatarColors(), label: L('Renk', 'Color'), icon: '🎨' },
+  { key: 'shirt', list: avatarShirts(), label: L('Tişört', 'Shirt'), icon: '👕' },
+  { key: 'hat', list: avatarHats(), label: L('Şapka', 'Hat'), icon: '🎩' },
+  { key: 'item', list: avatarItems(), label: L('Eşya', 'Item'), icon: '🎈' },
+  { key: 'pet', list: avatarPets(), label: L('Dost', 'Pet'), icon: '🐶' },
+  { key: 'scene', list: avatarScenes(), label: L('Sahne', 'Scene'), icon: '🌈' },
+];
+const AVATAR_DEFAULTS = { color: 'yellow', shirt: 'red', hat: 'none', item: 'none', pet: 'none', scene: 'sky' };
+function avatarPart(list, id) { return list.find((x) => x.id === id) || list[0]; }
 
 // localStorage tarayicidan/devtools'tan elle degistirilebilir ya da
 // bozulabilir - guvenilmeyen girdi sayiyoruz. Profil listesini OKUMA
@@ -2373,12 +2511,14 @@ const avatarHats = () => [
 // attribute'una) ham/kacissiz gitmesine yol aciyordu.
 function _sanitizeProfile(p) {
   p = p || {};
-  return {
+  const out = {
     id: String(p.id || 'p1').replace(/[^a-z0-9]/gi, '').slice(0, 12) || 'p1',
     name: String(p.name || '').slice(0, 12),
-    color: ['yellow', 'blue', 'green', 'pink', 'purple'].includes(p.color) ? p.color : 'yellow',
-    hat: ['none', 'cap', 'party', 'crown', 'wizard'].includes(p.hat) ? p.hat : 'none',
   };
+  AVATAR_SLOTS().forEach((slot) => {
+    out[slot.key] = slot.list.some((x) => x.id === p[slot.key]) ? p[slot.key] : AVATAR_DEFAULTS[slot.key];
+  });
+  return out;
 }
 const Profiles = {
   _load() {
@@ -2404,7 +2544,7 @@ const Profiles = {
   all() { const d = this._load(); return d ? d.list : []; },
   active() {
     const d = this._load();
-    if (!d) return { id: 'p1', name: '', color: 'yellow', hat: 'none' };
+    if (!d) return Object.assign({ id: 'p1', name: '' }, AVATAR_DEFAULTS);
     return d.list.find((x) => x.id === d.active) || d.list[0];
   },
   save(profile) {
@@ -2432,42 +2572,176 @@ const Profiles = {
 // Kullanici geri bildirimi: diger pozlarin kaynak gorseli (idle disinda)
 // amator/kenar-hatali duruyordu - tutarlilik icin TUM maskot gorunumleri
 // (poz farki fark etmeksizin) artik ayni temiz "idle" render'ini kullaniyor.
-function avatarBodySrc(pose, color) {
-  const rel = (!color || color === 'yellow') ? `mascot/mascot_idle.png` : `mascot/avatar/idle_${color}.png`;
-  return new URL(rel, ASSET_BASE_URL).href;
+//
+// Avatar v2 boyama: avatar/idle_base.png (sari, 600x900) + idle_mask.png
+// (R = deri, G = tisort kirmizisi; scripts/generate_avatar_masks.py).
+// Istenen renk/tisort kombinasyonu bir kez canvas'ta boyanip blob URL
+// olarak onbellege aliniyor. Eski 5 renk + kirmizi tisort icin hazir
+// PNG'ler var; onlar aninda gorunur, boyama beklemez.
+const LEGACY_AVATAR_COLORS = ['yellow', 'blue', 'green', 'pink', 'purple'];
+function _rgb2hsv(r, g, b) {
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  let h = 0;
+  if (d) {
+    if (mx === r) h = ((g - b) / d) % 6;
+    else if (mx === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h /= 6; if (h < 0) h += 1;
+  }
+  return [h, mx ? d / mx : 0, mx / 255];
 }
-function avatarHatStyle(pose) {
+function _hsv2rgb(h, s, v, out, j) {
+  const i = Math.floor(h * 6), f = h * 6 - i;
+  const p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+  let r, g, b;
+  switch (i % 6) {
+    case 0: r = v; g = t; b = p; break;
+    case 1: r = q; g = v; b = p; break;
+    case 2: r = p; g = v; b = t; break;
+    case 3: r = p; g = q; b = v; break;
+    case 4: r = t; g = p; b = v; break;
+    default: r = v; g = p; b = q;
+  }
+  out[j] = r * 255; out[j + 1] = g * 255; out[j + 2] = b * 255;
+}
+const AvatarPaint = {
+  cache: new Map(),
+  pending: new Map(),
+  _src: null,
+  key(p) { return (p.color || 'yellow') + '-' + (p.shirt || 'red'); },
+  isLegacy(p) { return (p.shirt || 'red') === 'red' && LEGACY_AVATAR_COLORS.includes(p.color || 'yellow'); },
+  legacySrc(p) {
+    const c = p.color || 'yellow';
+    return new URL(c === 'yellow' ? 'mascot/mascot_idle.png' : `mascot/avatar/idle_${c}.png`, ASSET_BASE_URL).href;
+  },
+  src(p) { return this.isLegacy(p) ? this.legacySrc(p) : (this.cache.get(this.key(p)) || null); },
+  _load() {
+    if (this._src) return this._src;
+    const get = (rel) => new Promise((res, rej) => {
+      const i = new Image();
+      i.onload = () => res(i); i.onerror = rej;
+      i.src = new URL(rel, ASSET_BASE_URL).href;
+    });
+    this._src = Promise.all([get('mascot/avatar/idle_base.png'), get('mascot/avatar/idle_mask.png')]).then(([b, m]) => {
+      const w = b.naturalWidth, h = b.naturalHeight;
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(m, 0, 0, w, h);
+      const mask = ctx.getImageData(0, 0, w, h).data;
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(b, 0, 0);
+      return { w, h, base: ctx.getImageData(0, 0, w, h), mask };
+    });
+    this._src.catch(() => { this._src = null; });
+    return this._src;
+  },
+  ensure(p) {
+    const k = this.key(p);
+    if (this.isLegacy(p)) return Promise.resolve(this.legacySrc(p));
+    if (this.cache.has(k)) return Promise.resolve(this.cache.get(k));
+    if (this.pending.has(k)) return this.pending.get(k);
+    const color = avatarPart(avatarColors(), p.color);
+    const shirt = avatarPart(avatarShirts(), p.shirt);
+    const job = this._load().then((s) => {
+      const d = new Uint8ClampedArray(s.base.data);
+      const m = s.mask;
+      const skinShift = (color.hue || 0) / 360;
+      for (let j = 0; j < d.length; j += 4) {
+        if (!d[j + 3]) continue;
+        if (m[j] > 127 && color.id !== 'yellow') {
+          const hsv = _rgb2hsv(d[j], d[j + 1], d[j + 2]);
+          if (color.sat != null) _hsv2rgb(0.58, hsv[1] * color.sat, hsv[2] * 0.86, d, j);
+          else _hsv2rgb((hsv[0] + skinShift + 1) % 1, hsv[1], hsv[2], d, j);
+        } else if (m[j + 1] > 127 && shirt.id !== 'red') {
+          const hsv = _rgb2hsv(d[j], d[j + 1], d[j + 2]);
+          if (shirt.dark) _hsv2rgb(hsv[0], hsv[1] * 0.12, hsv[2] * 0.3, d, j);
+          else _hsv2rgb(shirt.hue / 360, hsv[1], hsv[2], d, j);
+        }
+      }
+      const c = document.createElement('canvas'); c.width = s.w; c.height = s.h;
+      c.getContext('2d').putImageData(new ImageData(d, s.w, s.h), 0, 0);
+      return new Promise((res) => c.toBlob((blob) => res(blob ? URL.createObjectURL(blob) : c.toDataURL())));
+    }).then((url) => { this.cache.set(k, url); this.pending.delete(k); return url; },
+      () => { this.pending.delete(k); return this.legacySrc({ color: LEGACY_AVATAR_COLORS.includes(p.color) ? p.color : 'yellow' }); });
+    this.pending.set(k, job);
+    return job;
+  },
+  // Sayfadaki bu kombinasyonu bekleyen tum govde gorsellerini guncelle
+  apply(k, url) {
+    document.querySelectorAll(`.ke-av[data-avk="${k}"] > img.ke-av-body`).forEach((img) => {
+      img.src = url; img.classList.remove('ke-av-pending');
+    });
+  },
+};
+
+// Tum katmanlar .ke-av kutusuna (gorselin kendi 2:3 kutusu) gore yuzde/cqw
+// ile konumlaniyor - eskiden sapka yuvarlak butonun kutusuna gore
+// konumlandigi icin ana ekranda kafadan kayiyordu ("maskottaki croplar").
+function avatarLayerHTML(item, cx, cy, size, extra) {
+  const rot = item.rot ? ` rotate(${item.rot}deg)` : '';
+  return `<span class="ke-av-layer ${extra || ''}" aria-hidden="true" style="left:${(cx * 100).toFixed(1)}cqw;top:${(cy * 100).toFixed(1)}cqw;font-size:${(size * 100).toFixed(1)}cqw;transform:translate(-50%,-50%)${rot}">${item.emoji}</span>`;
+}
+function avatarHatStyle() {
   const a = AVATAR_ANCHORS.idle;
   return `left:${((a.x - a.w / 2) * 100).toFixed(2)}%;width:${(a.w * 100).toFixed(2)}%;bottom:${((1 - a.y) * 100).toFixed(2)}%`;
 }
 function avatarHatHTML(pose, profile) {
   const p = profile || Profiles.active();
-  if (!p.hat || p.hat === 'none') return '';
-  const src = new URL(`mascot/avatar/hat_${p.hat}.png`, ASSET_BASE_URL).href;
-  return `<img class="ke-mascot-hat" src="${src}" alt="" draggable="false" style="${avatarHatStyle(pose)}" />`;
+  const hat = avatarPart(avatarHats(), p.hat);
+  if (hat.id === 'none') return '';
+  if (hat.img) {
+    const src = new URL(`mascot/avatar/hat_${hat.img}.png`, ASSET_BASE_URL).href;
+    return `<img class="ke-mascot-hat" src="${src}" alt="" draggable="false" style="${avatarHatStyle()}" />`;
+  }
+  // Emoji sapkanin alt kenari alnin ust cizgisine (~0.27 genislik; kas
+  // 0.27-0.30, gozluk 0.33+) oturuyor - glifin gorunur alti merkezin
+  // ~0.42em altinda.
+  const a = AVATAR_ANCHORS.idle;
+  return avatarLayerHTML(hat, a.x + (hat.dx || 0), 0.27 - hat.s * 0.42 + (hat.dy || 0), hat.s, 'ke-av-hatemoji');
+}
+// opts.head: yuvarlak cercevede bas-omuz kadraji (esya/dost gizli)
+function avatarFigureHTML(p, opts) {
+  p = p || Profiles.active();
+  opts = opts || {};
+  const k = AvatarPaint.key(p);
+  const ready = AvatarPaint.src(p);
+  if (!ready) AvatarPaint.ensure(p).then((url) => AvatarPaint.apply(k, url));
+  const src = ready || new URL('mascot/avatar/idle_base.png', ASSET_BASE_URL).href;
+  let layers = avatarHatHTML('idle', p);
+  if (!opts.head) {
+    const item = avatarPart(avatarItems(), p.item);
+    if (item.id !== 'none') layers += avatarLayerHTML(item, 0.88, item.y != null ? item.y : 0.36, 0.3, 'ke-av-item');
+    // Sahnede dost karakterin yaninda (sahne kutusunda yer var); ders
+    // sahnesinde ise figurun kendi kutusundan tasmasin diye bacak onunde.
+    const pet = avatarPart(avatarPets(), p.pet);
+    if (pet.id !== 'none') layers += opts.stage ? avatarLayerHTML(pet, 1.12, 1.3, 0.4, 'ke-av-pet') : avatarLayerHTML(pet, 0.84, 1.3, 0.32, 'ke-av-pet');
+  }
+  return `<div class="ke-av${opts.cls ? ' ' + opts.cls : ''}${p.hat && p.hat !== 'none' ? ' ke-av-hashat' : ''}" data-avk="${k}"><img class="ke-av-body${ready ? '' : ' ke-av-pending'}" src="${src}" alt="Aktapokus" draggable="false" />${layers}</div>`;
+}
+// Yuvarlak rozet: sahne arka plani + bas-omuz kadraji
+function avatarCircleHTML(p, cls) {
+  p = p || Profiles.active();
+  const scene = avatarPart(avatarScenes(), p.scene);
+  return `<span class="ke-av-circle${cls ? ' ' + cls : ''}" style="background:${scene.bg}">${avatarFigureHTML(p, { head: true })}</span>`;
+}
+// Genis sahne (profil ekrani): sahne + susler + tam boy avatar
+function avatarStageHTML(p) {
+  const scene = avatarPart(avatarScenes(), p.scene);
+  const deco = scene.deco.map((e, i) => `<span class="ke-av-deco d${i}" aria-hidden="true">${e}</span>`).join('');
+  return `<div class="ke-avatar-stage${p.pet && p.pet !== 'none' ? ' ke-has-pet' : ''}" style="background:${scene.bg}">${deco}${avatarFigureHTML(p, { stage: true })}</div>`;
 }
 
 function mascotSvg() {
-  const p = Profiles.active();
-  return `<img class="ke-mascot-img" src="${avatarBodySrc('idle', p.color)}" alt="Aktapokus" draggable="false" />${avatarHatHTML('idle', p)}`;
+  return avatarFigureHTML(Profiles.active(), { cls: 'ke-mascot-img' });
 }
 
 function avatarLandingHTML(pose) {
-  const p = Profiles.active();
-  return `<div class="ke-landing-mascot"><img src="${avatarBodySrc(pose, p.color)}" alt="Aktapokus" draggable="false" />${avatarHatHTML(pose, p)}</div>`;
+  return `<div class="ke-landing-mascot">${avatarFigureHTML(Profiles.active())}</div>`;
 }
 
-// Kullanıcı geri bildirimi: "diğer Aktapokus görsellerini hiç
-// kullanmamışsın" — poz seti (wave/point/think/wink/read/write/kick)
-// anlamlı anlarda kullanılıyor; renk/şapka seçimi profilden geliyor.
-function setMascotPose(host, poseName) {
-  const img = host.querySelector('.ke-mascot-img');
-  if (!img) return;
-  const p = Profiles.active();
-  img.src = avatarBodySrc(poseName, p.color);
-  const hat = img.parentElement.querySelector('.ke-mascot-hat');
-  if (hat) hat.setAttribute('style', avatarHatStyle(poseName));
-}
+// Pozlar artik tek idle render'ini kullaniyor (bkz. yukarisi) - cagri
+// noktalari bozulmasin diye fonksiyon duruyor.
+function setMascotPose() { /* no-op */ }
 
 // Görsel katman oyun mantığından bilerek ayrı: emoji varsa onu
 // gösteriyoruz. Emoji bulunamayan (soyut) kelimelerde tek harf bir
@@ -2815,7 +3089,7 @@ function showQuickMenu(container, api, toolId, categories) {
   overlay.innerHTML = `
     <div class="ke-river-msg-card ke-quickmenu-card">
       <div class="ke-quickmenu-who">
-        <img class="ke-quickmenu-avatar" src="${avatarBodySrc('idle', p.color)}" alt="" draggable="false" />
+        ${avatarCircleHTML(p, 'ke-quickmenu-avatar')}
         <span>${escapeProfileText(p.name || L('Ben', 'Me'))}</span>
       </div>
       <div class="ke-quickmenu-grid">
@@ -2974,8 +3248,8 @@ function showSectionMenu(container, api, toolId, categories) {
       <img class="ke-carnival-logo" src="${new URL('mascot/aktapokus_kids_english_logo.png', ASSET_BASE_URL).href}" alt="Aktapokus Kids English" draggable="false" />
       <p class="ke-carnival-subtitle">${L('Ne öğrenmek istiyorsun? Bir bölüm seç!', 'What do you want to learn? Pick a section!')}</p>
       <button type="button" class="ke-mascot-btn" id="keMascotBtn" aria-label="${L("Aktapokus'um ve ayarlar", 'My Aktapokus & settings')}" title="${L("Aktapokus'um", 'My Aktapokus')}">
-        <img class="ke-av-body" src="${avatarBodySrc('wave', Profiles.active().color)}" alt="Aktapokus" draggable="false" />
-        ${avatarHatHTML('wave', Profiles.active())}
+        ${avatarCircleHTML(Profiles.active())}
+        <span class="ke-mascot-edit" aria-hidden="true">✏️</span>
         <span class="ke-mascot-badge" id="keMascotBadge" ${hasBadge ? '' : 'hidden'}></span>
       </button>
     </div>
@@ -3211,11 +3485,12 @@ function showProfileScreen(container, api, toolId, categories, opts) {
   const first = !!opts.first;
   const creating = !!opts.newProfile;
   const draft = creating
-    ? { id: Profiles.newId(), name: '', color: 'yellow', hat: 'none' }
+    ? Object.assign({ id: Profiles.newId(), name: '' }, AVATAR_DEFAULTS)
     : Object.assign({}, Profiles.active());
   const stars = creating ? 0 : Progress.totalStars();
   const streakDays = creating ? 0 : Streak.get();
   let msg = '';
+  let tab = 'color';
 
   // Bazi ust-seviye kilitler yildiza (tamamlanan bolum) degil, art arda
   // gun seriyene bagli ("her gun biraz oyna" tesvigi) - needStreak varsa
@@ -3233,16 +3508,36 @@ function showProfileScreen(container, api, toolId, categories, opts) {
       : L(`🔒 ${label} için ${item.need} ⭐ gerekli (şu an ${stars})`, `🔒 ${label} needs ${item.need} ⭐ (you have ${stars})`);
   }
 
+  // Siradaki acilacak parca: yildiz ve seri icin ayri ayri en yakini
+  function nextUnlockMsg() {
+    const all = [];
+    AVATAR_SLOTS().forEach((slot) => slot.list.forEach((it) => { if (isLocked(it)) all.push(it); }));
+    const byStar = all.filter((i) => !i.needStreak).sort((a, b) => a.need - b.need)[0];
+    const byStreak = all.filter((i) => i.needStreak).sort((a, b) => a.needStreak - b.needStreak)[0];
+    const parts = [];
+    if (byStar) parts.push(L(`${byStar.emoji || '🎨'} ${byStar.label}: ${byStar.need - stars} ⭐ kaldı`, `${byStar.emoji || '🎨'} ${byStar.label}: ${byStar.need - stars} ⭐ to go`));
+    if (byStreak) parts.push(L(`${byStreak.emoji || '🎨'} ${byStreak.label}: ${byStreak.needStreak} gün seri`, `${byStreak.emoji || '🎨'} ${byStreak.label}: ${byStreak.needStreak}-day streak`));
+    const opened = AVATAR_SLOTS().reduce((n, slot) => n + slot.list.filter((it) => !isLocked(it)).length, 0);
+    const total = AVATAR_SLOTS().reduce((n, slot) => n + slot.list.length, 0);
+    return { opened, total, text: parts.length ? L('Sıradaki: ', 'Next: ') + parts.join(' · ') : L('Hepsini açtın! 🎉', 'You unlocked everything! 🎉') };
+  }
+  function pickHTML(slot, it) {
+    const lock = isLocked(it);
+    const sel = draft[slot.key] === it.id;
+    const face = slot.key === 'color' || slot.key === 'shirt'
+      ? `<span class="ke-sw${slot.key === 'shirt' ? ' ke-sw-shirt' : ''}" style="background:${it.swatch}"></span>`
+      : slot.key === 'scene'
+        ? `<span class="ke-sw ke-sw-scene" style="background:${it.bg}">${it.emoji}</span>`
+        : `<span class="ke-pick-emo">${it.emoji}</span>`;
+    return `<button type="button" class="ke-pick ke-pick-tile${sel ? ' ke-sel' : ''}${lock ? ' ke-lock' : ''}" data-slot="${slot.key}" data-id="${it.id}" aria-pressed="${sel}" aria-label="${it.label}${lock ? ' 🔒' : ''}">${face}<span class="ke-pick-name">${lock ? lockLabel(it) : it.label}</span></button>`;
+  }
+
   function draw() {
     const profiles = Profiles.all();
-    const colorBtns = avatarColors().map((c) => {
-      const lock = isLocked(c);
-      return `<button type="button" class="ke-pick${draft.color === c.id ? ' ke-sel' : ''}${lock ? ' ke-lock' : ''}" data-color="${c.id}" aria-label="${c.label}"><span class="ke-sw" style="background:${c.swatch}"></span>${lock ? ` ${lockLabel(c)}` : ''}</button>`;
-    }).join('');
-    const hatBtns = avatarHats().map((h) => {
-      const lock = isLocked(h);
-      return `<button type="button" class="ke-pick${draft.hat === h.id ? ' ke-sel' : ''}${lock ? ' ke-lock' : ''}" data-hat="${h.id}" aria-label="${h.label}">${h.emoji}${lock ? ` ${lockLabel(h)}` : ''}</button>`;
-    }).join('');
+    const slots = AVATAR_SLOTS();
+    const cur = slots.find((x) => x.key === tab) || slots[0];
+    const nu = nextUnlockMsg();
+    const tabs = slots.map((x) => `<button type="button" class="ke-av-tab${x.key === cur.key ? ' ke-sel' : ''}" data-tab="${x.key}" aria-pressed="${x.key === cur.key}"><span>${x.icon}</span>${x.label}</button>`).join('');
     const switcher = first || creating ? '' : `
       <div class="ke-pl-label">${L('Profiller', 'Profiles')}</div>
       <div class="ke-pick-row">
@@ -3254,11 +3549,21 @@ function showProfileScreen(container, api, toolId, categories, opts) {
       ${first ? '' : `<button class="ke-back-btn" id="keProfileBack">${ICON_BACK} ${L('Bölümler', 'Sections')}</button>`}
       <div class="ke-profile-screen">
         <h1 class="ke-title">${bubbleTitleHTML(first ? L('Merhaba! Ben Aktapokus', "Hi! I'm Aktapokus") : L("Aktapokus'um", 'My Aktapokus'))}</h1>
-        <div class="ke-avatar-stage"><img class="ke-av-body" src="${avatarBodySrc('idle', draft.color)}" alt="Aktapokus" draggable="false" />${avatarHatHTML('idle', draft)}</div>
-        <div><input id="keProfileName" class="ke-profile-name" maxlength="12" placeholder="${L('Adın ne?', 'Your name?')}" value="${escapeProfileText(draft.name)}" autocomplete="off" /></div>
-        <div class="ke-pl-label">${L('Renk', 'Color')}</div><div class="ke-pick-row">${colorBtns}</div>
-        <div class="ke-pl-label">${L('Şapka', 'Hat')}</div><div class="ke-pick-row">${hatBtns}</div>
-        <div class="ke-pl-label" id="keProfileMsg">${msg || L(`Kazandığın yıldız: ${stars} ⭐ · Seri: ${streakDays} gün 🔥 — bölüm bitirdikçe ve art arda oynadıkça yeni renk/şapkalar açılır!`, `Stars: ${stars} ⭐ · Streak: ${streakDays} days 🔥 — finish episodes and keep your streak to unlock new colors/hats!`)}</div>
+        <div class="ke-av-studio">
+          <div class="ke-av-preview">
+            ${avatarStageHTML(draft)}
+            <button type="button" class="ke-av-dice" id="keAvRandom" aria-label="${L('Rastgele', 'Random')}" title="${L('Rastgele', 'Random')}">🎲</button>
+          </div>
+          <div class="ke-av-controls">
+            <div><input id="keProfileName" class="ke-profile-name" maxlength="12" placeholder="${L('Adın ne?', 'Your name?')}" value="${escapeProfileText(draft.name)}" autocomplete="off" /></div>
+            <div class="ke-av-tabs" role="toolbar">${tabs}</div>
+            <div class="ke-av-grid">${cur.list.map((it) => pickHTML(cur, it)).join('')}</div>
+            <div class="ke-av-unlock">
+              <div class="ke-av-unlock-bar"><i style="width:${Math.round(nu.opened / nu.total * 100)}%"></i></div>
+              <div id="keProfileMsg">${msg || `${L(`${nu.opened}/${nu.total} parça açık`, `${nu.opened}/${nu.total} pieces unlocked`)} · ⭐ ${stars} · 🔥 ${streakDays}<br>${nu.text}`}</div>
+            </div>
+          </div>
+        </div>
         <div style="margin-top:8px;"><button type="button" class="ke-btn-primary" id="keProfileSave" style="font-size:17px !important;padding:14px 26px !important;">${first ? L('Başla! 🚀', "Let's go! 🚀") : L('Kaydet ✓', 'Save ✓')}</button></div>
         ${switcher}
         ${creating ? '' : (() => {
@@ -3281,16 +3586,24 @@ function showProfileScreen(container, api, toolId, categories, opts) {
       </div>`;
     const nameEl = host.querySelector('#keProfileName');
     nameEl.addEventListener('input', () => { draft.name = nameEl.value; });
-    host.querySelectorAll('[data-color]').forEach((b) => b.addEventListener('click', () => {
-      const c = avatarColors().find((x) => x.id === b.dataset.color);
-      if (isLocked(c)) { msg = lockMsg(c.label, c); draw(); return; }
-      draft.color = c.id; msg = ''; draw();
+    host.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => { tab = b.dataset.tab; msg = ''; draw(); }));
+    host.querySelectorAll('[data-slot]').forEach((b) => b.addEventListener('click', () => {
+      const slot = AVATAR_SLOTS().find((x) => x.key === b.dataset.slot);
+      const it = avatarPart(slot.list, b.dataset.id);
+      if (isLocked(it)) { msg = lockMsg(it.label, it); draw(); return; }
+      draft[slot.key] = it.id; msg = ''; draw();
+      const fig = host.querySelector('.ke-avatar-stage .ke-av');
+      if (fig) fig.classList.add('ke-av-pop');
     }));
-    host.querySelectorAll('[data-hat]').forEach((b) => b.addEventListener('click', () => {
-      const h = avatarHats().find((x) => x.id === b.dataset.hat);
-      if (isLocked(h)) { msg = lockMsg(h.label, h); draw(); return; }
-      draft.hat = h.id; msg = ''; draw();
-    }));
+    host.querySelector('#keAvRandom').addEventListener('click', () => {
+      AVATAR_SLOTS().forEach((slot) => {
+        const open = slot.list.filter((it) => !isLocked(it));
+        draft[slot.key] = open[Math.floor(Math.random() * open.length)].id;
+      });
+      msg = ''; draw();
+      const fig = host.querySelector('.ke-avatar-stage .ke-av');
+      if (fig) fig.classList.add('ke-av-pop');
+    });
     host.querySelector('#keProfileSave').addEventListener('click', () => {
       draft.name = (draft.name || '').trim() || L('Arkadaşım', 'Friend');
       Profiles.save(draft);
