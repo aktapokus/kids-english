@@ -198,9 +198,9 @@ function studentDetail(s, catalog) {
 // ayni sira - MEB Maarif programi: 2. sinif = A1.1 ...). Iki yerde
 // tutuluyor; panel.js'te sira degisirse burasi da guncellenmeli.
 const GRADE_STEPS = [
-  ['2. Sınıf · A1.1', ['conv_social_manners', 'school_education', 'classroom_life', 'conv_school', 'body_health', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons', 'family_people', 'conv_family_home', 'home', 'animals', 'food_drinks', 'conv_food_drinks', 'math_numbers']],
-  ['3. Sınıf · A1.2', ['daily_life', 'conv_daily_routine', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes']],
-  ['4. Sınıf · A1.3', ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'get']],
+  ['2. Sınıf · A1.1', ['conv_social_manners', 'expressions', 'school_education', 'classroom_life', 'conv_school', 'body_health', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons', 'family_people', 'conv_family_home', 'home', 'animals', 'food_drinks', 'conv_food_drinks', 'math_numbers']],
+  ['3. Sınıf · A1.2', ['daily_life', 'conv_daily_routine', 'months_time', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes']],
+  ['4. Sınıf · A1.3', ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'countries', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'get']],
   ['Bonus · A1+', ['technology_computers', 'conv_technology', 'communication_internet', 'science', 'space_astronomy', 'conv_space']],
   ['5. Sınıf · A2.1', ['daily_life', 'family_people', 'school_education', 'classroom_life', 'body_health', 'clothes_shopping', 'food_drinks', 'animals', 'nature_environment', 'city_places', 'hobbies_free_time'].map((x) => x + '_a2')],
   ['6. Sınıf · A2.2', ['home', 'jobs_professions', 'travel_transportation', 'emotions_personality', 'weather_seasons', 'sports_exercise', 'technology_computers', 'science', 'communication_internet', 'space_astronomy'].map((x) => x + '_a2')],

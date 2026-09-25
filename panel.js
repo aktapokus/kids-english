@@ -61,6 +61,9 @@ const CATEGORY_THEME = {
   conversations:          { c: '#EF6C9C', dark: '#D14F80', tint: '#F7A9C6' },
   opposites:              { c: '#7E57C2', dark: '#6641A8', tint: '#B597E0' },
   math_numbers:           { c: '#3949AB', dark: '#2C3A94', tint: '#8E99E0' },
+  expressions:            { c: '#EC407A', dark: '#C2185B', tint: '#F48FB1' },
+  months_time:            { c: '#5C6BC0', dark: '#3949AB', tint: '#9FA8DA' },
+  countries:              { c: '#26A69A', dark: '#00897B', tint: '#80CBC4' },
   math_shapes:            { c: '#00897B', dark: '#00695C', tint: '#4DB6AC' },
   math_operations:        { c: '#F4511E', dark: '#D84315', tint: '#FF8A65' },
   // "conversation kisminda hepsi tek bir listede yer aliyor bunlari
@@ -114,6 +117,7 @@ const CATEGORY_MOTIF = {
   science: '🔬', communication_internet: '💬',
   prepositions: '📦', question_words: '❓', get: '🔄', conversations: '💬', opposites: '↔️',
   math_numbers: '🔢', math_shapes: '🔷', math_operations: '➕',
+  expressions: '🙋', months_time: '📅', countries: '🌍',
   conv_social_manners: '👋', conv_family_home: '🏠', conv_daily_routine: '⏰',
   conv_school: '📚', conv_hobbies_sports: '⚽', conv_animals_nature: '🐾',
   conv_food_drinks: '🍽️', conv_shopping_clothes: '👕', conv_weather_seasons: '⛅',
@@ -3693,11 +3697,11 @@ const A2_JOURNEY_IDS = {
 };
 const JOURNEY_SECTORS = [
   { id: 'moon', emoji: '🌙', tr: 'Ay İstasyonu', en: 'Moon Station', grade: 2, get level() { return L('2. Sınıf', 'Grade 2') + ' · A1.1'; },
-    planets: ['conv_social_manners', 'school_education', 'classroom_life', 'conv_school', 'body_health', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons', 'family_people', 'conv_family_home', 'home', 'animals', 'food_drinks', 'conv_food_drinks', 'math_numbers'] },
+    planets: ['conv_social_manners', 'expressions', 'school_education', 'classroom_life', 'conv_school', 'body_health', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons', 'family_people', 'conv_family_home', 'home', 'animals', 'food_drinks', 'conv_food_drinks', 'math_numbers'] },
   { id: 'mars', emoji: '🔴', tr: 'Mars Üssü', en: 'Mars Base', grade: 3, get level() { return L('3. Sınıf', 'Grade 3') + ' · A1.2'; },
-    planets: ['daily_life', 'conv_daily_routine', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes'] },
+    planets: ['daily_life', 'conv_daily_routine', 'months_time', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes'] },
   { id: 'jupiter', emoji: '🟠', tr: 'Jüpiter İstasyonu', en: 'Jupiter Station', grade: 4, get level() { return L('4. Sınıf', 'Grade 4') + ' · A1.3'; },
-    planets: ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'get'] },
+    planets: ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'countries', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'get'] },
   { id: 'saturn', emoji: '🪐', tr: 'Satürn Halkaları', en: 'Saturn Rings', grade: 0, get level() { return L('Bonus', 'Bonus') + ' · A1+'; },
     planets: ['technology_computers', 'conv_technology', 'communication_internet', 'science', 'space_astronomy', 'conv_space'] },
   { id: 'neptune', emoji: '🔵', tr: 'Neptün Kapısı', en: 'Neptune Gate', grade: 5, get level() { return L('5. Sınıf', 'Grade 5') + ' · A2.1'; }, planets: A2_JOURNEY_IDS.y5 },
@@ -3738,9 +3742,16 @@ const Journey = {
     });
     list.forEach((p, i) => {
       p.index = i;
-      p.unlocked = i === 0 || list[i - 1].cleared || p.done > 0;
+      // store.at = ulasilan en ileri gezegen; icerik eklenince (bolum sayisi
+      // artinca) daha once gecilmis gezegenler "bitmemis" olur - cocuk
+      // ulastigi yere tekrar kilitlenmesin.
+      p.unlocked = i === 0 || list[i - 1].cleared || p.done > 0 || i <= store.at;
     });
-    const cur = list.find((p) => p.unlocked && !p.cleared);
+    // Mevcut konum = ulasilan en ileri noktadan (store.at) itibaren ilk
+    // bitmemis gezegen; geriye sonradan eklenen yeni gezegenler roketi geri
+    // cekmesin (onlar sadece "acik" gorunur, istenirse oynanir).
+    const frontier = Math.min(store.at || 0, list.length - 1);
+    const cur = list.find((p) => p.index >= frontier && p.unlocked && !p.cleared) || list.find((p) => p.unlocked && !p.cleared);
     const current = cur ? cur.index : list.length - 1;
     const sectors = JOURNEY_SECTORS.map((sec, si) => {
       const ps = list.filter((p) => p.si === si);
