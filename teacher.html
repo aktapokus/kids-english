@@ -33,6 +33,17 @@
   .empty{ color:var(--ink-dim); font-size:13px; padding:12px 0; }
   #logoutBtn{ background:transparent; color:var(--ink-dim); border:1px solid var(--border); }
   .hidden{ display:none; }
+  .srow{ cursor:pointer; }
+  .srow:hover td{ background:#FAF7F0; }
+  .caret{ display:inline-block; color:var(--ink-dim); transition:transform .15s ease; }
+  .srow.open .caret{ transform:rotate(90deg); }
+  .drow td{ background:#FAF7F0; }
+  .detail{ display:grid; grid-template-columns:1fr 1fr; gap:14px; font-size:13px; padding:4px 2px; }
+  @media (max-width:520px){ .detail{ grid-template-columns:1fr; } }
+  .detail ul{ margin:6px 0 0; padding-left:18px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .chip{ background:#FDECEC; color:#9B2C2C; border-radius:999px; padding:3px 9px; font-weight:700; font-size:12.5px; }
+  button.del{ background:transparent; color:var(--bad); padding:2px 6px; margin:0; font-size:15px; }
   /* Kullanım kılavuzu - <details> ile JS'siz aç/kapa (CSP inline script'e izin vermiyor) */
   .guide{ background:var(--card); border:1px solid var(--border); border-radius:14px; margin-bottom:16px; }
   .guide > summary{ list-style:none; cursor:pointer; padding:16px 20px; font-weight:800; font-size:15px; display:flex; align-items:center; gap:8px; }
@@ -86,9 +97,11 @@
         <table class="guide-legend">
           <tr><td>⭐</td><td>Tamamlanan bölüm sayısı (her bölüm ~6 kelime).</td></tr>
           <tr><td>🔥</td><td>Üst üste çalışılan gün sayısı (seri).</td></tr>
-          <tr><td>Kelime</td><td>Öğrenilen kelime sayısı — <i>tamamlanan bölümlerden hesaplanan yaklaşık değer</i>.</td></tr>
+          <tr><td>Kelime</td><td>Bitirilen bölümlerdeki toplam kelime sayısı.</td></tr>
           <tr><td>Dakika</td><td>Uygulamada geçirilen toplam süre.</td></tr>
+          <tr><td>Son görülme</td><td>Öğrencinin cihazından son verinin geldiği zaman.</td></tr>
         </table>
+        <p>Öğrencinin adına tıklarsan <b>hangi konularda kaç bölüm bitirdiğini</b> ve <b>en çok zorlandığı kelimeleri</b> (kaç kez yanlış yaptığıyla) görürsün — tekrar çalışması gereken kelimeleri buradan seçebilirsin.</p>
         <div class="guide-note">Veriler öğrencinin cihazı internete bağlıyken, uygulama açık olduğu sürece yaklaşık <b>1 dakikada bir</b> güncellenir. Güncel veriyi görmek için sayfayı yenile.</div>
       </div></div>
       <div class="step"><div class="step-n">5</div><div>
@@ -99,13 +112,13 @@
         <dt>Öğrencim listede görünmüyor.</dt>
         <dd>Kodu doğru yazdığından (tire dahil) ve cihazın internete bağlı olduğundan emin ol. Katılınca uygulamada sınıfın adı görünür.</dd>
         <dt>Sayılar güncellenmiyor.</dt>
-        <dd>Öğrenci uygulamayı internet varken bir kez açıp birkaç dakika kullansın; veri o sırada gönderilir. Uygulama kapalıyken veri gönderilmez.</dd>
+        <dd>Öğrenci uygulamayı internet varken açsın ya da profilindeki Sınıf bölümünde <b>🔄 Şimdi Eşitle</b>'ye bassın. İnternet yokken yapılan çalışma kaybolmaz; internet gelince otomatik gönderilir.</dd>
         <dt>Aynı öğrenci iki kez görünüyor.</dt>
         <dd>Öğrenci başka bir cihazdan (ya da uygulamayı silip yeniden kurarak) tekrar katılmış olabilir; her cihaz ayrı sayılır.</dd>
         <dt>Öğrencinin adı yanlış görünüyor.</dt>
         <dd>Ad, sınıfa katıldığı andaki profil adıdır. Öğrenci profilde adını düzeltip sınıftan ayrılıp aynı kodla tekrar katılırsa ad güncellenir.</dd>
         <dt>Bir öğrenciyi listeden silmek istiyorum.</dt>
-        <dd>Panelden silme özelliği henüz yok; ihtiyaç olursa yöneticiden (bizden) talep edebilirsin.</dd>
+        <dd>Öğrencinin satırındaki 🗑 simgesine bas. Yalnızca kendi sınıflarındaki öğrencileri silebilirsin; silme geri alınamaz.</dd>
       </dl>
     </div>
   </details>

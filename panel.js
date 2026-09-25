@@ -374,8 +374,11 @@ function flushTimeTrack() {
   // Bir sınıfa katılmışsa (bkz. Classroom.join), her akış anında
   // öğretmenin gördüğü ilerlemeyi de tazeler - joined değilse sync()
   // zaten hemen dönüyor, maliyetsiz.
+  syncClassroom(false);
+}
+function syncClassroom(force) {
   const stars = Progress.totalStars();
-  Classroom.sync(stars, Streak.get(), stars * 6, Math.round(TimeTrack.total() / 60));
+  return Classroom.sync(stars, Streak.get(), stars * 6, Math.round(TimeTrack.total() / 60), force);
 }
 function startTimeTracking() {
   if (_timeTrackStarted) return;
@@ -387,6 +390,8 @@ function startTimeTracking() {
   });
   window.addEventListener('beforeunload', flushTimeTrack);
   setInterval(flushTimeTrack, 20000);
+  window.addEventListener('online', () => syncClassroom(true));
+  setTimeout(() => syncClassroom(false), 4000);
 }
 
 // "15 dakika kesintisiz ders -> 1 oyun hakki": TimeTrack toplam suredir,
@@ -521,29 +526,76 @@ const Classroom = {
     d.className = null; d.code = null;
     this._save(d);
   },
-  // flushTimeTrack her 20 sn'de bir çağırıyor - değişmeyen veriyi tekrar
-  // tekrar göndermemek için (okul ağında 30 cihaz x 3/dk gereksiz istek)
-  // aynı yük 5 dakikadan kısa sürede tekrar gönderilmiyor. keepalive:
-  // uygulama arka plana alınırken başlayan istek sayfa dondurulsa da
-  // tamamlansın (Android'de son senkronun kaybolmaması için).
+  // Senkron: her 20 sn'de bir (flushTimeTrack) + uygulama açılışında +
+  // internet geri gelince + "Şimdi eşitle" butonu. Aynı yük 5 dk içinde
+  // tekrar gönderilmez (okul ağında 30 cihaz x 3/dk gereksiz istek olurdu).
+  // v2: toplamların yanında hangi kategoride hangi bölümlerin bittiği ve
+  // en çok zorlanılan kelimeler de gider (öğretmen paneli ayrıntısı).
+  // Veritabanına v2 henüz kurulmadıysa (sync_v2_schema.sql çalıştırılmadı)
+  // PostgREST 404 döner - o oturum için sessizce eski fonksiyona düşülür.
+  // İstek başarısız olursa "pending" işaretlenir, internet gelince tekrar
+  // denenir. keepalive: uygulama arka plana alınırken başlayan istek sayfa
+  // dondurulsa da tamamlansın.
   _lastSent: '',
   _lastSentAt: 0,
-  async sync(stars, streakDays, wordsLearned, minutesTotal) {
+  _v2: true,
+  details() {
+    const data = Progress._load();
+    const cats = {};
+    const hard = [];
+    Object.keys(data).forEach((cid) => {
+      const c = data[cid];
+      if (!c) return;
+      if (c.completed && c.completed.length) cats[cid] = c.completed.slice().sort((a, b) => a - b);
+      Object.keys(c.missed || {}).forEach((w) => hard.push([cid, w, (c.missed[w] && c.missed[w].count) || 1]));
+    });
+    hard.sort((a, b) => b[2] - a[2]);
+    return { v: 1, cats, hard: hard.slice(0, 12) };
+  },
+  async sync(stars, streakDays, wordsLearned, minutesTotal, force) {
     const d = this._load();
-    if (!d.code) return;
-    const body = JSON.stringify({ p_device_id: d.deviceId, p_stars: stars, p_streak_days: streakDays, p_words_learned: wordsLearned, p_minutes_total: minutesTotal });
-    if (body === this._lastSent && Date.now() - this._lastSentAt < 5 * 60 * 1000) return;
+    if (!d.code) return { skipped: true };
+    const base = { p_device_id: d.deviceId, p_stars: stars, p_streak_days: streakDays, p_words_learned: wordsLearned, p_minutes_total: minutesTotal };
+    const progress = this.details();
+    const key = JSON.stringify([base, progress]);
+    if (!force && key === this._lastSent && Date.now() - this._lastSentAt < 5 * 60 * 1000) return { skipped: true };
+    const post = (fn, body) => fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+      method: 'POST',
+      keepalive: true,
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify(body),
+    });
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/sync_progress`, {
-        method: 'POST',
-        keepalive: true,
-        headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
-        body,
-      });
-      if (res.ok) { this._lastSent = body; this._lastSentAt = Date.now(); }
-    } catch (e) { /* sessiz basarisizlik - internet yoksa bir sonraki senkronda dener */ }
+      let res = null;
+      if (this._v2) {
+        res = await post('sync_progress_v2', Object.assign({}, base, { p_progress: progress }));
+        if (res.status === 404) this._v2 = false;
+      }
+      if (!this._v2) res = await post('sync_progress', base);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      this._lastSent = key;
+      this._lastSentAt = Date.now();
+      const d2 = this._load();
+      d2.lastSyncAt = Date.now();
+      d2.pending = false;
+      this._save(d2);
+      return { ok: true };
+    } catch (e) {
+      const d2 = this._load();
+      d2.pending = true;
+      this._save(d2);
+      return { ok: false };
+    }
   },
 };
+
+function classSyncLabel(cls) {
+  if (cls.pending) return `⏳ ${L('Bekleyen ilerleme var, internet gelince gönderilecek', 'Progress waiting — will send when online')}`;
+  if (!cls.lastSyncAt) return L('Henüz eşitlenmedi', 'Not synced yet');
+  const min = Math.round((Date.now() - cls.lastSyncAt) / 60000);
+  const ago = min < 1 ? L('az önce', 'just now') : min < 60 ? L(`${min} dk önce`, `${min} min ago`) : L(`${Math.round(min / 60)} sa önce`, `${Math.round(min / 60)} h ago`);
+  return `✅ ${L('Son eşitleme', 'Last sync')}: ${ago}`;
+}
 
 const CONTINUOUS_STUDY_SECONDS = 15 * 60;
 let _continuousStart = null;
@@ -3199,8 +3251,12 @@ function showProfileScreen(container, api, toolId, categories, opts) {
           const cls = Classroom.get();
           return cls.code
             ? `<div class="ke-pl-label" style="margin-top:16px;">${L('Sınıf', 'Class')}</div>
-               <p style="font-size:13.5px;font-weight:800;color:var(--kb-chalk);margin:2px 0 8px;">🏫 ${escapeProfileText(cls.className || cls.code)}</p>
-               <button type="button" class="ke-btn-secondary" id="keClassLeave" style="font-size:12px !important;padding:8px 14px !important;">${L('Sınıftan Ayrıl', 'Leave Class')}</button>`
+               <p style="font-size:13.5px;font-weight:800;color:var(--kb-chalk);margin:2px 0 4px;">🏫 ${escapeProfileText(cls.className || cls.code)}</p>
+               <div id="keClassSyncInfo" style="font-size:11.5px;font-weight:700;color:var(--kb-chalk-dim);margin-bottom:8px;">${classSyncLabel(cls)}</div>
+               <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+                 <button type="button" class="ke-btn-primary" id="keClassSync" style="font-size:12px !important;padding:8px 14px !important;">🔄 ${L('Şimdi Eşitle', 'Sync Now')}</button>
+                 <button type="button" class="ke-btn-secondary" id="keClassLeave" style="font-size:12px !important;padding:8px 14px !important;">${L('Sınıftan Ayrıl', 'Leave Class')}</button>
+               </div>`
             : `<div class="ke-pl-label" style="margin-top:16px;">${L('Sınıf (öğretmenin varsa)', "Class (if your teacher has one)")}</div>
                <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:4px;">
                  <input id="keClassCode" class="ke-profile-name" style="width:140px;font-size:14px;padding:8px 10px;" maxlength="9" placeholder="${L('SINIF KODU', 'CLASS CODE')}" autocomplete="off" />
@@ -3238,6 +3294,7 @@ function showProfileScreen(container, api, toolId, categories, opts) {
       msgEl.textContent = L('Katılıyor...', 'Joining...');
       try {
         await Classroom.join(code, draft.name || Profiles.active().name);
+        await syncClassroom(true);
         draw();
       } catch (e) {
         classJoinBtn.disabled = false;
@@ -3245,6 +3302,15 @@ function showProfileScreen(container, api, toolId, categories, opts) {
           ? L('Bu kod bulunamadı, kontrol eder misin?', "That code wasn't found, can you check it?")
           : L('Bağlanılamadı, internetini kontrol et.', "Couldn't connect, check your internet.");
       }
+    });
+    const classSyncBtn = host.querySelector('#keClassSync');
+    if (classSyncBtn) classSyncBtn.addEventListener('click', async () => {
+      const info = host.querySelector('#keClassSyncInfo');
+      classSyncBtn.disabled = true;
+      info.textContent = L('Eşitleniyor...', 'Syncing...');
+      const r = await syncClassroom(true);
+      info.textContent = r && r.ok ? `✅ ${L('Öğretmenine gönderildi', 'Sent to your teacher')}` : `⚠️ ${L('Gönderilemedi, internet gelince tekrar denenecek', "Couldn't send — will retry when you're online")}`;
+      classSyncBtn.disabled = false;
     });
     const classLeaveBtn = host.querySelector('#keClassLeave');
     if (classLeaveBtn) classLeaveBtn.addEventListener('click', () => { Classroom.leave(); draw(); });

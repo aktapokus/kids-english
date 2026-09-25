@@ -6,7 +6,24 @@ function saveSession(s) { try { localStorage.setItem(SESSION_KEY, JSON.stringify
 function loadSession() { try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch (e) { return null; } }
 function clearSession() { try { localStorage.removeItem(SESSION_KEY); } catch (e) {} }
 
-async function authFetch(path, opts) {
+// Giris oturumu (access_token) 1 saatte doluyor. Eskiden yenilenmiyordu:
+// sekmeyi acik birakan ogretmen "JWT expired" hatasi alip tekrar giris
+// yapmak zorunda kaliyordu. Artik 401'de refresh_token ile bir kez
+// yenileyip istegi tekrarliyoruz.
+async function refreshSession() {
+  const session = loadSession();
+  if (!session || !session.refresh_token) return false;
+  const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY },
+    body: JSON.stringify({ refresh_token: session.refresh_token }),
+  });
+  if (!res.ok) return false;
+  saveSession(await res.json());
+  return true;
+}
+
+async function authFetch(path, opts, retried) {
   opts = opts || {};
   const session = loadSession();
   const headers = Object.assign({
@@ -15,11 +32,21 @@ async function authFetch(path, opts) {
     Authorization: 'Bearer ' + (session ? session.access_token : SUPABASE_KEY),
   }, opts.headers || {});
   const res = await fetch(SUPABASE_URL + path, Object.assign({}, opts, { headers }));
+  if (res.status === 401 && session && !retried && !path.startsWith('/auth/')) {
+    if (await refreshSession()) return authFetch(path, opts, true);
+    clearSession();
+    document.getElementById('dashboard').classList.add('hidden');
+    document.getElementById('authCard').classList.remove('hidden');
+    setMsg(document.getElementById('authMsg'), 'Oturumun sona erdi, lütfen tekrar giriş yap.', 'err');
+    throw new Error('Oturum sona erdi');
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error_description || body.msg || body.message || ('HTTP ' + res.status));
   }
-  return res.status === 204 ? null : res.json();
+  if (res.status === 204) return null;
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
 
 function setMsg(el, text, kind) {
@@ -126,18 +153,101 @@ async function loadClasses() {
   });
 }
 
+// Uygulamanin kendi icerik dosyasi (ayni sitede) - kategori adlari ve her
+// bolumun kelime sayisi. Boylece "Kelime" tahmini degil, bitirilen
+// bolumlerin gercek kelime toplami olarak hesaplanabiliyor.
+let _catalog = null;
+async function loadCatalog() {
+  if (_catalog) return _catalog;
+  try {
+    const d = await (await fetch('data/episodes.json')).json();
+    _catalog = {};
+    d.categories.forEach((c) => {
+      _catalog[c.id] = {
+        title: String(c.title).split('–').pop().trim(),
+        sizes: c.episodes.map((e) => (e.objects || e.conversation || []).length || 0),
+        total: c.episode_count,
+      };
+    });
+  } catch (e) { _catalog = {}; }
+  return _catalog;
+}
+
+function timeAgo(iso) {
+  if (!iso) return '—';
+  const min = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (min < 2) return 'şimdi';
+  if (min < 60) return min + ' dk önce';
+  if (min < 60 * 24) return Math.round(min / 60) + ' sa önce';
+  return Math.round(min / 1440) + ' gün önce';
+}
+
+function studentDetail(s, catalog) {
+  const p = s.progress;
+  if (!p || !p.cats) return '<p class="empty">Ayrıntılı ilerleme henüz gelmedi (öğrencinin uygulamayı güncel sürümle bir kez açması gerekiyor).</p>';
+  const rows = Object.keys(p.cats).map((cid) => {
+    const info = catalog[cid] || { title: cid, total: '?' };
+    return `<li><b>${escapeHtml(info.title)}</b> — ${p.cats[cid].length}/${info.total} bölüm</li>`;
+  }).join('');
+  const hard = (p.hard || []).map((h) => `<span class="chip">${escapeHtml(h[1])} <small>×${h[2]}</small></span>`).join(' ');
+  return `<div class="detail"><div><b>Bitirilen bölümler</b><ul>${rows || '<li>Henüz yok</li>'}</ul></div>
+    <div><b>Zorlandığı kelimeler</b><div class="chips">${hard || '<span class="empty">Henüz yok 👍</span>'}</div></div></div>`;
+}
+
+function exactWords(s, catalog) {
+  const p = s.progress;
+  if (!p || !p.cats) return s.words_learned;
+  let n = 0;
+  Object.keys(p.cats).forEach((cid) => {
+    const info = catalog[cid];
+    if (info) p.cats[cid].forEach((i) => { n += info.sizes[i] || 0; });
+  });
+  return n;
+}
+
 async function toggleRoster(classId) {
   const el = document.getElementById('roster-' + classId);
   const wasHidden = el.classList.contains('hidden');
   el.classList.toggle('hidden');
   if (!wasHidden) return;
+  renderRoster(classId);
+}
+
+async function renderRoster(classId) {
+  const el = document.getElementById('roster-' + classId);
+  el.innerHTML = '<p class="empty">Yükleniyor...</p>';
+  const cols = 'id,name,stars,streak_days,words_learned,minutes_total,updated_at';
+  let students;
+  let hasDetail = true;
   try {
-    const students = await authFetch(`/rest/v1/students?class_id=eq.${classId}&select=name,stars,streak_days,words_learned,minutes_total,updated_at&order=stars.desc`);
-    if (!students.length) { el.innerHTML = '<p class="empty">Henüz bu sınıfa katılan öğrenci yok. Sınıf kodunu öğrencilerinle paylaş.</p>'; return; }
-    el.innerHTML = `<table><thead><tr><th>Öğrenci</th><th>⭐</th><th>🔥</th><th>Kelime</th><th>Dakika</th></tr></thead><tbody>
-      ${students.map((s) => `<tr><td>${escapeHtml(s.name)}</td><td>${s.stars}</td><td>${s.streak_days}</td><td>${s.words_learned}</td><td>${s.minutes_total}</td></tr>`).join('')}
-    </tbody></table>`;
-  } catch (e) { el.innerHTML = '<p class="empty">Yüklenemedi: ' + e.message + '</p>'; }
+    students = await authFetch(`/rest/v1/students?class_id=eq.${classId}&select=${cols},progress&order=stars.desc`);
+  } catch (e) {
+    // sync_v2_schema.sql henuz calistirilmadiysa progress sutunu yok
+    try {
+      students = await authFetch(`/rest/v1/students?class_id=eq.${classId}&select=${cols}&order=stars.desc`);
+      hasDetail = false;
+    } catch (e2) { el.innerHTML = '<p class="empty">Yüklenemedi: ' + e2.message + '</p>'; return; }
+  }
+  if (!students.length) { el.innerHTML = '<p class="empty">Henüz bu sınıfa katılan öğrenci yok. Sınıf kodunu öğrencilerinle paylaş.</p>'; return; }
+  const catalog = await loadCatalog();
+  el.innerHTML = `<table><thead><tr><th>Öğrenci</th><th>⭐</th><th>🔥</th><th>Kelime</th><th>Dakika</th><th>Son görülme</th><th></th></tr></thead><tbody>
+    ${students.map((s) => `<tr class="srow" data-id="${s.id}"><td>${hasDetail ? '<span class="caret">▸</span> ' : ''}${escapeHtml(s.name)}</td><td>${s.stars}</td><td>${s.streak_days}</td><td>${exactWords(s, catalog)}</td><td>${s.minutes_total}</td><td>${timeAgo(s.updated_at)}</td>
+      <td><button type="button" class="del" data-id="${s.id}" data-name="${escapeHtml(s.name)}" title="Öğrenciyi sil" aria-label="Öğrenciyi sil">🗑</button></td></tr>
+      ${hasDetail ? `<tr class="drow hidden" id="d-${s.id}"><td colspan="7">${studentDetail(s, catalog)}</td></tr>` : ''}`).join('')}
+  </tbody></table>`;
+  el.querySelectorAll('.srow').forEach((r) => r.addEventListener('click', (e) => {
+    if (e.target.closest('.del')) return;
+    const d = document.getElementById('d-' + r.dataset.id);
+    if (d) { d.classList.toggle('hidden'); r.classList.toggle('open'); }
+  }));
+  el.querySelectorAll('.del').forEach((b) => b.addEventListener('click', async () => {
+    if (!window.confirm(`"${b.dataset.name}" sınıftan silinsin mi? Bu geri alınamaz.`)) return;
+    try {
+      const rows = await authFetch(`/rest/v1/students?id=eq.${b.dataset.id}`, { method: 'DELETE', headers: { Prefer: 'return=representation' } });
+      if (Array.isArray(rows) && !rows.length) throw new Error('Silme izni yok — veritabanı güncellemesi (sync_v2_schema.sql) henüz yapılmamış olabilir.');
+      renderRoster(classId);
+    } catch (e) { window.alert('Silinemedi: ' + e.message); }
+  }));
 }
 
 async function createClass() {
