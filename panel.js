@@ -60,6 +60,9 @@ const CATEGORY_THEME = {
   tourist:                { c: '#8E44AD', dark: '#712E8C', tint: '#C990E0' },
   conversations:          { c: '#EF6C9C', dark: '#D14F80', tint: '#F7A9C6' },
   opposites:              { c: '#7E57C2', dark: '#6641A8', tint: '#B597E0' },
+  math_numbers:           { c: '#3949AB', dark: '#2C3A94', tint: '#8E99E0' },
+  math_shapes:            { c: '#00897B', dark: '#00695C', tint: '#4DB6AC' },
+  math_operations:        { c: '#F4511E', dark: '#D84315', tint: '#FF8A65' },
   // "conversation kisminda hepsi tek bir listede yer aliyor bunlari
   // ayirmak lazim" geri bildirimi - tek 'conversations' kategorisi 17
   // konuya bolundu (bkz. scripts/split_conversations.py), her biri kendi
@@ -110,6 +113,7 @@ const CATEGORY_MOTIF = {
   emotions_personality: '😊', clothes_shopping: '👕', jobs_professions: '💼',
   science: '🔬', communication_internet: '💬',
   prepositions: '📦', question_words: '❓', get: '🔄', conversations: '💬', opposites: '↔️',
+  math_numbers: '🔢', math_shapes: '🔷', math_operations: '➕',
   conv_social_manners: '👋', conv_family_home: '🏠', conv_daily_routine: '⏰',
   conv_school: '📚', conv_hobbies_sports: '⚽', conv_animals_nature: '🐾',
   conv_food_drinks: '🍽️', conv_shopping_clothes: '👕', conv_weather_seasons: '⛅',
@@ -2577,10 +2581,12 @@ const CONVERSATION_CATEGORY_IDS = [
 ];
 const OPPOSITE_CATEGORY_IDS = ['opposites'];
 const A2_CATEGORY_SUFFIX = '_a2';
+// İngilizce ilkokul matematiği pilotu (bkz. scripts/build_math_pilot.py)
+const MATH_CATEGORY_PREFIX = 'math_';
 const SECTIONS = [
   { id: 'words', title: 'Words', sub: 'Themed word categories', subTr: 'Temalı kelime kategorileri', titleTr: 'Kelimeler', motif: '📚',
     theme: { c: '#FFA000', dark: '#DB8A00', tint: '#FFCF66' },
-    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !CONVERSATION_CATEGORY_IDS.includes(c.id) && !OPPOSITE_CATEGORY_IDS.includes(c.id) && !c.id.endsWith(A2_CATEGORY_SUFFIX) },
+    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !CONVERSATION_CATEGORY_IDS.includes(c.id) && !OPPOSITE_CATEGORY_IDS.includes(c.id) && !c.id.endsWith(A2_CATEGORY_SUFFIX) && !c.id.startsWith(MATH_CATEGORY_PREFIX) },
   { id: 'grammar', title: 'Grammar', sub: 'Prepositions: in, on, at, under…', subTr: 'Edatlar: in, on, at, under…', titleTr: 'Gramer', motif: '🧩',
     theme: { c: '#00ACC1', dark: '#008BA0', tint: '#5DD6E6' },
     pick: (c) => GRAMMAR_CATEGORY_IDS.includes(c.id) },
@@ -2607,6 +2613,12 @@ const SECTIONS = [
     // artik yok ama CONVERSATION_CATEGORY_IDS'de geriye donuk uyumluluk
     // icin duruyor.
     pick: (c) => CONVERSATION_CATEGORY_IDS.includes(c.id) },
+  // "İlkokul matematiğini İngilizce olarak koyabiliriz - MEB'de olmayan bir
+  // ekstra" - pilot: sayılar, şekiller, toplama/çıkarma. Normal kelime
+  // kategorisi biçiminde, tüm bölüm akışını (keşif/soru/konuşma/cümle/harf) aynen kullanıyor.
+  { id: 'math', title: 'Math in English', sub: 'Numbers, shapes, adding & taking away', subTr: 'Sayılar, şekiller, toplama ve çıkarma', titleTr: 'İngilizce Matematik', motif: '🧮',
+    theme: { c: '#3949AB', dark: '#2C3A94', tint: '#8E99E0' },
+    pick: (c) => c.id.startsWith(MATH_CATEGORY_PREFIX) },
   // "StoryBook altındaki ppt'yi sisteme adapte edelim" - kelime
   // kategorilerinden TAMAMEN AYRI bir veri kaynağı (data/stories.json,
   // /stories API'si) kullandığı için categories dizisinde hiç yok;
