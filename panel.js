@@ -179,6 +179,21 @@ function idbPut(key, value) {
     try { db.transaction('kv', 'readwrite').objectStore('kv').put({ k: key, v: value }); } catch (e) { /* yok say */ }
   });
 }
+function idbDel(key) {
+  openIDB().then((db) => {
+    if (!db) return;
+    try { db.transaction('kv', 'readwrite').objectStore('kv').delete(key); } catch (e) { /* yok say */ }
+  });
+}
+function idbDeleteEvents(profileId) {
+  openIDB().then((db) => {
+    if (!db) return;
+    try {
+      const req = db.transaction('events', 'readwrite').objectStore('events').index('by_profile').openCursor(IDBKeyRange.only(profileId));
+      req.onsuccess = () => { const c = req.result; if (c) { c.delete(); c.continue(); } };
+    } catch (e) { /* yok say */ }
+  });
+}
 function idbLogEvent(evt) {
   openIDB().then((db) => {
     if (!db) return;
@@ -2185,6 +2200,25 @@ ${FONT_FACES}
     .ke-lib-grid .ke-category-meta:first-of-type{ display:none; }
   }
   .ke-profile-screen{ max-width:760px; margin:0 auto; text-align:center; position:relative; z-index:1; }
+  /* "Kim oynuyor?" - tek cihazi paylasan kardesler icin acilis secimi */
+  .ke-who{ max-width:760px; margin:0 auto; padding:24px 0; text-align:center; position:relative; z-index:1; }
+  .ke-who h1{ font-size:30px; margin:6px 0 4px; color:var(--kb-chalk); }
+  .ke-who p{ margin:0 0 20px; color:var(--kb-chalk-dim); font-weight:700; }
+  .ke-who-grid{ display:flex; flex-wrap:wrap; justify-content:center; gap:16px; }
+  .ke-shell .ke-who-card{
+    display:flex; flex-direction:column; align-items:center; gap:8px; width:132px; padding:14px 8px 12px !important;
+    border-radius:22px !important; background:rgba(255,255,255,.08) !important; border:3px solid rgba(245,240,223,.25) !important;
+    color:var(--kb-chalk) !important; font-size:17px !important; font-weight:800 !important; box-shadow:none !important;
+  }
+  .ke-shell .ke-who-card:hover, .ke-shell .ke-who-card:focus-visible{ border-color:var(--kb-discover) !important; }
+  .ke-who-card .ke-av-circle{ width:88px; height:88px; }
+  .ke-who-card .ke-who-new{ width:88px; height:88px; border-radius:50%; display:grid; place-items:center; font-size:40px; border:3px dashed rgba(245,240,223,.5); }
+  .ke-who-card small{ font-size:12px; color:var(--kb-chalk-dim); font-weight:700; }
+  .ke-shell .ke-who-chip{
+    display:inline-flex; align-items:center; gap:6px; margin:6px auto 0; min-height:40px; padding:6px 14px !important;
+    border-radius:999px !important; background:rgba(255,255,255,.12) !important; color:var(--kb-chalk) !important;
+    border:2px solid rgba(245,240,223,.35) !important; font-size:14px !important; font-weight:800 !important; box-shadow:none !important;
+  }
   /* ---- Avatar v2 ----
      .ke-av = govde gorselinin kendi 2:3 kutusu; tum katmanlar (sapka,
      esya, dost) bu kutuya gore cqw ile konumlaniyor, boylece her boyutta
@@ -2847,7 +2881,14 @@ const Profiles = {
     d.list = d.list.filter((p) => p.id !== id);
     if (d.active === id) d.active = d.list[0].id;
     this._save(d);
-    try { window.localStorage.removeItem(id === 'p1' ? PROGRESS_KEY : PROGRESS_KEY + '_' + id); } catch (e) { /* yok say */ }
+    // Profilin TUM verisi silinir: newId() bos kimligi yeniden kullandigi
+    // icin eskiden yeni profil (ayni p2) silinen cocugun serisini, yildizini,
+    // yolculugunu devraliyordu.
+    Object.values(profileStorageKeys(id)).forEach((k) => {
+      try { window.localStorage.removeItem(k); } catch (e) { /* yok say */ }
+      idbDel(k);
+    });
+    idbDeleteEvents(id);
   },
 };
 
@@ -3170,7 +3211,8 @@ export async function mount(container, api, toolId) {
     return;
   }
 
-  if (Profiles.exists()) resumeLastScreen(container, api, toolId, categories);
+  if (Profiles.all().length > 1) showWhoIsPlaying(container, api, toolId, categories);
+  else if (Profiles.exists()) resumeLastScreen(container, api, toolId, categories);
   else showWelcome(container, api, toolId, categories);
   // Guard, ILK render'DAN SONRA kuruluyor - once .ke-carnival-hero/
   // .ke-profile-screen'in kendisi "yeni bir ekrana gecis" sanilip
@@ -3546,6 +3588,7 @@ function showSectionMenu(container, api, toolId, categories) {
         <span class="ke-mascot-edit" aria-hidden="true">✏️</span>
         <span class="ke-mascot-badge" id="keMascotBadge" ${hasBadge ? '' : 'hidden'}></span>
       </button>
+      <button type="button" class="ke-who-chip" id="keWhoChip" aria-label="${L('Çocuk değiştir', 'Switch child')}">👤 ${escapeProfileText(Profiles.active().name || L('Ben', 'Me'))} <span aria-hidden="true">⇄</span></button>
     </div>
     ${journeyHomeCardHTML(categories)}
     ${dueTotal ? `<button type="button" class="ke-due-chip" id="keDueChip">🔁 ${L(`Bugün ${dueTotal} kelime tekrar`, `${dueTotal} words to review today`)} <span>→</span></button>` : ''}
@@ -3557,6 +3600,7 @@ function showSectionMenu(container, api, toolId, categories) {
   `;
   wireBottomNav(host, container, api, toolId, categories);
   wireJourneyHomeCard(host, container, api, toolId, categories);
+  host.querySelector('#keWhoChip').addEventListener('click', () => showWhoIsPlaying(container, api, toolId, categories));
   const dueChip = host.querySelector('#keDueChip');
   if (dueChip) dueChip.addEventListener('click', () => { const c = dueByCat[0][0]; startReviewSession(container, api, toolId, categories, c.id, c.title); });
   host.querySelector('#keMascotBtn').addEventListener('click', () => showQuickMenu(container, api, toolId, categories));
@@ -3627,6 +3671,13 @@ function profileStorageKeys(pid) {
     daily: pid === 'p1' ? DAILY_KEY : DAILY_KEY + '_' + pid,
     time: pid === 'p1' ? TIME_KEY : TIME_KEY + '_' + pid,
     journey: pid === 'p1' ? 'ke_journey_v1' : 'ke_journey_v1_' + pid,
+    todayTime: pid === 'p1' ? TODAY_TIME_KEY : TODAY_TIME_KEY + '_' + pid,
+    gameTokens: pid === 'p1' ? GAME_TOKENS_KEY : GAME_TOKENS_KEY + '_' + pid,
+    river: pid === 'p1' ? RIVER_HIGHSCORE_KEY : RIVER_HIGHSCORE_KEY + '_' + pid,
+    classroom: pid === 'p1' ? CLASSROOM_KEY : CLASSROOM_KEY + '_' + pid,
+    pendingQuiz: pid === 'p1' ? PENDING_QUIZ_KEY : PENDING_QUIZ_KEY + '_' + pid,
+    mathBest: pid === 'p1' ? 'ke_math_best_v1' : 'ke_math_best_v1_' + pid,
+    puzzle: `${PUZZLE_BEST_KEY}_${pid}`,
   };
 }
 
@@ -4833,6 +4884,35 @@ function reportProblemHref() {
     'Where were you (category/episode) and what happened?\n\n\n---\nDevice: ' + navigator.userAgent
   );
   return `mailto:bmenderes@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+// Tek cihazi birden fazla cocuk kullaniyorsa (aile tableti/telefonu):
+// acilista ve ana ekrandaki "⇄" cipinden kim oynadigi secilir. Her profilin
+// ilerlemesi, yildizi, serisi, yolculugu, rekorlari ayri anahtarlarda
+// (profileStorageKeys) tutulur.
+function showWhoIsPlaying(container, api, toolId, categories) {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  const host = container.querySelector('#keScreenHost');
+  const activeId = Profiles.active().id;
+  const cards = Profiles.all().map((p) => {
+    const stars = (() => { try { const raw = JSON.parse(window.localStorage.getItem(profileStorageKeys(p.id).progress)) || {}; return Object.values(raw).reduce((n, c) => n + ((c && c.completed) || []).length, 0); } catch (e) { return 0; } })();
+    return `<button type="button" class="ke-who-card" data-who="${p.id}" aria-pressed="${p.id === activeId}">
+      ${avatarCircleHTML(p)}<span>${escapeProfileText(p.name || L('Ben', 'Me'))}</span><small>⭐ ${stars}</small></button>`;
+  }).join('');
+  host.innerHTML = `
+    <div class="ke-who">
+      <h1>${L('Kim oynuyor?', "Who's playing?")}</h1>
+      <p>${L('Her çocuğun ilerlemesi ayrı tutulur.', "Each child's progress is kept separate.")}</p>
+      <div class="ke-who-grid">
+        ${cards}
+        <button type="button" class="ke-who-card" id="keWhoNew"><span class="ke-who-new" aria-hidden="true">＋</span><span>${L('Yeni çocuk', 'New child')}</span><small>&nbsp;</small></button>
+      </div>
+    </div>`;
+  host.querySelectorAll('[data-who]').forEach((b) => b.addEventListener('click', () => {
+    Profiles.setActive(b.dataset.who);
+    resumeLastScreen(container, api, toolId, categories);
+  }));
+  host.querySelector('#keWhoNew').addEventListener('click', () => showProfileScreen(container, api, toolId, categories, { newProfile: true }));
 }
 
 function escapeProfileText(t) {
