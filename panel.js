@@ -7480,13 +7480,22 @@ async function showBonusQuiz(container, api, toolId, categories, onPass) {
   }
 
   async function loadWords() {
-    const pool = categories.filter((c) => c.word_count > 0 && c.episode_count > 0);
-    const cat = pool[Math.floor(Math.random() * pool.length)];
-    const epIndex = Math.floor(Math.random() * cat.episode_count);
-    const r = await api.apiFetch(`/api/tools/${toolId}/categories/${cat.id}/episodes/${epIndex}`);
-    if (!r.ok) throw new Error('fetch failed');
-    const ep = await r.json();
-    const objs = (ep.objects || []).filter((o) => o.word && o.tr);
+    // Konusma kategorilerinde kelime karti yok (word_count diyalog sayisi) ve
+    // bazi bolumler 1-2 kartlik - "sinav hazirlanamadi" hatasi buradan
+    // geliyordu. Konusmalari disla, 5 kelimeye ulasana kadar bolum topla.
+    const pool = categories.filter((c) => c.word_count > 0 && c.episode_count > 0 && !String(c.id).startsWith('conv_'));
+    const byWord = new Map();
+    for (let tries = 0; tries < 6 && byWord.size < 5 && pool.length; tries++) {
+      const cat = pool[Math.floor(Math.random() * pool.length)];
+      const epIndex = Math.floor(Math.random() * cat.episode_count);
+      try {
+        const r = await api.apiFetch(`/api/tools/${toolId}/categories/${cat.id}/episodes/${epIndex}`);
+        if (!r.ok) continue;
+        const ep = await r.json();
+        (ep.objects || []).filter((o) => o.word && o.tr).forEach((o) => byWord.set(o.word, o));
+      } catch (e) { /* sonraki denemede baska bolum */ }
+    }
+    const objs = [...byWord.values()];
     return shuffle(objs).slice(0, Math.min(5, objs.length));
   }
 
