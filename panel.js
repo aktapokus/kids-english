@@ -3456,7 +3456,7 @@ function showQuickMenu(container, api, toolId, categories) {
         <button type="button" class="ke-quickmenu-tile qm-sound" id="keQmSound"><span class="qm-ico">🔊</span>${L('Ses Testi', 'Sound Test')}</button>
         <button type="button" class="ke-quickmenu-tile qm-lang" id="keQmLang"><span class="qm-ico">🌐</span>${_lang === 'tr' ? 'English' : 'Türkçe'}</button>
         <button type="button" class="ke-quickmenu-tile qm-rank" id="keQmRank"><span class="qm-ico">🏆</span>${L('Sıralama', 'Leaderboard')}</button>
-        <button type="button" class="ke-quickmenu-tile qm-guide" id="keQmGuide"><span class="qm-ico">📖</span>${L('Kılavuz', 'Guide')}</button>
+        <button type="button" class="ke-quickmenu-tile qm-guide" id="keQmGuide"><span class="qm-ico">📖</span>${L('Rehber', 'Guide')}</button>
         <button type="button" class="ke-quickmenu-tile qm-parent" id="keQmParent"><span class="qm-ico">👪</span>${L('Ebeveyn', 'Parent')}</button>
       </div>
       <div id="keQmSoundInfo" style="margin-top:2px;font-size:11.5px;color:var(--kb-chalk-dim);font-weight:700;"></div>
@@ -3513,71 +3513,53 @@ function showGuide(container, api, toolId, categories) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   const host = container.querySelector('#keScreenHost');
   const back = () => showSectionMenu(container, api, toolId, categories);
+  // "How to use'a gerek var mi bilmiyorum - oyunun nasil kazanildigini,
+  // adventure nedir, section'lar nedir, uygulama hakkinda bilgi versin":
+  // eski kilavuz tek tek ekran hareketlerini anlatiyordu ve eskimisti
+  // (sayilar, hizli menu). Artik uygulamanin yapisini anlatan bir rehber.
   const topics = [
     {
-      icon: '🧩', title: L('Bölümler', 'Sections'),
-      body: L('Ana ekrandaki renkli kartlara dokun: Kelimeler, Dilbilgisi, Sorular, Zıt Anlamlılar, Hikaye Zamanı ve daha fazlası. Her kart kendi kategori listesini açar.', 'Tap a coloured card on the home screen: Words, Grammar, Questions, Opposites, Story Time and more. Each card opens its own list of categories.'),
-      demo: `<div class="ke-category-card" style="--cc-c:#FF7A45;--cc-dark:#D65E2E;--cc-tint:#FFC9A8;background:#FF7A45;pointer-events:none;max-width:240px;">
-        <div class="ke-category-icon" style="color:#FF7A45">W<span class="ke-cat-motif-badge">🐾</span></div>
-        <div class="ke-category-text">
-          <div class="ke-category-title">${L('Kelimeler', 'Words')}</div>
-          <div class="ke-category-meta">${L('21 kategori · 856 kelime', '21 categories · 856 words')}</div>
-        </div>
-      </div>`,
+      icon: '🐙', title: L('Aktapokus Kids English nedir?', 'What is Aktapokus Kids English?'),
+      body: L('İlkokul çocukları için İngilizce kelime ve konuşma uygulaması. İçerik MEB İngilizce programı (2.–6. sınıf) ve Cambridge YLE kelime listeleri esas alınarak hazırlandı; British English kullanır. Her kelime resim, sesli okuma ve örnek cümleyle öğretilir.', 'An English words and speaking app for primary school children. Content is built on the Turkish national English curriculum (grades 2–6) and the Cambridge YLE word lists, in British English. Every word comes with a picture, audio and an example sentence.'),
     },
     {
-      icon: '❓', title: L('Kelime Sorusu', 'Word Quiz'),
-      body: L('Bir bölümde önce kelime tanıtılır, sonra 4 seçenekten doğru olanına dokunulur. Doğru cevap yeşil yanıp söner, yanlışta doğrusu gösterilir.', 'In an episode a word is introduced first, then you tap the right one out of 4 choices. A correct answer flashes green; a wrong one reveals the right answer.'),
-      demo: `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-width:220px;pointer-events:none;">
-        <div class="ke-quiz-card ke-correct" style="padding:8px;"><div class="ke-icon-hex"><div class="ke-icon-hex-inner" style="background:#FFE9B3"><div class="ke-emoji-icon" style="font-size:30px;">🐶</div></div></div></div>
-        <div class="ke-quiz-card" style="padding:8px;"><div class="ke-icon-hex"><div class="ke-icon-hex-inner" style="background:#D9E8FF"><div class="ke-emoji-icon" style="font-size:30px;">🐱</div></div></div></div>
-      </div>`,
+      icon: '🚀', title: L('Macera (Adventure) nedir?', 'What is the Adventure?'),
+      body: L('Uzayda bir yolculuk: her istasyon bir sınıf düzeyidir (Ay = 2. sınıf, Mars = 3. sınıf, Jüpiter = 4. sınıf … Galaksi = 6. sınıf). Her gezegen bir konudur. Konular sırayla açılır: bir gezegenin bölümlerini bitirince sıradaki açılır. İstasyona ulaşınca kutlama ve oyun hakkı kazanırsın. Bildiğin konuları atlamak için atlama testi var (%80 doğru). Bitirdiğin gezegenleri istediğin zaman tekrar oynayabilirsin.', 'A journey through space: each station is a school grade (Moon = grade 2, Mars = grade 3, Jupiter = grade 4 … Galaxy = grade 6). Each planet is a topic. Topics open in order: finish a planet\'s episodes to open the next one. Reaching a station gives a celebration and a game ticket. A jump test (80% right) lets you skip topics you already know. You can replay finished planets any time.'),
     },
     {
-      icon: '🎤', title: L('Şimdi Sen Söyle', 'Now You Say It'),
-      body: L('Konuşma turunda mikrofona dokun ve kelimeyi İngilizce söyle. Uygulama söylediğini dinler ve doğru telaffuz ettiysen seni onaylar.', 'In the speak round, tap the microphone and say the word in English. The app listens and confirms it if you pronounced it correctly.'),
-      demo: `<div style="text-align:center;pointer-events:none;">
-        <div class="ke-speak-word">dog</div>
-        <div style="margin-top:8px;font-size:34px;">🎙️</div>
-      </div>`,
+      icon: '🧩', title: L('Bir bölümde ne yapılır?', 'What happens in an episode?'),
+      body: L('Her bölümde 4–6 kelime vardır ve aşamalar sırayla gelir: 👀 Keşif (resme dokun, dinle) → ❓ Soru (doğru resmi seç) → 🎤 Konuş (kelimeyi söyle) → 🧩 Cümle (kelimelerden cümle kur). Yanlış yaptığın kelimeler "tekrar" listesine girer ve sonraki günlerde ana ekranda hatırlatılır.', 'Each episode has 4–6 words and steps come in order: 👀 Discover (tap and listen) → ❓ Quiz (pick the right picture) → 🎤 Speak (say the word) → 🧩 Sentence (build a sentence). Words you miss go into a review list and come back on the home screen on later days.'),
     },
     {
-      icon: '🧱', title: L('Cümle Kur', 'Build a Sentence'),
-      body: L('Alttaki kelime parçacıklarını yukarıdaki boşluklara sürükleyerek doğru cümleyi oluştur.', 'Drag the word tiles at the bottom into the blanks above to build the correct sentence.'),
-      demo: `<div style="pointer-events:none;">
-        <div style="display:flex;gap:6px;justify-content:center;margin-bottom:10px;">
-          <span class="ke-slot ke-filled">I</span><span class="ke-slot ke-filled">like</span><span class="ke-slot">____</span>
-        </div>
-        <div style="display:flex;gap:6px;justify-content:center;">
-          <span class="ke-tile" style="background:#fff;border-radius:10px;padding:6px 12px;font-weight:700;color:var(--ke-ink);">dogs</span>
-          <span class="ke-tile" style="background:#fff;border-radius:10px;padding:6px 12px;font-weight:700;color:var(--ke-ink);">cats</span>
-        </div>
-      </div>`,
+      icon: '📚', title: L('Kütüphane ve bölümler', 'Library and sections'),
+      body: L('Kütüphane serbest çalışma alanıdır; Macera sırasını beklemeden istediğin konuyu açarsın. Bölümler: <b>Words</b> (konu konu kelimeler), <b>Grammar</b> (in, on, under gibi yer bildiren kelimeler), <b>Questions</b> (Who, What, Where…), <b>Opposites</b> (büyük/küçük gibi zıtlar), <b>A2 Level</b> (5.–6. sınıf kelimeleri ve cümleleri), <b>Get</b> (get kalıpları), <b>Maths in English</b> (Matematik Yolu, Sayı Yağmuru, Çarpım Tablosu) ve <b>Story Time</b> (sesli okunan Aktapokus hikâyeleri).', 'The Library is free practice: open any topic without waiting for the Adventure order. Sections: <b>Words</b> (topic by topic), <b>Grammar</b> (place words like in, on, under), <b>Questions</b> (Who, What, Where…), <b>Opposites</b> (big/small and more), <b>A2 Level</b> (grade 5–6 words and sentences), <b>Get</b> (phrases with get), <b>Maths in English</b> (Maths Path, Number Rain, Times Tables) and <b>Story Time</b> (read-along Aktapokus stories).'),
     },
     {
-      icon: '📖', title: L('Hikaye Zamanı', 'Story Time'),
-      body: L('Sesli okunan bir hikayeyi sayfa sayfa takip et — okunan kelime altın renkte vurgulanır. İstersen kendi sesinle de okuyup kaydedebilir, kaydı telefonundan öğretmenine/velisine gönderebilirsin (kayıt hiçbir yere yüklenmez, sadece cihazda kalır).', 'Follow a read-along story page by page — the word being read is highlighted in gold. You can also record yourself reading and share the clip from your phone with a teacher or parent (nothing is uploaded, it stays on the device).'),
-      demo: `<div style="text-align:center;pointer-events:none;font-size:14px;font-weight:700;color:var(--kb-chalk);">He is <span class="ke-story-word ke-story-word-active">yellow</span> and very cute.</div>`,
+      icon: '🎮', title: L('Oyun hakkı nasıl kazanılır?', 'How do I earn a game?'),
+      body: L('Ödül oyunları (nehir oyunu, yapboz) oyun hakkıyla açılır. İki yol var: 1) Uygulamadan çıkmadan 15 dakika çalış; sonra 5 soruluk kısa bir sınav açılır, 3 doğru yaparsan 1 hak kazanırsın. 2) Macera\'da bir sonraki istasyona ulaş. Hakların Aktapokus\'a dokununca açılan menüde "Ödül Oyunu" karosundadır; kilitliyken kaç dakika kaldığını gösterir.', 'Reward games (river game, puzzle) open with a game ticket. Two ways: 1) Keep learning for 15 minutes without leaving the app; a short 5-question quiz then opens, get 3 right to earn 1 ticket. 2) Reach the next station in the Adventure. Tap Aktapokus to open the menu; the "Reward Game" tile shows your tickets, or how many minutes are left while it is locked.'),
     },
     {
-      icon: '⭐', title: L('İlerleme ve Ödüller', 'Progress & Rewards'),
-      body: L('Her doğru cevap yıldız kazandırır. Günlük hedefini tamamlayınca serin uzar, biriken yıldızlarla ödül oyunlarının kilidi açılır. Aktapokus\'a dokununca ilerlemeni, ödül oyununu ve daha fazlasını gösteren hızlı menü açılır.', 'Every correct answer earns a star. Hitting your daily goal extends your streak, and enough stars unlock reward games. Tap Aktapokus to open a quick menu with your progress, the reward game, and more.'),
-      demo: `<div style="display:flex;gap:10px;align-items:center;justify-content:center;pointer-events:none;font-weight:700;color:var(--kb-chalk);font-size:15px;"><span>⭐ 42</span><span>🔥 5 ${L('gün', 'days')}</span></div>`,
+      icon: '⭐', title: L('Yıldızlar, seri ve avatar', 'Stars, streak and avatar'),
+      body: L('Bitirdiğin her bölüm bir yıldızdır. Her gün biraz çalışınca serin (🔥) uzar. Yıldız ve seri arttıkça avatarın için yeni renkler, şapkalar ve arkadaşlar açılır. İlerleme ekranı son 7 günde ne kadar çalıştığını gösterir.', 'Every finished episode is a star. Learning a little every day grows your streak (🔥). Stars and streak unlock new colours, hats and pets for your avatar. The Progress screen shows how much you practised in the last 7 days.'),
     },
     {
-      icon: '🏫', title: L('Sınıf (Öğretmenler için)', 'Classroom (for teachers)'),
-      body: L('Öğretmenin sana bir sınıf kodu verirse, hızlı menüdeki Avatar ekranından bu kodu girerek sınıfa katılabilirsin — böylece öğretmenin ilerlemeni takip edebilir. Öğretmenler kendi panellerine ayrı bir bağlantıdan giriş yapar.', 'If your teacher gives you a class code, enter it on the Avatar screen (from the quick menu) to join the class — then your teacher can see your progress. Teachers sign in to their own portal from a separate link.'),
+      icon: '👤', title: L('Birden fazla çocuk', 'More than one child'),
+      body: L('Aynı cihazı kardeşler paylaşabilir: her çocuğun kendi profili vardır; ilerleme, yıldızlar, Macera ve oyun hakları ayrı tutulur. Açılışta "Kim oynuyor?" ekranından ya da ana ekrandaki "👤 ad ⇄" düğmesinden çocuk değiştirilir.', 'Siblings can share one device: each child has their own profile, with separate progress, stars, Adventure and game tickets. Switch child from the "Who\'s playing?" screen at start or the "👤 name ⇄" button on the home screen.'),
     },
     {
-      icon: '⛶', title: L('Tam Ekran', 'Full Screen'),
-      body: L('Sol üstteki tam ekran düğmesiyle adres çubuğunu gizleyip daha büyük bir oyun alanı elde edebilirsin.', 'Use the full-screen button in the top-left corner to hide the address bar and get a bigger play area.'),
+      icon: '👪', title: L('Veliler ve öğretmenler', 'Parents and teachers'),
+      body: L('Veli alanı (menüde 👪) ilerlemeyi gösterir ve yedek alma/geri yükleme sunar. Öğretmenin bir sınıf kodu verdiyse Avatar ekranının altından sınıfa katılabilirsin; ilerlemen öğretmen paneline gönderilir. Öğretmenler kendi panellerine ayrı bir bağlantıdan girer.', 'The parent area (👪 in the menu) shows progress and offers backup and restore. If the teacher gave a class code, join from the bottom of the Avatar screen; progress is then sent to the teacher portal. Teachers sign in to their own portal from a separate link.'),
+    },
+    {
+      icon: '🔒', title: L('Veriler ve gizlilik', 'Data and privacy'),
+      body: L('Hesap gerekmez; reklam ve izleyici yoktur. Profil, avatar ve ilerleme yalnızca bu cihazda saklanır. İki isteğe bağlı özellik dışında hiçbir şey gönderilmez: 1) Nehir oyununda "Skoru Gönder"e basarsan yazdığın takma ad ve puan herkese açık sıralamada görünür. 2) Sınıf koduyla katılırsan ad ve ilerleme sayıların yalnızca o öğretmene gider. Konuşma alıştırmasında ses tanımayı tarayıcı/cihaz yapar (Android/Chrome’da Google hizmeti); uygulama sesi almaz ve kaydetmez. Hikâye okuma kayıtların cihazında kalır. Ayrıntılar: Gizlilik sayfası.', 'No account, no ads, no trackers. Profile, avatar and progress are stored only on this device. Nothing is sent except two optional features: 1) tapping "Submit Score" in the river game shows the nickname you type and your score on a public leaderboard; 2) joining a class with a code sends your name and progress numbers to that teacher only. Speech recognition is done by your browser or device (Google’s service on Android/Chrome); the app never receives or stores the audio. Story reading recordings stay on your device. Details: Privacy page.'),
     },
   ];
   host.innerHTML = `
     <button class="ke-back-btn" id="keGuideBack">${ICON_BACK} ${L('Kapat', 'Close')}</button>
     <div class="ke-landing-header">
-      <h1 class="ke-title">${bubbleTitleHTML(L('Nasıl Kullanılır?', 'How to Use'))}</h1>
-      <p class="ke-subtitle">${L('Uygulamayı tanıyalım', "Let's get to know the app")}</p>
+      <h1 class="ke-title">${bubbleTitleHTML(L('Uygulama Rehberi', 'App Guide'))}</h1>
+      <p class="ke-subtitle">${L('Macera, bölümler, oyunlar ve daha fazlası', 'Adventure, sections, games and more')}</p>
     </div>
     <div class="ke-guide-list">
       ${topics.map((t, i) => `
