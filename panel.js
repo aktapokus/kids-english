@@ -2774,7 +2774,7 @@ const avatarScenes = () => [
 ];
 // Özelleştirme sekmeleri: profil alanı + katalog + sekme başlığı
 const AVATAR_SLOTS = () => [
-  { key: 'color', list: avatarColors(), label: L('Renk', 'Color'), icon: '🎨' },
+  { key: 'color', list: avatarColors(), label: L('Renk', 'Colour'), icon: '🎨' },
   { key: 'shirt', list: avatarShirts(), label: L('Tişört', 'Shirt'), icon: '👕' },
   { key: 'hat', list: avatarHats(), label: L('Şapka', 'Hat'), icon: '🎩' },
   { key: 'item', list: avatarItems(), label: L('Eşya', 'Item'), icon: '🎈' },
@@ -3233,7 +3233,7 @@ const SECTIONS = [
   // "İlkokul matematiğini İngilizce olarak koyabiliriz - MEB'de olmayan bir
   // ekstra" - pilot: sayılar, şekiller, toplama/çıkarma. Normal kelime
   // kategorisi biçiminde, tüm bölüm akışını (keşif/soru/konuşma/cümle/harf) aynen kullanıyor.
-  { id: 'math', title: 'Math in English', sub: 'Numbers, shapes, adding & taking away', subTr: 'Sayılar, şekiller, toplama ve çıkarma', titleTr: 'İngilizce Matematik', motif: '🧮',
+  { id: 'math', title: 'Maths in English', sub: 'Numbers, shapes, adding & taking away', subTr: 'Sayılar, şekiller, toplama ve çıkarma', titleTr: 'İngilizce Matematik', motif: '🧮',
     theme: { c: '#3949AB', dark: '#2C3A94', tint: '#8E99E0' },
     pick: (c) => c.id.startsWith(MATH_CATEGORY_PREFIX) },
   // "StoryBook altındaki ppt'yi sisteme adapte edelim" - kelime
@@ -3440,7 +3440,7 @@ function showGuide(container, api, toolId, categories) {
   const topics = [
     {
       icon: '🧩', title: L('Bölümler', 'Sections'),
-      body: L('Ana ekrandaki renkli kartlara dokun: Kelimeler, Dilbilgisi, Sorular, Zıt Anlamlılar, Hikaye Zamanı ve daha fazlası. Her kart kendi kategori listesini açar.', 'Tap a colored card on the home screen: Words, Grammar, Questions, Opposites, Story Time and more. Each card opens its own list of categories.'),
+      body: L('Ana ekrandaki renkli kartlara dokun: Kelimeler, Dilbilgisi, Sorular, Zıt Anlamlılar, Hikaye Zamanı ve daha fazlası. Her kart kendi kategori listesini açar.', 'Tap a coloured card on the home screen: Words, Grammar, Questions, Opposites, Story Time and more. Each card opens its own list of categories.'),
       demo: `<div class="ke-category-card" style="--cc-c:#FF7A45;--cc-dark:#D65E2E;--cc-tint:#FFC9A8;background:#FF7A45;pointer-events:none;max-width:240px;">
         <div class="ke-category-icon" style="color:#FF7A45">W<span class="ke-cat-motif-badge">🐾</span></div>
         <div class="ke-category-text">
@@ -4043,7 +4043,7 @@ function showPlanetSheet(container, api, toolId, categories, p, st) {
       <div class="ke-jr-moons">${eps.join('')}</div>
       <div class="ke-btn-row" style="margin-top:12px;">
         ${due ? `<button type="button" class="ke-btn-secondary" id="keSheetReview">🔁 ${L('Tekrar', 'Review')} (${due})</button>` : ''}
-        ${p.id.startsWith('math_') ? `<button type="button" class="ke-btn-secondary" id="keSheetMath">🧮 ${L('Matematik Yolu', 'Math Path')}</button>` : ''}
+        ${p.id.startsWith('math_') ? `<button type="button" class="ke-btn-secondary" id="keSheetMath">🧮 ${L('Matematik Yolu', 'Maths Path')}</button>` : ''}
         <button type="button" class="ke-btn-primary" id="keSheetPlay">▶ ${p.full ? L('Baştan oyna', 'Play again') : L(`Bölüm ${next + 1}`, `Episode ${next + 1}`)}</button>
       </div>`;
   }
@@ -4494,7 +4494,7 @@ function showMathChallenge(container, api, toolId, categories, onExit, start) {
     host.innerHTML = `
       <button class="ke-back-btn" id="keMxBack">${ICON_BACK} ${L('Geri', 'Back')}</button>
       <div class="ke-mx">
-        <h1 class="ke-title">${bubbleTitleHTML(L('Matematik Yolu', 'Math Path'))}</h1>
+        <h1 class="ke-title">${bubbleTitleHTML(L('Matematik Yolu', 'Maths Path'))}</h1>
         <p class="ke-subtitle">${L('İngilizce sayılar ve işlemler — adım adım', 'Numbers and sums in English — step by step')} · ★ ${got} / ${MATH_PATH.length * 3}</p>
         <button type="button" class="ke-mx-tt-open" id="keMxTT">✖️ ${L('Çarpım Tablosu', 'Times Tables')} <small>1–10</small></button>
         <div class="ke-mx-path">${MATH_PATH.map((st, i) => {
@@ -4524,7 +4524,7 @@ function showMathChallenge(container, api, toolId, categories, onExit, start) {
     const t = Number(sel) > 0 ? Number(sel) : 2;
     const best = MathBest.get();
     host.innerHTML = `
-      <button class="ke-back-btn" id="keMxBack">${ICON_BACK} ${L('Matematik Yolu', 'Math Path')}</button>
+      <button class="ke-back-btn" id="keMxBack">${ICON_BACK} ${L('Matematik Yolu', 'Maths Path')}</button>
       <div class="ke-mx">
         <h1 class="ke-title">${bubbleTitleHTML(L('Çarpım Tablosu', 'Times Tables'))}</h1>
         <div class="ke-mx-tt-pick">${Array.from({ length: 10 }, (_, i) => i + 1).map((n) => `<button type="button" class="ke-mx-tt-n${n === t ? ' sel' : ''}" data-t="${n}">${n}<small>${'★'.repeat(best['tt_' + n] || 0)}</small></button>`).join('')}</div>
@@ -4559,7 +4559,7 @@ function showMathChallenge(container, api, toolId, categories, onExit, start) {
     let fallMs = st.speed;
     const dummy = document.createElement('div');
     host.innerHTML = `
-      <button class="ke-back-btn" id="keMxBack">${ICON_BACK} ${L('Matematik Yolu', 'Math Path')}</button>
+      <button class="ke-back-btn" id="keMxBack">${ICON_BACK} ${L('Matematik Yolu', 'Maths Path')}</button>
       <div class="ke-mx ke-rain">
         <div class="ke-mx-top"><span>${st.icon} ${st.title()}</span><span id="keRainHud">0 / ${N} · ✅ 0</span></div>
         <div class="ke-rain-arena" id="keRainArena"><div class="ke-rain-drop" id="keRainDrop"></div><div class="ke-rain-ground"></div></div>
@@ -4638,7 +4638,7 @@ function showMathChallenge(container, api, toolId, categories, onExit, start) {
           <div class="ke-mx-stars big">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
           <p>${stars ? L('Harika! Sıradaki adım açıldı.', 'Great! The next step is open.') : L('En az 8 doğru yaparsan 1 yıldız kazanırsın. Tekrar dene!', 'Get at least 8 right to earn a star. Try again!')}</p>
           <div class="ke-btn-row">
-            <button type="button" class="ke-btn-secondary" id="keMxLevels">${L('Matematik Yolu', 'Math Path')}</button>
+            <button type="button" class="ke-btn-secondary" id="keMxLevels">${L('Matematik Yolu', 'Maths Path')}</button>
             <button type="button" class="ke-btn-primary" id="keMxAgain">${L('Tekrar', 'Again')}</button>
           </div>
         </div>`;
@@ -5056,7 +5056,7 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
     mc.className = 'ke-category-card ke-mx-entry';
     const best = MathBest.get();
     const got = MATH_PATH.reduce((n, st) => n + (best[st.id] || 0), 0);
-    mc.innerHTML = `<div class="ke-category-icon" style="color:#3949AB">🧮</div><div class="ke-category-text"><div class="ke-category-title">${L('Matematik Yolu', 'Math Path')}</div><div class="ke-category-meta">${L('Sayı yağmuru, işlemler, çarpım tablosu, problemler', 'Number rain, sums, times tables, word problems')}</div><div class="ke-category-meta">★ ${got} / ${MATH_PATH.length * 3}</div></div>`;
+    mc.innerHTML = `<div class="ke-category-icon" style="color:#3949AB">🧮</div><div class="ke-category-text"><div class="ke-category-title">${L('Matematik Yolu', 'Maths Path')}</div><div class="ke-category-meta">${L('Sayı yağmuru, işlemler, çarpım tablosu, problemler', 'Number rain, sums, times tables, word problems')}</div><div class="ke-category-meta">★ ${got} / ${MATH_PATH.length * 3}</div></div>`;
     const back = () => showCategoryGrid(container, api, toolId, categories, 'math');
     mc.addEventListener('click', () => showMathChallenge(container, api, toolId, categories, back));
     grid.appendChild(mc);
