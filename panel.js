@@ -2006,6 +2006,33 @@ ${FONT_FACES}
   .ke-jr-grade-head{ position:relative; display:inline-flex; align-items:center; gap:8px; margin:14px auto 10px; padding:6px 16px; border-radius:99px; background:rgba(255,255,255,.14); border:2px solid rgba(255,255,255,.35); color:#fff; font-weight:800; font-size:15px; }
   .ke-jr-grade-head span{ font-size:20px; }
   .ke-shell .ke-jr-gradeskip{ position:relative; display:block; margin:-10px auto 22px; padding:10px 16px !important; min-height:44px; border-radius:14px !important; background:#FFD84D !important; color:#3a2a00 !important; font-weight:800 !important; font-size:13.5px !important; box-shadow:0 4px 0 #C99A12 !important; border:none !important; top:0 !important; }
+  /* ---- Math Challenge ---- */
+  .ke-mx{ max-width:560px; margin:0 auto; text-align:center; position:relative; z-index:1; }
+  .ke-mx-levels{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin:10px 0; }
+  .ke-shell .ke-mx-level{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:14px 8px !important; border-radius:18px !important; background:linear-gradient(160deg,#3949AB,#283593) !important; color:#fff !important; border:2px solid rgba(255,255,255,.3) !important; box-shadow:0 5px 0 #1A237E !important; top:0 !important; }
+  .ke-shell .ke-mx-level.locked{ opacity:.5; }
+  .ke-mx-lv-ic{ font-size:30px; } .ke-mx-level b{ font-size:15px; } .ke-mx-level small{ font-size:12px; opacity:.85; }
+  .ke-mx-stars{ color:#FFD84D; font-size:18px; letter-spacing:2px; } .ke-mx-stars.big{ font-size:40px; }
+  .ke-mx-top{ display:flex; justify-content:space-between; color:var(--kb-chalk,#fff); font-weight:800; font-size:14px; margin-top:6px; }
+  .ke-mx-bar{ height:8px; border-radius:99px; background:rgba(255,255,255,.14); overflow:hidden; margin:6px 0 12px; }
+  .ke-mx-bar i{ display:block; height:100%; background:linear-gradient(90deg,#8E99E0,#FFD84D); }
+  .ke-mx-card{ position:relative; background:#FFFDF4; color:#233; border-radius:24px; padding:18px 14px; box-shadow:0 6px 0 rgba(0,0,0,.25); min-height:150px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; }
+  .ke-shell .ke-mx-say{ position:absolute; right:10px; top:10px; }
+  .ke-mx-q{ font-family:'Fredoka','Baloo 2',sans-serif; font-size:40px; font-weight:700; }
+  .ke-mx-q.story{ font-size:19px; line-height:1.4; max-width:440px; padding:0 30px; }
+  .ke-mx-objs{ display:flex; flex-wrap:wrap; justify-content:center; gap:4px; font-size:30px; max-width:320px; }
+  .ke-mx-objs span.gone{ opacity:.3; position:relative; } .ke-mx-objs span.gone::after{ content:'✕'; position:absolute; left:0; right:0; top:-2px; color:#E5484D; font-size:34px; font-weight:900; opacity:1; }
+  .ke-mx-eq{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; } .ke-mx-eq b{ font-size:30px; color:#3949AB; }
+  .ke-mx-groups{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; } .ke-mx-objs.grp{ font-size:18px; padding:4px 6px; border:2px dashed #8E99E0; border-radius:12px; max-width:120px; }
+  .ke-mx-story{ font-size:52px; }
+  .ke-mx-choices{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:14px; }
+  .ke-shell .ke-mx-choice{ display:flex; flex-direction:column; align-items:center; padding:10px !important; min-height:74px; border-radius:18px !important; background:#fff !important; color:#233 !important; border:3px solid #DDE2F5 !important; box-shadow:0 4px 0 #C5CBE6 !important; top:0 !important; }
+  .ke-mx-choice b{ font-size:32px; font-family:'Fredoka','Baloo 2',sans-serif; line-height:1.1; } .ke-mx-choice small{ font-size:13px; font-weight:700; color:#5a6280; }
+  .ke-shell .ke-mx-choice.right{ border-color:#4CAF50 !important; background:#EFFCE5 !important; } .ke-shell .ke-mx-choice.wrong{ border-color:#E5484D !important; background:#FFEDED !important; }
+  .ke-mx-feedback{ min-height:26px; margin-top:10px; color:var(--kb-chalk,#fff); font-weight:800; font-size:15px; }
+  .ke-mx-done{ padding-top:40px; color:var(--kb-chalk,#fff); }
+  .ke-shell .ke-mx-entry{ background:linear-gradient(135deg,#3949AB,#6A1B9A) !important; border-color:#FFD84D !important; }
+  .ke-shell .ke-mx-level.ke-shake{ animation:ke-shake-x .35s ease; }
   /* ---- Uzay Yolculugu ---- */
   .ke-journey{ max-width:560px; margin:0 auto; text-align:center; position:relative; z-index:1; }
   .ke-jr-hint{ font-size:12.5px; font-weight:700; color:var(--kb-chalk-dim,#ccc); margin:0 auto 10px; max-width:420px; line-height:1.4; }
@@ -3979,6 +4006,7 @@ function showPlanetSheet(container, api, toolId, categories, p, st) {
       <div class="ke-jr-moons">${eps.join('')}</div>
       <div class="ke-btn-row" style="margin-top:12px;">
         ${due ? `<button type="button" class="ke-btn-secondary" id="keSheetReview">🔁 ${L('Tekrar', 'Review')} (${due})</button>` : ''}
+        ${p.id.startsWith('math_') ? `<button type="button" class="ke-btn-secondary" id="keSheetMath">🧮 Math Challenge</button>` : ''}
         <button type="button" class="ke-btn-primary" id="keSheetPlay">▶ ${p.full ? L('Baştan oyna', 'Play again') : L(`Bölüm ${next + 1}`, `Episode ${next + 1}`)}</button>
       </div>`;
   }
@@ -3998,6 +4026,8 @@ function showPlanetSheet(container, api, toolId, categories, p, st) {
   }));
   const play = ov.querySelector('#keSheetPlay');
   if (play) play.addEventListener('click', () => { close(); playJourneyEpisode(container, api, toolId, categories, p, p.full ? 0 : Progress.nextIncompleteEpisode(p.id, p.cat.episode_count)); });
+  const mx = ov.querySelector('#keSheetMath');
+  if (mx) mx.addEventListener('click', () => { close(); showMathChallenge(container, api, toolId, categories, () => showJourney(container, api, toolId, categories)); });
   const rev = ov.querySelector('#keSheetReview');
   if (rev) rev.addEventListener('click', () => { close(); _journeyMode = true; startReviewSession(container, api, toolId, categories, p.id, p.cat.title); });
   const goCur = ov.querySelector('#keSheetGoCur');
@@ -4296,6 +4326,197 @@ async function showParentArea(container, api, toolId, categories) {
   void today;
   host.querySelector('#keParentExport').addEventListener('click', exportBackup);
   host.querySelector('#keParentImport').addEventListener('change', (e) => importBackup(e.target.files[0]));
+}
+
+// ============================================================
+// MATH CHALLENGE - "Math kismini guclendirmemiz lazim, islem yapabilmeli"
+// Sayi/sekil/islem KELIMELERININ yaninda gercek islem pratigi. Seviyeler
+// ilkokul matematigi sirasiyla (sayma -> 10'a kadar toplama/cikarma ->
+// 20'ye kadar -> carpim (2/5/10) -> Ingilizce problem). Her soru
+// Ingilizce sesli okunur, nesnelerle gorsellestirilir; cevaplar rakam +
+// Ingilizce yazilisiyla ("7 · seven"). Seviye yildizlari profil bazinda,
+// yildiz kazanilan seviye Progress'e 'math_challenge' olarak islenir
+// (avatar kilitlerine sayilsin).
+// ============================================================
+const NUM_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+const TENS_WORDS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+function numWord(n) {
+  if (n < 20) return NUM_WORDS[n];
+  if (n === 100) return 'one hundred';
+  return TENS_WORDS[Math.floor(n / 10)] + (n % 10 ? '-' + NUM_WORDS[n % 10] : '');
+}
+const MATH_LEVELS = [
+  { id: 'count', icon: '🍎', tr: 'Sayma', en: 'Counting', sub: '1–10' },
+  { id: 'add10', icon: '➕', tr: 'Toplama', en: 'Adding', get sub() { return L('10\'a kadar', 'up to 10'); } },
+  { id: 'sub10', icon: '➖', tr: 'Çıkarma', en: 'Taking away', get sub() { return L('10\'a kadar', 'up to 10'); } },
+  { id: 'mix20', icon: '🔀', tr: 'Toplama ve çıkarma', en: 'Add & take away', get sub() { return L('20\'ye kadar', 'up to 20'); } },
+  { id: 'times', icon: '✖️', tr: 'Çarpım', en: 'Times tables', sub: '2 · 5 · 10' },
+  { id: 'story', icon: '📖', tr: 'Problemler', en: 'Word problems', get sub() { return L('İngilizce', 'in English'); } },
+];
+const MATH_OBJ = ['🍎', '⭐', '🎈', '🐟', '🍪', '🌸', '⚽', '🐤'];
+function mathBestKey() {
+  const pid = Profiles.active().id;
+  return pid === 'p1' ? 'ke_math_best_v1' : 'ke_math_best_v1_' + pid;
+}
+const MathBest = {
+  get() { try { return JSON.parse(window.localStorage.getItem(mathBestKey())) || {}; } catch (e) { return {}; } },
+  set(id, stars) {
+    const d = this.get();
+    if ((d[id] || 0) >= stars) return;
+    d[id] = stars;
+    try { window.localStorage.setItem(mathBestKey(), JSON.stringify(d)); } catch (e) { /* yok say */ }
+    idbPut(mathBestKey(), d);
+  },
+};
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+
+// Ingilizce problem sablonlari - cogul/tekil hatasi olmasin diye sayilar
+// >= 2 tutuluyor (b >= 2, a >= 3); cevap >= 1.
+const MATH_STORIES = [
+  { obj: '🍎', n: 'apples', add: (a, b) => `Ali has ${a} apples. He gets ${b} more. How many apples does he have now?`, sub: (a, b) => `Ali has ${a} apples. He eats ${b}. How many apples are left?` },
+  { obj: '🐦', n: 'birds', add: (a, b) => `There are ${a} birds in the tree. ${b} more birds come. How many birds are there now?`, sub: (a, b) => `There are ${a} birds in the tree. ${b} fly away. How many birds are left?` },
+  { obj: '🎈', n: 'balloons', add: (a, b) => `Elif has ${a} balloons. Her mum gives her ${b} more. How many balloons does she have now?`, sub: (a, b) => `Elif has ${a} balloons. ${b} fly away. How many balloons are left?` },
+  { obj: '📚', n: 'books', add: (a, b) => `Mert has ${a} books. He buys ${b} more. How many books does he have now?`, sub: (a, b) => `Mert has ${a} books. He gives ${b} to his friend. How many books does he have now?` },
+  { obj: '🐱', n: 'cats', add: (a, b) => `There are ${a} cats in the garden. ${b} more cats come. How many cats are there now?`, sub: (a, b) => `There are ${a} cats in the garden. ${b} run away. How many cats are left?` },
+];
+
+function makeMathQuestion(level) {
+  const o = MATH_OBJ[rnd(0, MATH_OBJ.length - 1)];
+  const row = (n, cls) => `<div class="ke-mx-objs${cls ? ' ' + cls : ''}">${Array.from({ length: n }, () => `<span>${o}</span>`).join('')}</div>`;
+  let q;
+  if (level === 'count') {
+    const n = rnd(1, 10);
+    q = { answer: n, text: `How many? Count them!`, say: 'How many? Count them!', visual: row(n) };
+  } else if (level === 'add10' || (level === 'mix20' && Math.random() < 0.5)) {
+    const max = level === 'add10' ? 10 : 20;
+    const a = rnd(1, max - 1), b = rnd(1, max - a);
+    q = { answer: a + b, text: `${a} + ${b} = ?`, say: `What is ${numWord(a)} plus ${numWord(b)}?`, full: `${numWord(a)} plus ${numWord(b)} is ${numWord(a + b)}`,
+      visual: max <= 10 ? `<div class="ke-mx-eq">${row(a)}<b>+</b>${row(b)}</div>` : '' };
+  } else if (level === 'sub10' || level === 'mix20') {
+    const max = level === 'sub10' ? 10 : 20;
+    const a = rnd(2, max), b = rnd(1, a - 1);
+    q = { answer: a - b, text: `${a} − ${b} = ?`, say: `What is ${numWord(a)} take away ${numWord(b)}?`, full: `${numWord(a)} take away ${numWord(b)} is ${numWord(a - b)}`,
+      visual: max <= 10 ? `<div class="ke-mx-objs">${Array.from({ length: a }, (_, i) => `<span class="${i >= a - b ? 'gone' : ''}">${o}</span>`).join('')}</div>` : '' };
+  } else if (level === 'times') {
+    const t = [2, 5, 10][rnd(0, 2)], k = rnd(1, t === 10 ? 5 : 6);
+    q = { answer: t * k, text: `${k} × ${t} = ?`, say: `What is ${numWord(k)} times ${numWord(t)}?`, full: `${numWord(k)} times ${numWord(t)} is ${numWord(t * k)}`,
+      visual: t * k <= 30 ? `<div class="ke-mx-groups">${Array.from({ length: k }, () => row(t, 'grp')).join('')}</div>` : '' };
+  } else {
+    const st = MATH_STORIES[rnd(0, MATH_STORIES.length - 1)];
+    if (Math.random() < 0.5) {
+      const a = rnd(2, 8), b = rnd(2, 10 - a);
+      q = { answer: a + b, text: st.add(a, b), say: st.add(a, b), full: `${numWord(a)} plus ${numWord(b)} is ${numWord(a + b)}`, visual: `<div class="ke-mx-story">${st.obj}</div>` };
+    } else {
+      const a = rnd(4, 10), b = rnd(2, a - 1);
+      q = { answer: a - b, text: st.sub(a, b), say: st.sub(a, b), full: `${numWord(a)} take away ${numWord(b)} is ${numWord(a - b)}`, visual: `<div class="ke-mx-story">${st.obj}</div>` };
+    }
+    q.story = true;
+  }
+  const opts = new Set([q.answer]);
+  const spread = q.answer > 20 ? 10 : 3;
+  while (opts.size < 4) {
+    const v = q.answer + rnd(-spread, spread) * (q.answer > 20 && Math.random() < 0.5 ? 1 : 1);
+    if (v >= 0 && v <= 100) opts.add(v);
+  }
+  q.choices = shuffle([...opts]);
+  return q;
+}
+
+function showMathChallenge(container, api, toolId, categories, onExit) {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  const host = container.querySelector('#keScreenHost');
+  const exit = onExit || (() => showSectionMenu(container, api, toolId, categories));
+  function levelsScreen() {
+    const best = MathBest.get();
+    host.innerHTML = `
+      <button class="ke-back-btn" id="keMxBack">${ICON_BACK} ${L('Geri', 'Back')}</button>
+      <div class="ke-mx">
+        <h1 class="ke-title">${bubbleTitleHTML('Math Challenge')}</h1>
+        <p class="ke-subtitle">${L('İngilizce dinle, işlemi yap, doğru sayıyı seç!', 'Listen in English, do the maths, pick the right number!')}</p>
+        <div class="ke-mx-levels">${MATH_LEVELS.map((lv, i) => {
+          const stars = best[lv.id] || 0;
+          const open = i === 0 || (best[MATH_LEVELS[i - 1].id] || 0) >= 1;
+          return `<button type="button" class="ke-mx-level${open ? '' : ' locked'}" data-lv="${i}" ${open ? '' : 'aria-disabled="true"'}>
+            <span class="ke-mx-lv-ic">${open ? lv.icon : '🔒'}</span>
+            <b>${L(lv.tr, lv.en)}</b><small>${lv.sub}</small>
+            <span class="ke-mx-stars">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</span></button>`;
+        }).join('')}</div>
+        <p class="ke-jr-hint">${L('Bir seviyeden en az 1 yıldız al, sıradaki açılsın. 10 sorudan 10 doğru = 3 yıldız.', 'Get at least 1 star to open the next level. 10 out of 10 = 3 stars.')}</p>
+      </div>`;
+    host.querySelector('#keMxBack').addEventListener('click', exit);
+    host.querySelectorAll('[data-lv]').forEach((b) => b.addEventListener('click', () => {
+      if (b.classList.contains('locked')) { b.classList.add('ke-shake'); setTimeout(() => b.classList.remove('ke-shake'), 400); return; }
+      play(MATH_LEVELS[Number(b.dataset.lv)]);
+    }));
+  }
+  function play(lv) {
+    const N = 10;
+    let qi = 0, correct = 0;
+    const dummy = document.createElement('div');
+    function ask() {
+      if (qi >= N) { finish(); return; }
+      const q = makeMathQuestion(lv.id);
+      host.innerHTML = `
+        <button class="ke-back-btn" id="keMxBack">${ICON_BACK} ${L('Seviyeler', 'Levels')}</button>
+        <div class="ke-mx">
+          <div class="ke-mx-top"><span>${lv.icon} ${L(lv.tr, lv.en)}</span><span>${qi + 1} / ${N} · ✅ ${correct}</span></div>
+          <div class="ke-mx-bar"><i style="width:${qi / N * 100}%"></i></div>
+          <div class="ke-mx-card">
+            <button type="button" class="ke-say-btn ke-mx-say" id="keMxSay" aria-label="${L('Tekrar dinle', 'Listen again')}">🔊</button>
+            ${q.visual || ''}
+            <div class="ke-mx-q${q.story ? ' story' : ''}">${escapeProfileText(q.text)}</div>
+          </div>
+          <div class="ke-mx-choices">${q.choices.map((c) => `<button type="button" class="ke-mx-choice" data-v="${c}"><b>${c}</b><small>${numWord(c)}</small></button>`).join('')}</div>
+          <div class="ke-mx-feedback" id="keMxFb" aria-live="polite"></div>
+        </div>`;
+      host.querySelector('#keMxBack').addEventListener('click', levelsScreen);
+      const say = () => speakWord(q.say, dummy);
+      host.querySelector('#keMxSay').addEventListener('click', say);
+      say();
+      let done = false;
+      host.querySelectorAll('.ke-mx-choice').forEach((b) => b.addEventListener('click', () => {
+        if (done) return;
+        done = true;
+        const ok = Number(b.dataset.v) === q.answer;
+        const fb = host.querySelector('#keMxFb');
+        if (ok) {
+          correct++;
+          b.classList.add('right');
+          try { GameSfx.good(); } catch (e) { /* yok say */ }
+          fb.textContent = L('Doğru! 🎉', 'Correct! 🎉') + ' ' + (q.full ? q.full.charAt(0).toUpperCase() + q.full.slice(1) + '.' : `${q.answer} · ${numWord(q.answer)}`);
+        } else {
+          b.classList.add('wrong');
+          host.querySelectorAll('.ke-mx-choice').forEach((x) => { if (Number(x.dataset.v) === q.answer) x.classList.add('right'); });
+          try { GameSfx.bad(); } catch (e) { /* yok say */ }
+          fb.textContent = L('Doğru cevap: ', 'The answer is ') + `${q.answer} (${numWord(q.answer)})`;
+        }
+        speakWord(q.full ? q.full : numWord(q.answer), dummy);
+        setTimeout(() => { qi++; ask(); }, ok ? 1500 : 2600);
+      }));
+    }
+    function finish() {
+      const stars = correct >= 10 ? 3 : correct >= 8 ? 2 : correct >= 6 ? 1 : 0;
+      MathBest.set(lv.id, stars);
+      if (stars >= 1) Progress.markComplete('math_challenge', MATH_LEVELS.indexOf(lv));
+      host.innerHTML = `
+        <div class="ke-mx ke-mx-done">
+          <div class="ke-jr-cp-emoji">${stars ? '🏆' : '💪'}</div>
+          <h2>${L(`${correct} / ${N} doğru`, `${correct} / ${N} correct`)}</h2>
+          <div class="ke-mx-stars big">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
+          <p>${stars ? L('Harika! Sıradaki seviye açıldı.', 'Great! The next level is open.') : L('En az 6 doğru yaparsan 1 yıldız kazanırsın. Tekrar dene!', 'Get at least 6 right to earn a star. Try again!')}</p>
+          <div class="ke-btn-row">
+            <button type="button" class="ke-btn-secondary" id="keMxLevels">${L('Seviyeler', 'Levels')}</button>
+            <button type="button" class="ke-btn-primary" id="keMxAgain">${L('Tekrar oyna', 'Play again')}</button>
+          </div>
+        </div>`;
+      if (stars) { try { GameSfx.win(); } catch (e) { /* yok say */ } }
+      host.querySelector('#keMxLevels').addEventListener('click', levelsScreen);
+      host.querySelector('#keMxAgain').addEventListener('click', () => play(lv));
+    }
+    ask();
+  }
+  levelsScreen();
+  pushBackState(exit);
 }
 
 async function showStatsScreen(container, api, toolId, categories) {
@@ -4630,6 +4851,15 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
   wireBottomNav(host, container, api, toolId, categories);
   host.querySelector('#keSectionsBack').addEventListener('click', () => showSectionMenu(container, api, toolId, categories));
   const grid = host.querySelector('#keCategoryGrid');
+  if (section.id === 'math') {
+    const mc = document.createElement('button');
+    mc.className = 'ke-category-card ke-mx-entry';
+    const best = MathBest.get();
+    const got = MATH_LEVELS.reduce((n, lv) => n + (best[lv.id] || 0), 0);
+    mc.innerHTML = `<div class="ke-category-icon" style="color:#3949AB">🧮</div><div class="ke-category-text"><div class="ke-category-title">Math Challenge</div><div class="ke-category-meta">${L('İşlem yap: toplama, çıkarma, çarpım, problemler', 'Do sums: add, take away, times, word problems')}</div><div class="ke-category-meta">★ ${got} / ${MATH_LEVELS.length * 3}</div></div>`;
+    mc.addEventListener('click', () => showMathChallenge(container, api, toolId, categories, () => showCategoryGrid(container, api, toolId, categories, 'math')));
+    grid.appendChild(mc);
+  }
   shown.forEach((c) => {
     const card = document.createElement('button');
     card.className = 'ke-category-card';

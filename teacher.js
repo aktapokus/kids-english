@@ -186,7 +186,7 @@ function studentDetail(s, catalog) {
   const p = s.progress;
   if (!p || !p.cats) return '<p class="empty">Ayrıntılı ilerleme henüz gelmedi (öğrencinin uygulamayı güncel sürümle bir kez açması gerekiyor).</p>';
   const rows = Object.keys(p.cats).map((cid) => {
-    const info = catalog[cid] || { title: cid, total: '?' };
+    const info = catalog[cid] || (cid === 'math_challenge' ? { title: 'Math Challenge (seviye)', total: 6 } : cid.startsWith('story_') ? { title: 'Macera Kitabı: ' + cid.slice(6), total: 1 } : { title: cid, total: '?' });
     return `<li><b>${escapeHtml(info.title)}</b> — ${p.cats[cid].length}/${info.total} bölüm</li>`;
   }).join('');
   const hard = (p.hard || []).map((h) => `<span class="chip">${escapeHtml(h[1])} <small>×${h[2]}</small></span>`).join(' ');
