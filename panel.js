@@ -2339,7 +2339,14 @@ function catLabel(c) {
   const parts = c.title.split('–');
   return _lang === 'tr' && parts[1] ? parts[1].trim() : parts[0].trim();
 }
-function rewardLabel(t) { return _lang === 'tr' ? t : String(t).replace(/ Yıldızı Kazandın!$/, ' Star Earned!').replace('Tekrar Şampiyonu!', 'Review Champion!'); }
+// Veride iki dil karışık (179 bölüm "… Yıldızı Kazandın!", 236 bölüm
+// "… Star Earned!") - eskiden sadece TR→EN çevriliyordu, Türkçe modda
+// İngilizce etiketler olduğu gibi görünüyordu. Artık iki yönde de.
+function rewardLabel(t) {
+  const s = String(t);
+  if (_lang === 'tr') return s.replace(/ Star Earned!$/, ' Yıldızı Kazandın!').replace('Review Champion!', 'Tekrar Şampiyonu!');
+  return s.replace(/ Yıldızı Kazandın!$/, ' Star Earned!').replace('Tekrar Şampiyonu!', 'Review Champion!');
+}
 
 const AVATAR_ANCHORS = {"idle": {"x": 0.4521, "y": 0.2078, "w": 0.5858}, "wave": {"x": 0.5, "y": 0.2302, "w": 0.585}, "think": {"x": 0.4531, "y": 0.2015, "w": 0.5516}, "wink": {"x": 0.4751, "y": 0.224, "w": 0.5722}, "point": {"x": 0.5556, "y": 0.2447, "w": 0.5222}, "read": {"x": 0.4765, "y": 0.3211, "w": 0.5962}, "write": {"x": 0.5351, "y": 0.3379, "w": 0.6}, "kick": {"x": 0.4912, "y": 0.2424, "w": 0.5628}, "celebrate": {"x": 0.4561, "y": 0.0842, "w": 0.5444}};
 const avatarColors = () => [
@@ -2841,7 +2848,14 @@ function showQuickMenu(container, api, toolId, categories) {
     }
   });
   overlay.querySelector('#keQmSound').addEventListener('click', () => runSoundTest(overlay.querySelector('#keQmSoundInfo')));
-  overlay.querySelector('#keQmLang').addEventListener('click', () => { setLang(_lang === 'tr' ? 'en' : 'tr'); close(); showQuickMenu(container, api, toolId, categories); });
+  // Dil değişince arkadaki bölüm ekranı da yeniden çizilmeli - eskiden
+  // sadece bu menü yenileniyordu, arka ekran eski dilde kalıyordu.
+  overlay.querySelector('#keQmLang').addEventListener('click', () => {
+    setLang(_lang === 'tr' ? 'en' : 'tr');
+    overlay.remove();
+    showSectionMenu(container, api, toolId, categories);
+    showQuickMenu(container, api, toolId, categories);
+  });
   overlay.querySelector('#keQmRank').addEventListener('click', () => { close(); showLeaderboard(container); });
   overlay.querySelector('#keQmGuide').addEventListener('click', () => { close(); showGuide(container, api, toolId, categories); });
   overlay.querySelector('#keQmClose').addEventListener('click', close);
@@ -2868,8 +2882,8 @@ function showGuide(container, api, toolId, categories) {
       demo: `<div class="ke-category-card" style="--cc-c:#FF7A45;--cc-dark:#D65E2E;--cc-tint:#FFC9A8;background:#FF7A45;pointer-events:none;max-width:240px;">
         <div class="ke-category-icon" style="color:#FF7A45">W<span class="ke-cat-motif-badge">🐾</span></div>
         <div class="ke-category-text">
-          <div class="ke-category-title">Words</div>
-          <div class="ke-category-meta">21 categories · 856 words</div>
+          <div class="ke-category-title">${L('Kelimeler', 'Words')}</div>
+          <div class="ke-category-meta">${L('21 kategori · 856 kelime', '21 categories · 856 words')}</div>
         </div>
       </div>`,
     },
@@ -3802,7 +3816,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
         <div class="ke-stars"></div>
         ${motif ? `<div class="ke-scene-motif ke-motif-${motif}"></div>` : ''}
         <div class="ke-bubble" id="keBubble">${L('Nesnelere dokun, Aktapokus sana ne olduğunu söylesin! 👆', 'Tap the pictures and Aktapokus will tell you what they are! 👆')}</div>
-        <button type="button" class="ke-help-btn" id="keHelpBtn" aria-label="Help">ⓘ</button>
+        <button type="button" class="ke-help-btn" id="keHelpBtn" aria-label="${L('Yardım', 'Help')}">ⓘ</button>
         <div class="ke-progress-chip" id="keProgress">0 / 0 ${L("kelime", "words")}</div>
         <div class="ke-word-popup" id="keWordPopup"></div>
         <div id="keObjects"></div>
@@ -3810,7 +3824,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
         <div class="ke-quiz" id="keQuiz">
           <button class="ke-quiz-replay" id="keQuizReplay" title="${L('Tekrar dinle', 'Listen again')}" aria-label="${L('Tekrar dinle', 'Listen again')}">${ICON_SPEAKER}</button>
           <div class="ke-bubble ke-quiz-bubble" id="keQuizBubble">${L('Şimdi öğrendiklerini deneyelim!', "Let's try what you learned!")}</div>
-          <div class="ke-quiz-progress" id="keQuizProgress">Soru 1 / 5</div>
+          <div class="ke-quiz-progress" id="keQuizProgress">${L('Soru 1 / 5', 'Question 1 / 5')}</div>
           <div class="ke-quiz-word" id="keQuizWord"></div>
           <div class="ke-quiz-cards" id="keQuizCards"></div>
         </div>
@@ -4092,7 +4106,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
   function markAllFound() {
     host.querySelectorAll('.ke-obj').forEach((o) => o.classList.add('ke-found'));
     foundCount = total;
-    progressEl.textContent = `${total} / ${total} kelime`;
+    progressEl.textContent = `${total} / ${total} ${L('kelime', 'words')}`;
   }
 
   host.querySelector('#keJumpDiscovery').addEventListener('click', () => {
@@ -4640,7 +4654,7 @@ function startQuiz(host, container, episode, wordList, mascotEl, restartEpisode,
       return;
     }
     attempts = 0;
-    quizProgressEl.textContent = `Soru ${qIndex + 1} / ${order.length}`;
+    quizProgressEl.textContent = L(`Soru ${qIndex + 1} / ${order.length}`, `Question ${qIndex + 1} / ${order.length}`);
     const correctObj = wordList[order[qIndex]];
     currentCorrectWord = correctObj.word;
     currentCorrectObj = correctObj;
