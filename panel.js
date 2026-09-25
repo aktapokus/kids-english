@@ -1896,6 +1896,7 @@ ${FONT_FACES}
   .ke-game-chip-pulse{ animation:ke-chip-pulse 1.1s ease-in-out infinite; background:rgba(255,215,90,.22) !important; border-color:var(--kb-discover) !important; }
   .ke-bonus-quiz{ position:absolute; inset:0; z-index:150; background:rgba(10,20,30,.78); display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; transition:opacity .25s ease; border-radius:inherit; }
   .ke-bonus-quiz.ke-show{ opacity:1; }
+  .ke-bonus-quiz.ke-jr-skip{ position:fixed; }
   .ke-bonus-card{ background:#F5F0DF; color:var(--ke-ink); border-radius:22px; padding:22px; text-align:center; max-width:360px; width:100%; }
   .ke-bonus-progress{ font-size:12.5px; font-weight:800; color:#8a7a55; text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px; }
   .ke-bonus-loading{ font-size:36px; animation:ke-bob 1.2s ease-in-out infinite; }
@@ -1908,6 +1909,127 @@ ${FONT_FACES}
   .ke-bonus-choice.ke-bonus-wrong{ background:#FFEDED !important; border-color:#E5484D !important; opacity:.7; }
   .ke-bonus-card p{ font-size:14.5px; font-weight:700; margin:0 0 14px; }
   .ke-profile-chip .ke-avatar-mini{ position:relative; width:34px; height:34px; flex:none; }
+  /* ---- Uzay Yolculugu ---- */
+  .ke-journey{ max-width:560px; margin:0 auto; text-align:center; position:relative; z-index:1; }
+  .ke-jr-hint{ font-size:12.5px; font-weight:700; color:var(--kb-chalk-dim,#ccc); margin:0 auto 10px; max-width:420px; line-height:1.4; }
+  .ke-jr-path{
+    position:relative; padding:18px 8px 40px; border-radius:26px; overflow:hidden;
+    background:
+      radial-gradient(1.5px 1.5px at 12% 8%, #fff 60%, transparent), radial-gradient(1px 1px at 72% 14%, #fff 60%, transparent),
+      radial-gradient(1.5px 1.5px at 40% 30%, #cfe6ff 60%, transparent), radial-gradient(1px 1px at 88% 46%, #fff 60%, transparent),
+      radial-gradient(1.5px 1.5px at 20% 62%, #fff 60%, transparent), radial-gradient(1px 1px at 60% 78%, #ffe9a8 60%, transparent),
+      radial-gradient(1px 1px at 8% 92%, #fff 60%, transparent),
+      radial-gradient(ellipse at 30% 0%, rgba(122,92,255,.35), transparent 60%),
+      radial-gradient(ellipse at 80% 60%, rgba(255,90,170,.18), transparent 55%),
+      linear-gradient(180deg, #0f1440 0%, #1a1256 45%, #0a0d2e 100%);
+    background-size: 220px 260px, 220px 260px, 220px 260px, 220px 260px, 220px 260px, 220px 260px, 220px 260px, 100% 100%, 100% 100%, 100% 100%;
+    border:3px solid rgba(255,255,255,.14);
+  }
+  .ke-jr-trail{ position:absolute; left:0; top:0; pointer-events:none; overflow:visible; }
+  .ke-jr-trail path{ fill:none; stroke-linecap:round; }
+  .ke-jr-trail-ahead{ stroke:rgba(255,255,255,.28); stroke-width:4; stroke-dasharray:2 11; }
+  .ke-jr-trail-done{ stroke:#FFD84D; stroke-width:5; stroke-dasharray:10 8; filter:drop-shadow(0 0 4px rgba(255,216,77,.6)); }
+  .ke-jr-start{ position:relative; color:#cfe6ff; font-weight:800; font-size:13px; margin-bottom:6px; }
+  .ke-jr-row{ position:relative; display:flex; flex-direction:column; align-items:center; margin:6px 0 16px; }
+  .ke-jr-row[data-zig="0"]{ transform:translateX(-22%); } .ke-jr-row[data-zig="2"]{ transform:translateX(22%); }
+  .ke-shell .ke-jr-planet{
+    position:relative; width:78px; height:78px; padding:5px !important; border-radius:50% !important; top:0 !important;
+    background:conic-gradient(#FFD84D var(--ring), rgba(255,255,255,.18) 0) !important; box-shadow:0 6px 0 rgba(0,0,0,.35) !important;
+    border:none !important;
+  }
+  .ke-jr-orb{
+    display:flex; width:100%; height:100%; border-radius:50%; align-items:center; justify-content:center; font-size:32px;
+    background:radial-gradient(circle at 32% 28%, var(--pt) 0%, var(--pc) 58%, rgba(0,0,0,.55) 130%);
+    box-shadow:inset -6px -8px 0 rgba(0,0,0,.18);
+  }
+  .ke-jr-badge{ position:absolute; right:-4px; top:-4px; min-width:26px; height:26px; border-radius:13px; background:#fff; color:#2a7a2a; font-size:14px; font-weight:900; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 0 rgba(0,0,0,.3); }
+  .ke-jr-locked .ke-jr-orb{ filter:grayscale(.85) brightness(.6); }
+  .ke-jr-locked .ke-jr-badge{ color:#666; }
+  .ke-shell .ke-jr-current .ke-jr-planet{ animation:ke-jr-pulse 1.8s ease-in-out infinite; }
+  @keyframes ke-jr-pulse{ 0%,100%{ box-shadow:0 6px 0 rgba(0,0,0,.35), 0 0 0 0 rgba(255,216,77,.55); } 50%{ box-shadow:0 6px 0 rgba(0,0,0,.35), 0 0 0 14px rgba(255,216,77,0); } }
+  .ke-jr-ship{ position:absolute; left:-58px; top:6px; display:flex; align-items:center; animation:ke-bob 2.4s ease-in-out infinite; pointer-events:none; }
+  .ke-jr-avatar{ width:46px; height:46px; border:3px solid #fff; }
+  .ke-jr-rocket{ font-size:20px; margin-left:-10px; margin-top:28px; }
+  .ke-jr-label{ margin-top:6px; display:flex; flex-direction:column; color:#fff; line-height:1.2; max-width:170px; }
+  .ke-jr-label b{ font-size:13.5px; font-weight:800; }
+  .ke-jr-label span{ font-size:11px; font-weight:700; color:rgba(255,255,255,.7); }
+  .ke-jr-locked .ke-jr-label{ opacity:.6; }
+  .ke-jr-station{
+    position:relative; display:flex; align-items:center; gap:10px; margin:10px auto 22px; max-width:320px; text-align:left;
+    padding:10px 14px; border-radius:18px; background:rgba(255,255,255,.08); border:2px dashed rgba(255,255,255,.3); color:#fff;
+  }
+  .ke-jr-station div{ flex:1; display:flex; flex-direction:column; }
+  .ke-jr-station b{ font-size:14.5px; } .ke-jr-station span{ font-size:11.5px; font-weight:700; color:rgba(255,255,255,.75); }
+  .ke-jr-st-emoji{ font-size:34px; }
+  .ke-jr-st-medal{ font-size:22px; }
+  .ke-jr-station.ke-jr-reached{ background:linear-gradient(135deg, rgba(255,216,77,.3), rgba(255,154,31,.2)); border:2px solid #FFD84D; }
+  .ke-jr-toast{ position:fixed; left:50%; top:70px; transform:translate(-50%,-20px); opacity:0; z-index:96; background:#FFD84D; color:#3a2a00; font-weight:800; font-size:14px; padding:10px 16px; border-radius:16px; box-shadow:0 4px 0 rgba(0,0,0,.25); transition:all .35s; max-width:90%; text-align:center; }
+  .ke-jr-toast.ke-show{ opacity:1; transform:translate(-50%,0); }
+  .ke-jr-cp-card{ position:relative; overflow:hidden; text-align:center; max-width:360px; }
+  .ke-jr-cp-emoji{ font-size:64px; animation:ke-bob 1.6s ease-in-out infinite; }
+  .ke-jr-cp-gift{ font-weight:800; }
+  .ke-jr-sheet{ align-items:flex-end !important; }
+  .ke-jr-sheet-card{ position:relative; width:min(520px,100%); max-height:82%; overflow:auto; text-align:left; border-top:6px solid var(--pc); }
+  .ke-shell .ke-jr-sheet-x{ position:absolute; right:10px; top:10px !important; width:40px; height:40px; padding:0 !important; border-radius:50% !important; font-size:16px !important; background:rgba(0,0,0,.08) !important; box-shadow:none !important; color:inherit !important; }
+  .ke-jr-sheet-head{ display:flex; align-items:center; gap:12px; margin-bottom:8px; padding-right:40px; }
+  .ke-jr-sheet-head h2{ margin:2px 0 0; font-size:20px; }
+  .ke-jr-sheet-orb{ width:52px; height:52px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-size:26px; background:radial-gradient(circle at 32% 28%, #fff 0%, var(--pc) 60%); }
+  .ke-jr-sheet-lead{ font-weight:700; font-size:14px; margin:6px 0 10px; }
+  .ke-jr-moons{ display:grid; grid-template-columns:repeat(auto-fill,minmax(56px,1fr)); gap:8px; }
+  .ke-shell .ke-jr-moon{ display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:56px; padding:4px !important; border-radius:16px !important; font-size:18px !important; background:#EEF1FA !important; color:#233 !important; box-shadow:0 3px 0 rgba(0,0,0,.12) !important; top:0 !important; }
+  .ke-jr-moon small{ font-size:11px; font-weight:800; }
+  .ke-shell .ke-jr-moon.done{ background:#FFF3C4 !important; }
+  .ke-shell .ke-jr-moon.locked{ opacity:.5; }
+  .ke-jr-moon.ke-shake, .ke-dot.ke-shake{ animation:ke-shake-x .35s ease; }
+  .ke-map .ke-dot.locked{ opacity:.55; }
+  .ke-jr-way{ display:flex; flex-direction:column; gap:6px; padding:12px; border-radius:16px; background:#F3F5FB; margin-bottom:10px; }
+  .ke-jr-way span{ font-size:13px; font-weight:600; }
+  .ke-jr-q{ font-weight:800; margin:0 0 10px; }
+  .ke-jr-listen{ margin-bottom:12px; }
+  .ke-jr-pics{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .ke-shell .ke-jr-pic{ padding:6px !important; border-radius:16px !important; background:#fff !important; border:3px solid var(--ke-border,#ddd) !important; box-shadow:none !important; top:0 !important; display:flex; justify-content:center; }
+  .ke-jr-pic .ke-icon-hex{ width:72px; height:72px; }
+  .ke-shell .ke-jr-pic.ke-bonus-right{ border-color:var(--kb-correct,#4CAF50) !important; background:#EFFCE5 !important; }
+  .ke-shell .ke-jr-pic.ke-bonus-wrong{ border-color:#E5484D !important; opacity:.7; }
+  .ke-jr-missed span{ display:inline-block; background:#FFF3C4; border-radius:10px; padding:2px 8px; margin:2px; font-weight:800; }
+  .ke-jr-medals{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-top:8px; }
+  .ke-jr-medal{ display:flex; flex-direction:column; align-items:center; padding:6px 2px; border-radius:12px; background:rgba(255,255,255,.06); opacity:.6; }
+  .ke-jr-medal.got{ background:rgba(255,216,77,.2); opacity:1; }
+  .ke-jr-medal span{ font-size:22px; } .ke-jr-medal small{ font-size:10px; font-weight:800; color:var(--kb-chalk,#fff); }
+  /* Ana ekran: yolculuk karti (bugunun gorevi) + tekrar cipi + kutuphane */
+  .ke-jhome{
+    max-width:560px; margin:4px auto 12px; padding:14px 16px; border-radius:24px; text-align:left; color:#fff; position:relative; z-index:1;
+    background:radial-gradient(1.5px 1.5px at 85% 20%, #fff 60%, transparent), radial-gradient(1px 1px at 60% 70%, #fff 60%, transparent), linear-gradient(135deg,#2B2A8C 0%,#5B2BB5 60%,#9C2FA8 100%);
+    border:3px solid rgba(255,255,255,.35); box-shadow:0 6px 0 rgba(0,0,0,.3);
+  }
+  .ke-jhome-top{ display:flex; align-items:center; gap:12px; }
+  .ke-jhome-planet{ width:58px; height:58px; flex:none; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; background:radial-gradient(circle at 32% 28%, #fff 0%, var(--pc) 60%, rgba(0,0,0,.4) 130%); }
+  .ke-jhome-text{ min-width:0; }
+  .ke-jhome-kicker{ font-size:11.5px; font-weight:800; opacity:.85; letter-spacing:.02em; }
+  .ke-jhome-title{ font-family:'Fredoka','Baloo 2',sans-serif; font-size:21px; font-weight:700; line-height:1.15; }
+  .ke-jhome-sub{ font-size:12.5px; font-weight:700; opacity:.9; }
+  .ke-jhome-bar{ height:10px; border-radius:99px; background:rgba(255,255,255,.2); overflow:hidden; margin:12px 0 3px; }
+  .ke-jhome-bar i{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#FFD84D,#FF9A1F); }
+  .ke-jhome-meta{ font-size:11.5px; font-weight:800; opacity:.85; }
+  .ke-jhome-actions{ display:flex; gap:8px; margin-top:10px; }
+  .ke-shell .ke-jhome-go{ flex:1; font-size:18px !important; padding:13px 16px !important; background:#FFD84D !important; color:#3a2a00 !important; border:none !important; border-radius:16px !important; box-shadow:0 5px 0 #C99A12 !important; font-weight:800 !important; }
+  .ke-shell .ke-jhome-map{ font-size:14px !important; padding:12px 14px !important; background:rgba(255,255,255,.16) !important; color:#fff !important; border:2px solid rgba(255,255,255,.45) !important; border-radius:16px !important; box-shadow:none !important; font-weight:800 !important; }
+  .ke-shell .ke-due-chip{
+    display:flex; align-items:center; justify-content:space-between; gap:8px; width:min(560px,100%); margin:0 auto 14px; min-height:48px;
+    padding:10px 16px !important; border-radius:16px !important; background:#FFF3C4 !important; color:#5a3f00 !important;
+    font-size:15px !important; font-weight:800 !important; box-shadow:0 4px 0 #E0B84A !important; position:relative; z-index:1;
+  }
+  .ke-lib-head{ max-width:980px; margin:8px auto 10px; color:var(--kb-chalk,#fff); font-size:18px; text-align:left; position:relative; z-index:1; }
+  .ke-lib-head span{ display:block; font-size:12px; font-weight:700; color:var(--kb-chalk-dim,#ccc); }
+  .ke-shell .ke-lib-grid{ gap:10px; }
+  @media (max-width:560px){
+    .ke-shell .ke-lib-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .ke-lib-grid .ke-category-card{ flex-direction:column; align-items:flex-start; gap:6px; padding:12px; border-radius:18px; }
+    .ke-lib-grid .ke-category-icon{ width:42px; height:42px; font-size:20px; }
+    .ke-lib-grid .ke-category-title{ font-size:15.5px; }
+    .ke-lib-grid .ke-category-meta{ font-size:11.5px; }
+    .ke-lib-grid .ke-category-meta:first-of-type{ display:none; }
+  }
   .ke-profile-screen{ max-width:760px; margin:0 auto; text-align:center; position:relative; z-index:1; }
   /* ---- Avatar v2 ----
      .ke-av = govde gorselinin kendi 2:3 kutusu; tum katmanlar (sapka,
@@ -2988,10 +3110,12 @@ const Resume = {
 function resumeLastScreen(container, api, toolId, categories) {
   const s = Resume.load();
   if (s && s.screen === 'grid' && s.sectionId) { showCategoryGrid(container, api, toolId, categories, s.sectionId); return; }
+  if (s && s.screen === 'journey') { showJourney(container, api, toolId, categories); return; }
   const cat = s && s.screen === 'episode' && s.categoryId ? categories.find((c) => c.id === s.categoryId) : null;
   if (cat) {
     const sec = SECTIONS.find((x) => x.id === s.sectionId) || SECTIONS.find((x) => x.pick(cat));
     _currentSection = sec ? sec.id : null;
+    _journeyMode = !!s.journey;
     enterCategory(container, api, toolId, categories, s.categoryId, s.episodeIndex || 0);
     return;
   }
@@ -3234,6 +3358,12 @@ function showGuide(container, api, toolId, categories) {
 function showSectionMenu(container, api, toolId, categories) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   _currentSection = null;
+  _journeyMode = false;
+  // Tekrar kuyrugu eskiden sadece kategori kartindaki kucuk 🔁 cipindeydi
+  // ("tekrar sistemi var ama gizli") - vadesi gelen tum kelimeler ana
+  // ekranda tek satir; dokununca en cok kelime bekleyen kategori.
+  const dueByCat = categories.map((c) => [c, Progress.dueMissed(c.id).length]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]);
+  const dueTotal = dueByCat.reduce((n, x) => n + x[1], 0);
   Resume.save({ screen: 'menu' });
   const host = container.querySelector('#keScreenHost');
   const waveSrc = new URL('mascot/mascot_wave.png', ASSET_BASE_URL).href;
@@ -3246,15 +3376,20 @@ function showSectionMenu(container, api, toolId, categories) {
       <span class="ke-carnival-sparkle cs4">★</span>
       <span class="ke-carnival-sparkle cs5">✦</span>
       <img class="ke-carnival-logo" src="${new URL('mascot/aktapokus_kids_english_logo.png', ASSET_BASE_URL).href}" alt="Aktapokus Kids English" draggable="false" />
-      <p class="ke-carnival-subtitle">${L('Ne öğrenmek istiyorsun? Bir bölüm seç!', 'What do you want to learn? Pick a section!')}</p>
       <button type="button" class="ke-mascot-btn" id="keMascotBtn" aria-label="${L("Aktapokus'um ve ayarlar", 'My Aktapokus & settings')}" title="${L("Aktapokus'um", 'My Aktapokus')}">
         ${avatarCircleHTML(Profiles.active())}
         <span class="ke-mascot-edit" aria-hidden="true">✏️</span>
         <span class="ke-mascot-badge" id="keMascotBadge" ${hasBadge ? '' : 'hidden'}></span>
       </button>
     </div>
-    <div class="ke-category-grid" id="keSectionGrid"></div>
+    ${journeyHomeCardHTML(categories)}
+    ${dueTotal ? `<button type="button" class="ke-due-chip" id="keDueChip">🔁 ${L(`Bugün ${dueTotal} kelime tekrar`, `${dueTotal} words to review today`)} <span>→</span></button>` : ''}
+    <h2 class="ke-lib-head">📚 ${L('Kütüphane', 'Library')} <span>${L('serbest çalışma — istediğin konuyu seç', 'free practice — pick any topic')}</span></h2>
+    <div class="ke-category-grid ke-lib-grid" id="keSectionGrid"></div>
   `;
+  wireJourneyHomeCard(host, container, api, toolId, categories);
+  const dueChip = host.querySelector('#keDueChip');
+  if (dueChip) dueChip.addEventListener('click', () => { const c = dueByCat[0][0]; startReviewSession(container, api, toolId, categories, c.id, c.title); });
   host.querySelector('#keMascotBtn').addEventListener('click', () => showQuickMenu(container, api, toolId, categories));
   refreshGameBadge(container);
   maybeShowMotivationToast(container);
@@ -3322,6 +3457,7 @@ function profileStorageKeys(pid) {
     streak: pid === 'p1' ? STREAK_KEY : STREAK_KEY + '_' + pid,
     daily: pid === 'p1' ? DAILY_KEY : DAILY_KEY + '_' + pid,
     time: pid === 'p1' ? TIME_KEY : TIME_KEY + '_' + pid,
+    journey: pid === 'p1' ? 'ke_journey_v1' : 'ke_journey_v1_' + pid,
   };
 }
 
@@ -3366,6 +3502,466 @@ function importBackup(file) {
     }
   };
   reader.readAsText(file);
+}
+
+// ============================================================
+// UZAY YOLCULUGU - "kullanici ilerlemesini takip edebilecek bir path;
+// uzayda yolculuk yapar gibi, ulastigi yerlerde seviyesine uygun
+// checkpoint; gecmise donuk tekrar oynayabilme; ileri gecmek icin ya
+// atlama quiz'i ya da tum bolumleri tek tek oynama" istegi.
+// Kararlar (kullanici onayi): yolculuk kilitli, Kutuphane (eski bolum
+// menusu) serbest - ama kutuphanede bitirilen bolumler de yolculuga
+// sayiliyor (ayni Progress). Gezegen icindeki bolumler de sirayla aciliyor.
+// Her gezegen bir kategori; istasyonlar (checkpoint) seviye duraklari.
+// Siralama: somut/gunluk -> soyut, her kelime gezegeninden sonra ayni
+// konunun konusma gezegeni; A1 bitince A2 tekrari ayni konular uzerinden.
+// ============================================================
+const A2_JOURNEY_IDS = ['daily_life', 'family_people', 'school_education', 'classroom_life', 'home', 'food_drinks', 'nature_environment', 'space_astronomy', 'animals', 'sports_exercise', 'hobbies_free_time', 'technology_computers', 'travel_transportation', 'city_places', 'body_health', 'weather_seasons', 'emotions_personality', 'clothes_shopping', 'jobs_professions', 'science', 'communication_internet'].map((id) => id + '_a2');
+const JOURNEY_SECTORS = [
+  { id: 'moon', emoji: '🌙', tr: 'Ay İstasyonu', en: 'Moon Station', level: 'A1 · 1',
+    planets: ['family_people', 'conv_family_home', 'home', 'animals', 'food_drinks', 'conv_food_drinks', 'conv_social_manners', 'classroom_life', 'math_numbers'] },
+  { id: 'mars', emoji: '🔴', tr: 'Mars Üssü', en: 'Mars Base', level: 'A1 · 2',
+    planets: ['body_health', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons', 'daily_life', 'conv_daily_routine', 'school_education', 'conv_school', 'math_shapes', 'question_words', 'prepositions'] },
+  { id: 'jupiter', emoji: '🟠', tr: 'Jüpiter İstasyonu', en: 'Jupiter Station', level: 'A1 · 3',
+    planets: ['sports_exercise', 'hobbies_free_time', 'conv_hobbies_sports', 'city_places', 'travel_transportation', 'conv_city_transport', 'nature_environment', 'conv_animals_nature', 'emotions_personality', 'conv_feelings_preferences', 'opposites', 'math_operations', 'conv_shopping_clothes', 'conv_health', 'conv_celebrations'] },
+  { id: 'saturn', emoji: '🪐', tr: 'Satürn Halkaları', en: 'Saturn Rings', level: 'A1 ✓',
+    planets: ['jobs_professions', 'conv_jobs_safety', 'technology_computers', 'conv_technology', 'communication_internet', 'science', 'space_astronomy', 'conv_space', 'get', 'conv_travel'] },
+  { id: 'neptune', emoji: '🔵', tr: 'Neptün Kapısı', en: 'Neptune Gate', level: 'A2 · 1', planets: A2_JOURNEY_IDS.slice(0, 10) },
+  { id: 'galaxy', emoji: '🌌', tr: 'Galaksi Merkezi', en: 'Galaxy Core', level: 'A2 ✓', planets: A2_JOURNEY_IDS.slice(10) },
+];
+const SKIP_PASS_RATIO = 0.8;
+let _journeyMode = false;
+
+function journeyKey() {
+  const pid = Profiles.active().id;
+  return pid === 'p1' ? 'ke_journey_v1' : 'ke_journey_v1_' + pid;
+}
+const Journey = {
+  _load() {
+    try {
+      const d = JSON.parse(window.localStorage.getItem(journeyKey())) || {};
+      return { skipped: Array.isArray(d.skipped) ? d.skipped : [], cps: Array.isArray(d.cps) ? d.cps : [], at: Number(d.at) || 0 };
+    } catch (e) { return { skipped: [], cps: [], at: 0 }; }
+  },
+  _save(d) {
+    try { window.localStorage.setItem(journeyKey(), JSON.stringify(d)); } catch (e) { /* yok say */ }
+    idbPut(journeyKey(), d);
+  },
+  // Duz gezegen listesi + her birinin durumu. Veride olmayan id atlanir.
+  state(categories) {
+    const store = this._load();
+    const byId = new Map(categories.map((c) => [c.id, c]));
+    const list = [];
+    JOURNEY_SECTORS.forEach((sec, si) => {
+      sec.planets.forEach((id) => {
+        const cat = byId.get(id);
+        if (!cat) return;
+        const done = Progress.getCategory(id).completed.filter((i) => i < cat.episode_count).length;
+        const full = done >= cat.episode_count;
+        const skipped = !full && store.skipped.includes(id);
+        list.push({ cat, id, sector: sec, si, done, full, skipped, cleared: full || skipped });
+      });
+    });
+    list.forEach((p, i) => {
+      p.index = i;
+      p.unlocked = i === 0 || list[i - 1].cleared || p.done > 0;
+    });
+    const cur = list.find((p) => p.unlocked && !p.cleared);
+    const current = cur ? cur.index : list.length - 1;
+    const sectors = JOURNEY_SECTORS.map((sec, si) => {
+      const ps = list.filter((p) => p.si === si);
+      return { sec, si, planets: ps, cleared: ps.length > 0 && ps.every((p) => p.cleared), celebrated: store.cps.includes(sec.id) };
+    });
+    return { list, current, sectors, store, cleared: list.filter((p) => p.cleared).length };
+  },
+  // Gezegen icindeki bolum sirayla: ilk bolum, bitmis bolum, bir oncekinin
+  // bittigi bolum ya da gezegen tamamen gecilmis (atlama sinaviyla) ise acik.
+  episodeOpen(p, i) {
+    if (p.cleared || i === 0) return true;
+    const done = Progress.getCategory(p.id).completed;
+    return done.includes(i) || done.includes(i - 1);
+  },
+  markSkipped(ids) {
+    const d = this._load();
+    ids.forEach((id) => { if (!d.skipped.includes(id)) d.skipped.push(id); });
+    this._save(d);
+  },
+  markCelebrated(secId, at) {
+    const d = this._load();
+    if (secId && !d.cps.includes(secId)) d.cps.push(secId);
+    if (at != null) d.at = at;
+    this._save(d);
+  },
+};
+
+function planetMotif(id) {
+  return CATEGORY_MOTIF[baseCatId(id)] || (id.startsWith('conv_') ? '💬' : '⭐');
+}
+function planetTheme(id) {
+  return CATEGORY_THEME[baseCatId(id)] || { c: '#4A90E2', dark: '#3A78C2', tint: '#9CC6F5' };
+}
+function planetName(p) {
+  const name = catLabel(p.cat);
+  if (p.id.startsWith('conv_')) return `💬 ${name}`;
+  if (p.id.endsWith(A2_CATEGORY_SUFFIX)) return `${name} · A2`;
+  return name;
+}
+
+// Ana ekrandaki yolculuk karti (Bugunun gorevi) - bkz. showSectionMenu
+function journeyHomeCardHTML(categories) {
+  const st = Journey.state(categories);
+  const p = st.list[st.current];
+  if (!p) return '';
+  const sec = p.sector;
+  const pct = Math.round(st.cleared / st.list.length * 100);
+  const nextEp = Progress.nextIncompleteEpisode(p.id, p.cat.episode_count);
+  return `
+    <div class="ke-jhome">
+      <div class="ke-jhome-top">
+        <span class="ke-jhome-planet" style="--pc:${planetTheme(p.id).c}">${planetMotif(p.id)}</span>
+        <div class="ke-jhome-text">
+          <div class="ke-jhome-kicker">🚀 ${L('Uzay Yolculuğu', 'Space Journey')} · ${sec.level}</div>
+          <div class="ke-jhome-title">${planetName(p)}</div>
+          <div class="ke-jhome-sub">${p.full ? L('Tüm gezegenleri gezdin! 🎉', 'You visited every planet! 🎉') : L(`Bölüm ${nextEp + 1} / ${p.cat.episode_count} · Sıradaki durak: ${sec.emoji} ${sec.tr}`, `Episode ${nextEp + 1} / ${p.cat.episode_count} · Next stop: ${sec.emoji} ${sec.en}`)}</div>
+        </div>
+      </div>
+      <div class="ke-jhome-bar" aria-label="${pct}%"><i style="width:${Math.max(3, pct)}%"></i></div>
+      <div class="ke-jhome-meta">${L(`${st.cleared}/${st.list.length} gezegen`, `${st.cleared}/${st.list.length} planets`)}</div>
+      <div class="ke-jhome-actions">
+        <button type="button" class="ke-btn-primary ke-jhome-go" id="keJourneyGo">▶ ${L('Devam et', 'Continue')}</button>
+        <button type="button" class="ke-btn-secondary ke-jhome-map" id="keJourneyMap">🗺️ ${L('Harita', 'Map')}</button>
+      </div>
+    </div>`;
+}
+function wireJourneyHomeCard(host, container, api, toolId, categories) {
+  const go = host.querySelector('#keJourneyGo');
+  if (go) go.addEventListener('click', () => {
+    const st = Journey.state(categories);
+    const p = st.list[st.current];
+    playJourneyEpisode(container, api, toolId, categories, p, Progress.nextIncompleteEpisode(p.id, p.cat.episode_count));
+  });
+  const map = host.querySelector('#keJourneyMap');
+  if (map) map.addEventListener('click', () => showJourney(container, api, toolId, categories));
+}
+
+function playJourneyEpisode(container, api, toolId, categories, p, epIndex) {
+  _journeyMode = true;
+  _currentSection = null;
+  enterCategory(container, api, toolId, categories, p.id, epIndex);
+}
+
+// Bolum ekranlarindan "geri"/"son bolum bitti": yolculuktan gelindiyse
+// haritaya, kutuphaneden gelindiyse kategori listesine.
+function leaveEpisodeList(container, api, toolId, categories) {
+  if (_journeyMode) showJourney(container, api, toolId, categories);
+  else showCategoryGrid(container, api, toolId, categories);
+}
+
+function showJourney(container, api, toolId, categories) {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  _journeyMode = true;
+  _currentSection = null;
+  Resume.save({ screen: 'journey' });
+  const host = container.querySelector('#keScreenHost');
+  const st = Journey.state(categories);
+  const prof = Profiles.active();
+  const cur = st.list[st.current];
+  const nodes = [];
+  st.sectors.forEach((sx) => {
+    if (!sx.planets.length) return;
+    sx.planets.forEach((p) => {
+      const th = planetTheme(p.id);
+      const ring = Math.round(p.done / p.cat.episode_count * 360);
+      const state = p.index === st.current && !p.cleared ? 'current' : p.cleared ? 'cleared' : p.unlocked ? 'open' : 'locked';
+      const badge = state === 'cleared' ? (p.skipped ? '⏭' : '✓') : state === 'locked' ? '🔒' : '';
+      nodes.push(`
+        <div class="ke-jr-row ke-jr-${state}" data-zig="${p.index % 4}">
+          <button type="button" class="ke-jr-planet" data-planet="${p.index}" style="--pc:${th.c};--pt:${th.tint};--ring:${ring}deg" aria-label="${planetName(p)}">
+            <span class="ke-jr-orb">${planetMotif(p.id)}</span>
+            ${badge ? `<span class="ke-jr-badge">${badge}</span>` : ''}
+            ${state === 'current' ? `<span class="ke-jr-ship">${avatarCircleHTML(prof, 'ke-jr-avatar')}<span class="ke-jr-rocket">🚀</span></span>` : ''}
+          </button>
+          <div class="ke-jr-label"><b>${planetName(p)}</b><span>${p.done}/${p.cat.episode_count}${p.skipped ? ' · ' + L('sınavla geçildi', 'passed by test') : ''}</span></div>
+        </div>`);
+    });
+    const reached = sx.cleared;
+    nodes.push(`
+      <div class="ke-jr-station${reached ? ' ke-jr-reached' : ''}">
+        <span class="ke-jr-st-emoji">${sx.sec.emoji}</span>
+        <div><b>${L(sx.sec.tr, sx.sec.en)}</b><span>${reached ? L(`${sx.sec.level} tamamlandı! 🏅`, `${sx.sec.level} complete! 🏅`) : L(`Seviye durağı · ${sx.sec.level}`, `Level stop · ${sx.sec.level}`)}</span></div>
+        <span class="ke-jr-st-medal">${reached ? '🏅' : '🔒'}</span>
+      </div>`);
+  });
+  host.innerHTML = `
+    <button class="ke-back-btn" id="keJourneyBack">${ICON_BACK} ${L('Ana Ekran', 'Home')}</button>
+    <div class="ke-journey">
+      <h1 class="ke-title">${bubbleTitleHTML(L('Uzay Yolculuğum', 'My Space Journey'))}</h1>
+      <p class="ke-subtitle">${L(`${st.cleared}/${st.list.length} gezegen · ${st.sectors.filter((s) => s.cleared).length}/${st.sectors.length} istasyon`, `${st.cleared}/${st.list.length} planets · ${st.sectors.filter((s) => s.cleared).length}/${st.sectors.length} stations`)}</p>
+      <p class="ke-jr-hint">${L('Geçtiğin gezegenlere dokunup tekrar oynayabilirsin. Kilitli bir gezegene atlamak için atlama sınavını geçebilirsin.', 'Tap any planet you have visited to play it again. To jump to a locked planet, pass the jump test.')}</p>
+      <div class="ke-jr-path" id="keJrPath">
+        <svg class="ke-jr-trail" id="keJrTrail" aria-hidden="true"></svg>
+        <div class="ke-jr-start">🌍 ${L('Kalkış', 'Launch')}</div>
+        ${nodes.join('')}
+      </div>
+    </div>`;
+  host.querySelector('#keJourneyBack').addEventListener('click', () => { _journeyMode = false; showSectionMenu(container, api, toolId, categories); });
+  pushBackState(() => { _journeyMode = false; showSectionMenu(container, api, toolId, categories); });
+
+  host.querySelectorAll('[data-planet]').forEach((b) => b.addEventListener('click', () => {
+    const p = st.list[Number(b.dataset.planet)];
+    showPlanetSheet(container, api, toolId, categories, p, st);
+  }));
+
+  const pathEl = host.querySelector('#keJrPath');
+  const drawTrail = () => {
+    const svg = host.querySelector('#keJrTrail');
+    if (!svg || !pathEl.isConnected) return;
+    const base = pathEl.getBoundingClientRect();
+    const pts = [...pathEl.querySelectorAll('.ke-jr-planet, .ke-jr-st-emoji')].map((el) => {
+      const r = el.getBoundingClientRect();
+      return [r.left + r.width / 2 - base.left, r.top + r.height / 2 - base.top, el.closest('.ke-jr-row') ? el.closest('.ke-jr-row').className : ''];
+    });
+    svg.setAttribute('width', base.width); svg.setAttribute('height', pathEl.scrollHeight);
+    let travelled = '';
+    let ahead = '';
+    const curIdx = st.current;
+    pts.forEach((pt, i) => {
+      if (!i) return;
+      const [x0, y0] = pts[i - 1], [x1, y1] = pt;
+      const my = (y0 + y1) / 2;
+      const seg = `M${x0},${y0} C${x0},${my} ${x1},${my} ${x1},${y1} `;
+      if (pt[2].includes('ke-jr-cleared') || pt[2].includes('ke-jr-current')) travelled += seg; else ahead += seg;
+    });
+    svg.innerHTML = `<path d="${ahead}" class="ke-jr-trail-ahead"/><path d="${travelled}" class="ke-jr-trail-done"/>`;
+    void curIdx;
+  };
+  requestAnimationFrame(() => {
+    drawTrail();
+    const curEl = pathEl.querySelector('.ke-jr-current') || pathEl.querySelector('.ke-jr-row');
+    if (curEl) curEl.scrollIntoView({ block: 'center', behavior: 'instant' in document.documentElement.style ? 'instant' : 'auto' });
+  });
+  const ro = 'ResizeObserver' in window ? new ResizeObserver(() => drawTrail()) : null;
+  if (ro) ro.observe(pathEl);
+
+  // Yeni istasyona ulasildiysa kutlama (bir kez); yeni gezegen acildiysa haber
+  const fresh = st.sectors.find((s) => s.cleared && !s.celebrated);
+  if (fresh) {
+    Journey.markCelebrated(fresh.sec.id, st.current);
+    showCheckpointCelebration(container, fresh.sec);
+  } else if (st.current > st.store.at) {
+    Journey.markCelebrated(null, st.current);
+    if (st.store.at > 0 || st.current > 0) showJourneyToast(container, L(`🚀 Yeni gezegen açıldı: ${planetName(cur)}!`, `🚀 New planet unlocked: ${planetName(cur)}!`));
+  }
+}
+
+function showJourneyToast(container, text) {
+  const shell = container.querySelector('.ke-shell');
+  const t = document.createElement('div');
+  t.className = 'ke-jr-toast';
+  t.textContent = text;
+  shell.appendChild(t);
+  setTimeout(() => t.classList.add('ke-show'), 30);
+  setTimeout(() => { t.classList.remove('ke-show'); setTimeout(() => t.remove(), 400); }, 3200);
+}
+
+function showCheckpointCelebration(container, sec) {
+  GameTokens.add(1);
+  const shell = container.querySelector('.ke-shell');
+  const ov = document.createElement('div');
+  ov.className = 'ke-river-overlay-msg ke-jr-cp';
+  ov.style.position = 'fixed'; ov.style.zIndex = '95';
+  ov.innerHTML = `
+    <div class="ke-river-msg-card ke-jr-cp-card">
+      <div id="keCpConfetti" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
+      <div class="ke-jr-cp-emoji">${sec.emoji}</div>
+      <h2>${L(`${sec.tr}'na ulaştın!`, `You reached ${sec.en}!`)}</h2>
+      <p>${L(`${sec.level} seviye durağını tamamladın. Harika bir yolculuk! 🏅`, `You completed the ${sec.level} level stop. What a journey! 🏅`)}</p>
+      <p class="ke-jr-cp-gift">🎁 ${L('Ödül: 1 oyun hakkı 🎮', 'Reward: 1 game token 🎮')}</p>
+      <button type="button" class="ke-btn-primary" id="keCpOk">${L('Yolculuğa devam! 🚀', 'Keep flying! 🚀')}</button>
+    </div>`;
+  shell.appendChild(ov);
+  try { launchConfetti(ov.querySelector('#keCpConfetti')); } catch (e) { /* yok say */ }
+  try { GameSfx.win(); } catch (e) { /* yok say */ }
+  ov.querySelector('#keCpOk').addEventListener('click', () => { ov.remove(); refreshGameBadge(container); });
+}
+
+function showPlanetSheet(container, api, toolId, categories, p, st) {
+  const shell = container.querySelector('.ke-shell');
+  const ov = document.createElement('div');
+  ov.className = 'ke-river-overlay-msg ke-jr-sheet';
+  ov.style.position = 'fixed'; ov.style.zIndex = '90';
+  const close = () => ov.remove();
+  const th = planetTheme(p.id);
+  let body;
+  if (!p.unlocked) {
+    const cur = st.list[st.current];
+    const between = st.list.filter((x) => x.index >= st.current && x.index < p.index && !x.cleared);
+    const left = between.reduce((n, x) => n + (x.cat.episode_count - x.done), 0);
+    body = `
+      <p class="ke-jr-sheet-lead">🔒 ${L('Bu gezegen henüz kilitli. İki yolun var:', 'This planet is still locked. You have two ways:')}</p>
+      <div class="ke-jr-way">
+        <b>1. ${L('Sırayla uç', 'Fly in order')}</b>
+        <span>${L(`Aradaki ${between.length} gezegeni bitir (${left} bölüm).`, `Finish the ${between.length} planets in between (${left} episodes).`)}</span>
+        <button type="button" class="ke-btn-secondary" id="keSheetGoCur">▶ ${planetName(cur)}</button>
+      </div>
+      <div class="ke-jr-way">
+        <b>2. ${L('Atlama sınavı', 'Jump test')} 🚀</b>
+        <span>${L(`Aradaki gezegenlerden sorular. %${Math.round(SKIP_PASS_RATIO * 100)} doğru yaparsan buraya kadar atlarsın.`, `Questions from the planets in between. Get ${Math.round(SKIP_PASS_RATIO * 100)}% right to jump here.`)}</span>
+        <button type="button" class="ke-btn-primary" id="keSheetSkip">${L('Sınava başla', 'Start the test')}</button>
+      </div>`;
+  } else {
+    const eps = [];
+    for (let i = 0; i < p.cat.episode_count; i++) {
+      const doneSet = Progress.getCategory(p.id).completed;
+      const done = doneSet.includes(i);
+      const open = Journey.episodeOpen(p, i);
+      eps.push(`<button type="button" class="ke-jr-moon${done ? ' done' : ''}${open ? '' : ' locked'}" data-ep="${i}" ${open ? '' : 'aria-disabled="true"'}>${done ? '⭐' : open ? '▶' : '🔒'}<small>${i + 1}</small></button>`);
+    }
+    const next = Progress.nextIncompleteEpisode(p.id, p.cat.episode_count);
+    const due = Progress.dueMissed(p.id).length;
+    body = `
+      <p class="ke-jr-sheet-lead">${L(`${p.cat.word_count} kelime · ${p.done}/${p.cat.episode_count} bölüm`, `${p.cat.word_count} words · ${p.done}/${p.cat.episode_count} episodes`)}</p>
+      <div class="ke-jr-moons">${eps.join('')}</div>
+      <div class="ke-btn-row" style="margin-top:12px;">
+        ${due ? `<button type="button" class="ke-btn-secondary" id="keSheetReview">🔁 ${L('Tekrar', 'Review')} (${due})</button>` : ''}
+        <button type="button" class="ke-btn-primary" id="keSheetPlay">▶ ${p.full ? L('Baştan oyna', 'Play again') : L(`Bölüm ${next + 1}`, `Episode ${next + 1}`)}</button>
+      </div>`;
+  }
+  ov.innerHTML = `
+    <div class="ke-river-msg-card ke-jr-sheet-card" style="--pc:${th.c}">
+      <button type="button" class="ke-jr-sheet-x" id="keSheetClose" aria-label="${L('Kapat', 'Close')}">✕</button>
+      <div class="ke-jr-sheet-head"><span class="ke-jr-sheet-orb">${planetMotif(p.id)}</span><div><div class="ke-jhome-kicker">${p.sector.emoji} ${L(p.sector.tr, p.sector.en)} · ${p.sector.level}</div><h2>${planetName(p)}</h2></div></div>
+      ${body}
+    </div>`;
+  shell.appendChild(ov);
+  ov.addEventListener('click', (e) => { if (e.target === ov) close(); });
+  ov.querySelector('#keSheetClose').addEventListener('click', close);
+  ov.querySelectorAll('[data-ep]').forEach((b) => b.addEventListener('click', () => {
+    if (b.classList.contains('locked')) { b.classList.add('ke-shake'); setTimeout(() => b.classList.remove('ke-shake'), 400); return; }
+    close();
+    playJourneyEpisode(container, api, toolId, categories, p, Number(b.dataset.ep));
+  }));
+  const play = ov.querySelector('#keSheetPlay');
+  if (play) play.addEventListener('click', () => { close(); playJourneyEpisode(container, api, toolId, categories, p, p.full ? 0 : Progress.nextIncompleteEpisode(p.id, p.cat.episode_count)); });
+  const rev = ov.querySelector('#keSheetReview');
+  if (rev) rev.addEventListener('click', () => { close(); _journeyMode = true; startReviewSession(container, api, toolId, categories, p.id, p.cat.title); });
+  const goCur = ov.querySelector('#keSheetGoCur');
+  if (goCur) goCur.addEventListener('click', () => { close(); const c = st.list[st.current]; playJourneyEpisode(container, api, toolId, categories, c, Progress.nextIncompleteEpisode(c.id, c.cat.episode_count)); });
+  const skip = ov.querySelector('#keSheetSkip');
+  if (skip) skip.addEventListener('click', () => { close(); startSkipTest(container, api, toolId, categories, p, st); });
+}
+
+// Atlama sinavi: hedefe kadar aradaki (gecilmemis) gezegenlerden sorular.
+// Konusma gezegenlerinde resimli kelime yok - onlar yerine araliktaki
+// (yoksa daha onceki) kelime gezegenleri kullaniliyor. Iki soru tipi
+// donusumlu: resme bak -> Ingilizce kelimeyi sec (okuma), kelimeyi dinle ->
+// resmi sec (dinleme). Gecince aradaki gezegenler "sinavla gecildi"
+// isaretleniyor (yildiz verilmiyor - istedigi zaman oynayip kazanabilir).
+async function startSkipTest(container, api, toolId, categories, target, st) {
+  const shell = container.querySelector('.ke-shell');
+  const between = st.list.filter((x) => x.index >= st.current && x.index < target.index && !x.cleared);
+  let sources = between.filter((x) => !x.id.startsWith('conv_'));
+  if (!sources.length) sources = st.list.filter((x) => x.index < target.index && !x.id.startsWith('conv_')).slice(-3);
+  const ov = document.createElement('div');
+  ov.className = 'ke-bonus-quiz ke-jr-skip';
+  ov.innerHTML = `<div class="ke-bonus-card"><div class="ke-bonus-progress" id="keSkipProg">🚀 ${L('Atlama sınavı hazırlanıyor…', 'Preparing the jump test…')}</div><div id="keSkipBody"><div class="ke-bonus-loading">🛸</div></div></div>`;
+  shell.appendChild(ov);
+  requestAnimationFrame(() => ov.classList.add('ke-show'));
+  const close = () => { ov.classList.remove('ke-show'); setTimeout(() => ov.remove(), 300); };
+  const bodyEl = ov.querySelector('#keSkipBody');
+  const progEl = ov.querySelector('#keSkipProg');
+
+  const nQ = Math.min(12, Math.max(8, sources.length * 2));
+  const picked = shuffle(sources.slice()).slice(0, 8);
+  let pools = [];
+  try {
+    // Az kaynak gezegen varsa (ornegin arada tek kelime gezegeni) her
+    // birinden birden fazla bolum cekiliyor ki soru sayisi dolsun.
+    const perSource = Math.min(3, Math.ceil(nQ / (picked.length * 5)));
+    pools = await Promise.all(picked.map(async (x) => {
+      const eps = shuffle([...Array(x.cat.episode_count).keys()]).slice(0, perSource);
+      const lists = await Promise.all(eps.map(async (ep) => {
+        const r = await api.apiFetch(`/api/tools/${toolId}/categories/${x.id}/episodes/${ep}`);
+        if (!r.ok) return [];
+        const d = await r.json();
+        return (d.objects || []).filter((o) => o.word);
+      }));
+      return shuffle([...new Map(lists.flat().map((o) => [o.word.toLowerCase(), o])).values()]);
+    }));
+  } catch (e) { pools = []; }
+  const qs = [];
+  const all = pools.flat();
+  for (let round = 0; qs.length < nQ && round < 10; round++) {
+    pools.forEach((pool) => { if (qs.length < nQ && pool[round]) qs.push(pool[round]); });
+  }
+  if (qs.length < 5) {
+    bodyEl.innerHTML = `<p>${L('Şu an sınav hazırlanamadı. İnternetini kontrol edip tekrar dene.', 'Could not prepare the test. Check your internet and try again.')}</p><button type="button" class="ke-btn-secondary" id="keSkipClose">${L('Kapat', 'Close')}</button>`;
+    bodyEl.querySelector('#keSkipClose').addEventListener('click', close);
+    return;
+  }
+  const dummyMascot = document.createElement('div');
+  let qi = 0, correct = 0;
+  const missed = [];
+  function ask() {
+    if (qi >= qs.length) { finish(); return; }
+    const target_ = qs[qi];
+    const others = shuffle(all.filter((o) => o.word.toLowerCase() !== target_.word.toLowerCase())).slice(0, 2);
+    const choices = shuffle([target_, ...others]);
+    const listen = qi % 2 === 1;
+    progEl.textContent = `🚀 ${L('Soru', 'Question')} ${qi + 1} / ${qs.length} · ✅ ${correct}`;
+    bodyEl.innerHTML = listen
+      ? `<p class="ke-jr-q">${L('Dinle ve doğru resmi seç', 'Listen and pick the right picture')}</p>
+         <button type="button" class="ke-btn-secondary ke-jr-listen" id="keSkipSay">${ICON_SPEAKER} ${L('Tekrar dinle', 'Listen again')}</button>
+         <div class="ke-jr-pics">${choices.map((c, i) => `<button type="button" class="ke-jr-pic" data-i="${i}">${renderObjectIcon(c)}</button>`).join('')}</div>`
+      : `<p class="ke-jr-q">${L('Bu ne? Doğru kelimeyi seç', 'What is it? Pick the right word')}</p>
+         <div class="ke-bonus-icon">${renderObjectIcon(target_)}</div>
+         <div class="ke-bonus-choices">${choices.map((c, i) => `<button type="button" class="ke-bonus-choice" data-i="${i}">${c.word}</button>`).join('')}</div>`;
+    if (listen) {
+      const say = () => speakWord(target_.word, dummyMascot);
+      say();
+      bodyEl.querySelector('#keSkipSay').addEventListener('click', say);
+    }
+    let answered = false;
+    bodyEl.querySelectorAll('[data-i]').forEach((btn) => btn.addEventListener('click', () => {
+      if (answered) return;
+      answered = true;
+      const ok = choices[Number(btn.dataset.i)] === target_;
+      if (ok) { correct++; btn.classList.add('ke-bonus-right'); try { GameSfx.good(); } catch (e) { /* yok say */ } }
+      else {
+        missed.push(target_);
+        btn.classList.add('ke-bonus-wrong');
+        bodyEl.querySelectorAll('[data-i]').forEach((b) => { if (choices[Number(b.dataset.i)] === target_) b.classList.add('ke-bonus-right'); });
+      }
+      setTimeout(() => { qi++; ask(); }, ok ? 700 : 1400);
+    }));
+  }
+  function finish() {
+    const need = Math.ceil(qs.length * SKIP_PASS_RATIO);
+    if (correct >= need) {
+      Journey.markSkipped(between.map((x) => x.id));
+      progEl.textContent = L('Sonuç', 'Result');
+      bodyEl.innerHTML = `
+        <div class="ke-bonus-icon" style="font-size:54px;">🚀</div>
+        <p><b>${L(`${correct}/${qs.length} doğru — atlama başarılı!`, `${correct}/${qs.length} correct — jump successful!`)}</b></p>
+        <p>${L(`${planetName(target)} gezegenine uçtun. Geçtiğin gezegenleri istediğin zaman oynayıp yıldız toplayabilirsin.`, `You flew to ${planetName(target)}. You can still play the planets you skipped to collect stars.`)}</p>
+        <button type="button" class="ke-btn-primary" id="keSkipDone">${L('Haritaya dön', 'Back to the map')}</button>`;
+      bodyEl.querySelector('#keSkipDone').addEventListener('click', () => { close(); showJourney(container, api, toolId, categories); });
+    } else {
+      progEl.textContent = L('Sonuç', 'Result');
+      const ms = [...new Map(missed.map((m) => [m.word, m])).values()].slice(0, 8);
+      bodyEl.innerHTML = `
+        <div class="ke-bonus-icon" style="font-size:48px;">💪</div>
+        <p><b>${L(`${correct}/${qs.length} doğru. Atlamak için ${need} gerekiyordu.`, `${correct}/${qs.length} correct. You needed ${need} to jump.`)}</b></p>
+        ${ms.length ? `<p class="ke-jr-missed">${L('Çalışman gereken kelimeler:', 'Words to practise:')} ${ms.map((m) => `<span>${m.word}</span>`).join(' ')}</p>` : ''}
+        <div class="ke-btn-row">
+          <button type="button" class="ke-btn-secondary" id="keSkipLater">${L('Sırayla oynayacağım', "I'll play in order")}</button>
+          <button type="button" class="ke-btn-primary" id="keSkipRetry">${L('Tekrar dene', 'Try again')}</button>
+        </div>`;
+      bodyEl.querySelector('#keSkipLater').addEventListener('click', close);
+      bodyEl.querySelector('#keSkipRetry').addEventListener('click', () => { close(); startSkipTest(container, api, toolId, categories, target, st); });
+    }
+  }
+  ask();
 }
 
 async function showStatsScreen(container, api, toolId, categories) {
@@ -3426,9 +4022,18 @@ async function showStatsScreen(container, api, toolId, categories) {
       <div class="ke-trophy-need">${t.got ? L('Kazanıldı!', 'Earned!') : t.need}</div>
     </div>`).join('');
 
+  const jst = Journey.state(categories);
+  const journeyHTML = `
+    <div class="ke-week-card ke-jr-summary">
+      <div class="ke-kpi-lbl">🚀 ${L('Uzay Yolculuğum', 'My Space Journey')}</div>
+      <div class="ke-kpi-val">${jst.cleared}<span style="font-size:15px;font-weight:700;"> / ${jst.list.length} ${L('gezegen', 'planets')}</span></div>
+      <div class="ke-jr-medals">${jst.sectors.map((sx) => `<div class="ke-jr-medal${sx.cleared ? ' got' : ''}" title="${L(sx.sec.tr, sx.sec.en)}"><span>${sx.cleared ? sx.sec.emoji : '🔒'}</span><small>${sx.sec.level}</small></div>`).join('')}</div>
+      <button type="button" class="ke-btn-primary" id="keStatsJourney" style="margin-top:10px;">🗺️ ${L('Haritayı aç — geçmiş gezegenleri tekrar oyna', 'Open the map — replay past planets')}</button>
+    </div>`;
   const body = host.querySelector('#keStatsBody');
   if (body) {
     body.innerHTML = `
+      ${journeyHTML}
       <div class="ke-week-card">
         <div class="ke-week-top">
           <div>
@@ -3454,6 +4059,7 @@ async function showStatsScreen(container, api, toolId, categories) {
     host.querySelector('#keExportBtn').addEventListener('click', exportBackup);
     host.querySelector('#keImportInput').addEventListener('change', (e) => importBackup(e.target.files[0]));
     host.querySelector('#keGoCustomize').addEventListener('click', () => showProfileScreen(container, api, toolId, categories, {}));
+    host.querySelector('#keStatsJourney').addEventListener('click', () => showJourney(container, api, toolId, categories));
   }
 }
 
@@ -3663,6 +4269,7 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
   const section = SECTIONS.find((s) => s.id === (sectionId || _currentSection));
   if (!section || section.locked) { showSectionMenu(container, api, toolId, categories); return; }
   _currentSection = section.id;
+  _journeyMode = false;
   Resume.save({ screen: 'grid', sectionId: section.id });
   const shown = categories.filter(section.pick);
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -4061,7 +4668,7 @@ async function showStoryReader(container, api, toolId, categories, storyId, init
 }
 
 async function enterCategory(container, api, toolId, categories, categoryId, episodeIndex) {
-  Resume.save({ screen: 'episode', sectionId: _currentSection, categoryId, episodeIndex });
+  Resume.save({ screen: 'episode', sectionId: _currentSection, categoryId, episodeIndex, journey: _journeyMode });
   const host = container.querySelector('#keScreenHost');
   host.innerHTML = `<div style="padding:60px;text-align:center;color:rgba(245,247,250,.6);">${L('Yükleniyor...', 'Loading...')}</div>`;
   let episode;
@@ -4116,7 +4723,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
   const motif = SCENE_MOTIF[baseCatId(episode.category_id)];
 
   host.innerHTML = `
-    <button class="ke-back-btn" id="keBackBtn">${ICON_BACK} ${L('Kategoriler', 'Categories')}</button>
+    <button class="ke-back-btn" id="keBackBtn">${ICON_BACK} ${_journeyMode ? '🗺️ ' + L('Harita', 'Map') : L('Kategoriler', 'Categories')}</button>
     <details class="ke-map-details" id="keMapDetails"${isNarrowLayout() ? '' : ' open'}>
       <summary class="ke-map-summary">🗺️ ${L('Bölüm', 'Episode')} <span id="keMapSummaryNum">${episode.episode_index + 1}</span> / <span id="keMapSummaryTotal">${episode.episode_count}</span></summary>
       <div class="ke-map" id="keMap"></div>
@@ -4207,7 +4814,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
   }
 
   const completedSet = new Set(Progress.getCategory(episode.category_id).completed);
-  renderMap(host, episode.episode_index, episode.episode_count, jumpToEpisode, completedSet);
+  renderMap(host, episode.episode_index, episode.episode_count, jumpToEpisode, completedSet, journeyEpisodeGate(categories, episode));
 
   const leaveEpisode = () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -4215,7 +4822,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
       try { container._keActiveRecognition.abort(); } catch (e) { /* no-op */ }
       container._keActiveRecognition = null;
     }
-    showCategoryGrid(container, api, toolId, categories);
+    leaveEpisodeList(container, api, toolId, categories);
   };
   host.querySelector('#keBackBtn').addEventListener('click', leaveEpisode);
 
@@ -4262,7 +4869,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
     if (nextIndex < episode.episode_count) {
       enterCategory(container, api, toolId, categories, episode.category_id, nextIndex);
     } else {
-      showCategoryGrid(container, api, toolId, categories);
+      leaveEpisodeList(container, api, toolId, categories);
     }
   }
 
@@ -4461,7 +5068,7 @@ function renderConversationEpisodeScene(container, api, toolId, categories, epis
   const topicTitle = _lang === 'tr' ? (episode.title_tr || episode.title_en) : episode.title_en;
 
   host.innerHTML = `
-    <button class="ke-back-btn" id="keBackBtn">${ICON_BACK} ${L('Kategoriler', 'Categories')}</button>
+    <button class="ke-back-btn" id="keBackBtn">${ICON_BACK} ${_journeyMode ? '🗺️ ' + L('Harita', 'Map') : L('Kategoriler', 'Categories')}</button>
     <details class="ke-map-details" id="keMapDetails"${isNarrowLayout() ? '' : ' open'}>
       <summary class="ke-map-summary">🗺️ ${L('Konu', 'Topic')} <span id="keMapSummaryNum">${episode.episode_index + 1}</span> / <span id="keMapSummaryTotal">${episode.episode_count}</span></summary>
       <div class="ke-map" id="keMap"></div>
@@ -4508,11 +5115,11 @@ function renderConversationEpisodeScene(container, api, toolId, categories, epis
     enterCategory(container, api, toolId, categories, episode.category_id, index);
   }
   const completedSet = new Set(Progress.getCategory(episode.category_id).completed);
-  renderMap(host, episode.episode_index, episode.episode_count, jumpToEpisode, completedSet);
+  renderMap(host, episode.episode_index, episode.episode_count, jumpToEpisode, completedSet, journeyEpisodeGate(categories, episode));
 
   const leaveEpisode = () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    showCategoryGrid(container, api, toolId, categories);
+    leaveEpisodeList(container, api, toolId, categories);
   };
   host.querySelector('#keBackBtn').addEventListener('click', leaveEpisode);
   pushBackState(leaveEpisode);
@@ -4539,7 +5146,7 @@ function renderConversationEpisodeScene(container, api, toolId, categories, epis
     if (nextIndex < episode.episode_count) {
       enterCategory(container, api, toolId, categories, episode.category_id, nextIndex);
     } else {
-      showCategoryGrid(container, api, toolId, categories);
+      leaveEpisodeList(container, api, toolId, categories);
     }
   }
 
@@ -4628,7 +5235,15 @@ function primeMicrophonePermission() {
 // bölümü bitirmeyi beklemeden istediği bölüme atlayabilir, yeni
 // kelimeler direkt yüklenir. Gerçek bir ilerleme kilidi değil — bilinçli
 // bir esneklik, "Başlangıç noktası" satırındaki aşama-atlama ile aynı ruh.
-function renderMap(host, currentIndex, count, onJump, completedSet) {
+// Yolculuk modunda gezegen ici bolumler sirayla - kutuphanede (ya da
+// tekrar turunda) kapi yok, null donuyor.
+function journeyEpisodeGate(categories, episode) {
+  if (!_journeyMode || episode.isReview) return null;
+  const p = Journey.state(categories).list.find((x) => x.id === episode.category_id);
+  return p ? (i) => Journey.episodeOpen(p, i) : null;
+}
+
+function renderMap(host, currentIndex, count, onJump, completedSet, isOpen) {
   const mapRow = host.querySelector('#keMap');
   mapRow.innerHTML = '';
   const done = completedSet || new Set();
@@ -4637,14 +5252,19 @@ function renderMap(host, currentIndex, count, onJump, completedSet) {
     node.className = 'ke-node';
     const dot = document.createElement('button');
     const isDone = i !== currentIndex && done.has(i);
+    const locked = isOpen && i !== currentIndex && !isOpen(i);
     let cls = 'ke-dot';
     if (i === currentIndex) cls += ' current';
     else if (isDone) cls += ' done';
+    else if (locked) cls += ' locked';
     dot.className = cls;
     dot.type = 'button';
-    dot.title = L(`Bölüm ${i + 1}'e git`, `Go to episode ${i + 1}`);
-    dot.textContent = i === currentIndex ? '★' : (isDone ? '✓' : String(i + 1));
-    dot.addEventListener('click', () => onJump(i));
+    dot.title = locked ? L('Önce önceki bölümü bitir', 'Finish the previous episode first') : L(`Bölüm ${i + 1}'e git`, `Go to episode ${i + 1}`);
+    dot.textContent = i === currentIndex ? '★' : (isDone ? '✓' : locked ? '🔒' : String(i + 1));
+    dot.addEventListener('click', () => {
+      if (locked) { dot.classList.add('ke-shake'); setTimeout(() => dot.classList.remove('ke-shake'), 400); return; }
+      onJump(i);
+    });
     node.appendChild(dot);
     if (i < count - 1) {
       const line = document.createElement('div');
