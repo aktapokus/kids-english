@@ -1923,19 +1923,43 @@ ${FONT_FACES}
   .ke-shell .ke-phase.done{ background:rgba(76,175,80,.25) !important; color:#fff !important; border-color:rgba(120,210,120,.6) !important; cursor:pointer; }
   .ke-shell .ke-phase.cur{ background:#FFD84D !important; color:#3a2a00 !important; border-color:#FFD84D !important; opacity:1; }
   .ke-shell .ke-phase:disabled:not(.cur){ opacity:.45; }
+  /* ---- Masaustu ana ekran: iki sutun ---- */
+  .ke-home{ position:relative; z-index:1; }
+  @media (min-width:960px){
+    .ke-home{ display:grid; grid-template-columns:minmax(340px, 400px) minmax(0, 1fr); gap:34px; align-items:start; max-width:1180px; margin:0 auto; padding-top:8px; }
+    .ke-home-left{ position:sticky; top:12px; }
+    .ke-home .ke-carnival-hero{ margin:0 auto 10px; padding:4px 0 0; }
+    .ke-home .ke-carnival-logo{ max-width:300px; }
+    .ke-home .ke-jhome{ margin:6px 0 12px; }
+    .ke-home .ke-due-chip{ width:100%; }
+    .ke-home-right{ padding-top:14px; }
+    .ke-home .ke-lib-head{ margin:0 0 12px; font-size:22px; }
+    .ke-shell .ke-home .ke-lib-grid{ grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:14px; }
+  }
   /* ---- UX paketi: alt gezinme, karsilama, ebeveyn, tepki, sohbet ---- */
+  /* Alt gezinme v2 ("90'lar tasarimi gibi" geri bildirimi): tam
+     genislikte duz serit + sari blok yerine ortada yuzen, yuvarlak,
+     yari saydam bir dock; secili oge yumusak kapsul + nokta. */
   .ke-bnav{
-    position:sticky; bottom:0; z-index:40; display:grid; grid-template-columns:repeat(4,1fr); gap:4px;
-    margin:18px -16px 0; padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));
-    background:rgba(18,26,22,.94); border-top:2px solid rgba(255,255,255,.14); backdrop-filter:blur(6px);
+    position:sticky; bottom:calc(10px + env(safe-area-inset-bottom,0px)); z-index:40;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:2px;
+    width:min(440px, 100%); margin:22px auto 0; padding:6px;
+    background:linear-gradient(180deg, rgba(40,48,78,.88), rgba(22,26,48,.92));
+    border:1px solid rgba(255,255,255,.16); border-radius:24px;
+    box-shadow:0 12px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.12);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
   }
   .ke-shell .ke-bnav-btn{
-    display:flex; flex-direction:column; align-items:center; gap:1px; min-height:52px; padding:4px 2px !important;
+    position:relative; display:flex; flex-direction:column; align-items:center; gap:2px; min-height:54px; padding:6px 2px 8px !important;
     background:transparent !important; box-shadow:none !important; border:none !important; top:0 !important;
-    color:var(--kb-chalk-dim,#ccc) !important; font-size:11.5px !important; font-weight:800 !important; border-radius:14px !important;
+    color:rgba(235,238,255,.62) !important; font-size:11.5px !important; font-weight:700 !important; border-radius:18px !important;
+    transition:background .2s, color .2s, transform .15s;
   }
-  .ke-bnav-btn span{ font-size:21px; line-height:1.1; }
-  .ke-shell .ke-bnav-btn.ke-sel{ color:#3a2a00 !important; background:#FFD84D !important; }
+  .ke-bnav-btn span{ font-size:22px; line-height:1.1; transition:transform .2s; filter:saturate(.75); }
+  .ke-shell .ke-bnav-btn:hover{ color:#fff !important; background:rgba(255,255,255,.06) !important; }
+  .ke-shell .ke-bnav-btn.ke-sel{ color:#fff !important; background:linear-gradient(180deg, rgba(255,216,77,.26), rgba(255,154,31,.16)) !important; }
+  .ke-bnav-btn.ke-sel span{ transform:translateY(-2px) scale(1.12); filter:none; }
+  .ke-bnav-btn.ke-sel::after{ content:''; position:absolute; bottom:3px; left:50%; width:6px; height:6px; margin-left:-3px; border-radius:50%; background:#FFD84D; box-shadow:0 0 8px #FFD84D; }
   .ke-shell .ke-say-btn{
     display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; min-width:34px; margin-left:6px;
     padding:0 !important; border-radius:50% !important; font-size:16px !important; vertical-align:middle;
@@ -3452,6 +3476,7 @@ function showSectionMenu(container, api, toolId, categories) {
   const waveSrc = new URL('mascot/mascot_wave.png', ASSET_BASE_URL).href;
   const hasBadge = GameTokens.get() > 0 || PendingQuiz.get() > 0;
   host.innerHTML = `
+    <div class="ke-home"><div class="ke-home-left">
     <div class="ke-carnival-hero">
       <span class="ke-carnival-sparkle cs1">✦</span>
       <span class="ke-carnival-sparkle cs2">★</span>
@@ -3467,8 +3492,10 @@ function showSectionMenu(container, api, toolId, categories) {
     </div>
     ${journeyHomeCardHTML(categories)}
     ${dueTotal ? `<button type="button" class="ke-due-chip" id="keDueChip">🔁 ${L(`Bugün ${dueTotal} kelime tekrar`, `${dueTotal} words to review today`)} <span>→</span></button>` : ''}
+    </div><div class="ke-home-right">
     <h2 class="ke-lib-head">📚 ${L('Kütüphane', 'Library')} <span>${L('serbest çalışma — istediğin konuyu seç', 'free practice — pick any topic')}</span></h2>
     <div class="ke-category-grid ke-lib-grid" id="keSectionGrid"></div>
+    </div></div>
     ${bottomNavHTML('home')}
   `;
   wireBottomNav(host, container, api, toolId, categories);
