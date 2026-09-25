@@ -1682,6 +1682,146 @@ ${FONT_FACES}
      surekli yukari asagi kayiyor" geri bildirimi). */
   .ke-puzzle-tile{ position:absolute !important; display:block !important; top:0 !important; left:0 !important; margin:0; background-repeat:no-repeat; border:1px solid rgba(0,0,0,.35); box-shadow:none !important; padding:0 !important; border-radius:0 !important; transition:transform .16s ease; cursor:pointer; touch-action:none; }
   .ke-puzzle-tile:active{ filter:brightness(1.08); }
+
+  /* --- Ödül oyunları v2: butonlar, paneller, HUD --- */
+  .ke-shell .ke-game-btn{
+    font-size:17px; font-weight:800; padding:12px 26px; border-radius:16px; border:none; transform:none; text-shadow:none;
+    background:linear-gradient(180deg,#FFC94D,#FF9F1C); color:#3B2A1A; box-shadow:0 5px 0 #C46A00, 0 8px 18px rgba(0,0,0,.25);
+  }
+  .ke-shell .ke-game-btn:active:not(:disabled){ top:4px; box-shadow:0 1px 0 #C46A00; }
+  .ke-shell .ke-game-btn:disabled{ opacity:.5; cursor:not-allowed; }
+  .ke-shell .ke-game-btn-ghost{ background:#fff; color:#495057; box-shadow:0 5px 0 #CED4DA, 0 8px 18px rgba(0,0,0,.15); }
+  .ke-shell .ke-game-btn-ghost:active:not(:disabled){ box-shadow:0 1px 0 #CED4DA; }
+  .ke-shell .ke-game-btn-small{ font-size:14px; padding:9px 18px; }
+  .ke-game-panel{
+    background:linear-gradient(180deg,#FFFDF7,#F5EEDC); color:#3B2A1A; border-radius:24px; padding:22px 20px 20px;
+    width:min(380px,100%); max-height:100%; overflow-y:auto; text-align:center; border:3px solid #E9D8A6;
+    box-shadow:0 20px 50px rgba(0,0,0,.45), inset 0 0 0 3px rgba(255,255,255,.7);
+    animation:ke-panel-in .35s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes ke-panel-in{ from{ transform:scale(.85) translateY(10px); opacity:0; } to{ transform:none; opacity:1; } }
+  .ke-shell .ke-game-panel b, .ke-shell .ke-game-panel strong{ color:inherit; }
+  .ke-panel-title{ font-family:'Fredoka','Baloo 2',sans-serif; font-weight:700; font-size:24px; margin:0 0 6px; }
+  .ke-panel-sub{ margin:0 0 12px; font-size:14px; font-weight:700; color:#8A6A2A; }
+  .ke-panel-tip{ margin:12px 0 14px; font-size:12.5px; font-weight:600; color:#6B5237; line-height:1.45; }
+  .ke-panel-note{ margin:10px 0 14px; font-size:13px; font-weight:700; color:#8A6A2A; min-height:1em; }
+  .ke-panel-actions{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:12px; }
+  .ke-kbd-hint{ display:none; }
+  @media (hover:hover) and (pointer:fine){ .ke-kbd-hint{ display:inline; } }
+  .ke-howto{ display:flex; flex-direction:column; gap:8px; text-align:left; margin:10px 0 4px; }
+  .ke-howto-row{ display:flex; align-items:center; gap:10px; background:#fff; border-radius:12px; padding:8px 10px; font-size:13.5px; font-weight:600; box-shadow:0 1px 0 #E9D8A6; }
+  .ke-howto-ico{ font-size:20px; width:28px; text-align:center; flex:none; }
+  .ke-gstars{ display:flex; justify-content:center; gap:6px; margin:4px 0 6px; }
+  .ke-gstar{ font-size:40px; color:#DEE2E6; line-height:1; }
+  .ke-gstar.on{ color:#FFC107; text-shadow:0 2px 0 #E0A800, 0 0 14px rgba(255,193,7,.6); animation:ke-star-pop .5s cubic-bezier(.2,1.6,.4,1) both; }
+  @keyframes ke-star-pop{ from{ transform:scale(0) rotate(-40deg); } to{ transform:none; } }
+  .ke-big-score{ font-family:'Fredoka','Baloo 2',sans-serif; font-weight:700; font-size:44px; line-height:1; color:#E67700; margin:2px 0 8px; }
+  .ke-gstat-row{ display:flex; gap:8px; justify-content:center; margin:6px 0; }
+  .ke-gstat{ flex:1; max-width:100px; background:#fff; border-radius:12px; padding:8px 4px; box-shadow:0 1px 0 #E9D8A6; display:flex; flex-direction:column; }
+  .ke-gstat b{ font-size:18px; }
+  .ke-gstat span{ font-size:11px; font-weight:700; color:#8A6A2A; text-transform:uppercase; letter-spacing:.04em; }
+  .ke-word-chips{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:8px 0 2px; }
+  .ke-word-chip{ background:#E7F5FF; color:#1864AB; border-radius:999px; padding:4px 10px; font-size:13px; font-weight:800; }
+  .ke-submit-status{ min-height:18px; font-size:12px; font-weight:800; margin-top:4px; }
+
+  .ke-game-hud{
+    position:absolute; top:0; left:0; right:0; z-index:3; display:flex; align-items:center; justify-content:space-between; gap:8px; pointer-events:none;
+    padding:calc(8px + env(safe-area-inset-top, 0px)) calc(10px + env(safe-area-inset-right, 0px)) 8px calc(10px + env(safe-area-inset-left, 0px));
+  }
+  .ke-puzzle-game .ke-game-hud{ position:relative; }
+  .ke-hud-group{ display:flex; align-items:center; gap:6px; pointer-events:auto; }
+  .ke-hud-pill{ background:rgba(15,25,40,.62); color:#fff; font-weight:800; font-size:14px; padding:6px 12px; border-radius:999px; border:1.5px solid rgba(255,255,255,.18); white-space:nowrap; }
+  .ke-hud-score{ color:#FFE066; }
+  .ke-hud-hearts{ font-size:13px; letter-spacing:-2px; }
+  .ke-hud-hearts .ke-lost{ filter:grayscale(1); opacity:.35; }
+  .ke-shell .ke-hud-btn{ width:38px; height:38px; padding:0; border-radius:50%; background:rgba(15,25,40,.62); color:#fff; font-size:16px; border:1.5px solid rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; }
+  .ke-shell .ke-hud-btn.ke-on{ background:#FFC94D; color:#3B2A1A; }
+  .ke-hud-fuel{ flex:1; max-width:200px; display:flex; align-items:center; gap:6px; background:rgba(15,25,40,.62); padding:6px 10px; border-radius:999px; border:1.5px solid rgba(255,255,255,.18); pointer-events:auto; }
+  .ke-hud-fuel-track{ flex:1; height:10px; border-radius:999px; background:rgba(255,255,255,.18); overflow:hidden; }
+  .ke-hud-fuel-bar{ height:100%; width:100%; border-radius:999px; background:linear-gradient(90deg,#4DABF7,#74C0FC); transition:width .15s linear; }
+  .ke-hud-fuel.ke-low .ke-hud-fuel-bar{ background:linear-gradient(90deg,#FA5252,#FF8787); }
+  .ke-hud-fuel.ke-low{ animation:ke-fuel-blink .6s ease-in-out infinite; }
+  @keyframes ke-fuel-blink{ 50%{ border-color:#FF8787; } }
+  @media (max-width:420px){
+    .ke-hud-pill{ font-size:12.5px; padding:5px 9px; }
+    .ke-shell .ke-hud-btn{ width:34px; height:34px; font-size:14px; }
+    .ke-hud-fuel{ max-width:110px; padding:5px 8px; }
+  }
+
+  /* Nehir: hedef kelime pankartı + geri sayım */
+  .ke-river-target{
+    position:absolute; left:50%; top:calc(58px + env(safe-area-inset-top, 0px)); transform:translateX(-50%); z-index:3;
+    display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.95); color:#3B2A1A; border-radius:999px; padding:6px 8px 6px 14px;
+    box-shadow:0 6px 18px rgba(0,0,0,.3); border:3px solid #FFC94D; white-space:nowrap;
+  }
+  .ke-river-target[hidden]{ display:none; }
+  .ke-river-target.ke-bump{ animation:ke-target-bump .45s cubic-bezier(.2,1.6,.4,1); }
+  .ke-river-target.ke-ok{ animation:ke-target-ok .5s ease; }
+  .ke-river-target.ke-bad{ animation:ke-target-bad .4s ease; }
+  @keyframes ke-target-bump{ from{ transform:translateX(-50%) scale(.6); } to{ transform:translateX(-50%) scale(1); } }
+  @keyframes ke-target-ok{ 40%{ border-color:#40C057; transform:translateX(-50%) scale(1.12); } }
+  @keyframes ke-target-bad{ 20%,60%{ transform:translateX(calc(-50% - 6px)); border-color:#FA5252; } 40%,80%{ transform:translateX(calc(-50% + 6px)); } }
+  .ke-target-label{ font-size:16px; }
+  .ke-target-emoji{ font-size:30px; line-height:1; }
+  .ke-target-word{ font-family:'Fredoka','Baloo 2',sans-serif; font-weight:700; font-size:18px; max-width:0; overflow:hidden; opacity:0; transition:max-width .3s ease, opacity .3s ease; }
+  .ke-target-word.ke-show{ max-width:120px; opacity:1; }
+  .ke-shell .ke-target-say{ width:36px; height:36px; padding:0; border-radius:50%; background:#E7F5FF; font-size:16px; }
+  .ke-target-combo{ font-family:'Fredoka','Baloo 2',sans-serif; font-weight:700; font-size:16px; color:#fff; background:#F76707; border-radius:999px; padding:0; max-width:0; overflow:hidden; transition:all .25s ease; }
+  .ke-target-combo.ke-show{ padding:3px 9px; max-width:60px; }
+  .ke-river-countdown{
+    position:absolute; inset:0; z-index:4; display:flex; align-items:center; justify-content:center; pointer-events:none; opacity:0;
+    font-family:'Fredoka','Baloo 2',sans-serif; font-weight:700; font-size:96px; color:#fff; text-shadow:0 6px 0 rgba(0,0,0,.25), 0 0 30px rgba(0,0,0,.35);
+  }
+  .ke-river-countdown.ke-show{ animation:ke-count .6s cubic-bezier(.2,1.4,.4,1) forwards; }
+  @keyframes ke-count{ 0%{ transform:scale(2.2); opacity:0; } 35%{ transform:scale(1); opacity:1; } 80%{ opacity:1; } 100%{ transform:scale(.9); opacity:0; } }
+
+  /* Oyun seçici */
+  .ke-picker-panel{ width:min(440px,100%); }
+  .ke-picker-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:6px 0 16px; }
+  @media (max-width:380px){ .ke-picker-grid{ grid-template-columns:1fr; } }
+  .ke-shell .ke-game-card{
+    display:flex; flex-direction:column; align-items:center; gap:4px; padding:16px 10px 12px; border-radius:20px; color:#fff; text-align:center;
+    box-shadow:0 6px 0 rgba(0,0,0,.18), 0 10px 22px rgba(0,0,0,.2); transition:transform .15s ease;
+  }
+  .ke-shell .ke-game-card:hover{ transform:translateY(-3px); }
+  .ke-shell .ke-game-card:active:not(:disabled){ top:4px; box-shadow:0 2px 0 rgba(0,0,0,.18); }
+  .ke-shell .ke-game-card-river{ background:linear-gradient(160deg,#4DABF7,#1971C2); }
+  .ke-shell .ke-game-card-puzzle{ background:linear-gradient(160deg,#B197FC,#7048E8); }
+  .ke-game-card-art{ font-size:48px; line-height:1.1; filter:drop-shadow(0 4px 4px rgba(0,0,0,.25)); }
+  .ke-game-card-name{ font-family:'Fredoka','Baloo 2',sans-serif; font-size:17px; font-weight:700; }
+  .ke-game-card-desc{ font-size:12px; font-weight:600; opacity:.92; line-height:1.3; }
+  .ke-game-card-best{ margin-top:4px; font-size:12.5px; font-weight:800; background:rgba(0,0,0,.2); border-radius:999px; padding:3px 10px; color:#FFE066; }
+
+  /* Yap-boz */
+  .ke-puzzle-game{ background:radial-gradient(ellipse at 50% 30%, #3B5BDB, #1C2E6B 70%); }
+  .ke-puzzle-board{ border-radius:14px; border:none; background:rgba(0,0,0,.35); box-shadow:0 14px 30px rgba(0,0,0,.45), inset 0 0 0 3px rgba(255,255,255,.15); }
+  .ke-shell .ke-puzzle-tile{
+    border:none; color:#fff; border-radius:8px !important;
+    box-shadow:inset 0 0 0 2px rgba(255,255,255,.35), 0 3px 6px rgba(0,0,0,.35) !important;
+    transition:transform .14s ease, border-radius .4s ease, box-shadow .4s ease;
+  }
+  .ke-shell .ke-puzzle-tile.ke-nope{ animation:ke-tile-nope .3s ease; }
+  @keyframes ke-tile-nope{ 25%{ filter:brightness(.75); } }
+  .ke-tile-num{ position:absolute; top:4px; left:5px; min-width:20px; height:20px; border-radius:10px; background:rgba(0,0,0,.55); color:#fff; font-size:11px; font-weight:800; line-height:20px; text-align:center; display:none; }
+  .ke-show-nums .ke-tile-num{ display:block; }
+  .ke-puzzle-full{ position:absolute; inset:0; z-index:5; background-size:cover; background-position:center; opacity:0; transition:opacity .25s ease; pointer-events:none; }
+  .ke-puzzle-full.ke-show{ opacity:1; }
+  .ke-puzzle-board.ke-solved .ke-puzzle-tile{ border-radius:0 !important; box-shadow:none !important; }
+  .ke-puzzle-board.ke-solved .ke-tile-num{ display:none; }
+  .ke-puzzle-board.ke-solved .ke-puzzle-full{ opacity:1; transition:opacity .6s ease .35s; }
+  .ke-puzzle-board.ke-solved::after{
+    content:''; position:absolute; inset:0; z-index:6; pointer-events:none; transform:translateX(-120%);
+    background:linear-gradient(110deg, transparent 30%, rgba(255,255,255,.65) 50%, transparent 70%);
+    animation:ke-shine .9s ease .6s forwards;
+  }
+  @keyframes ke-shine{ to{ transform:translateX(120%); } }
+  .ke-puzzle-thumbs{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  .ke-shell .ke-puzzle-thumb{ width:56px; height:56px; padding:0; border-radius:12px; background-size:cover; background-position:center; border:3px solid transparent; box-shadow:0 2px 6px rgba(0,0,0,.2); }
+  .ke-shell .ke-puzzle-thumb.ke-sel{ border-color:#FF9F1C; transform:scale(1.08); }
+  .ke-seg{ display:inline-flex; background:#EFE4CA; border-radius:999px; padding:4px; margin-top:12px; gap:4px; }
+  .ke-shell .ke-seg-btn{ padding:7px 14px; border-radius:999px; font-size:13.5px; background:transparent; color:#6B5237; }
+  .ke-shell .ke-seg-btn.ke-sel{ background:#fff; color:#3B2A1A; box-shadow:0 2px 4px rgba(0,0,0,.15); }
+  .ke-shell .ke-seg-btn:active:not(:disabled){ top:0; }
   @keyframes ke-chip-pulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
   .ke-game-chip-pulse{ animation:ke-chip-pulse 1.1s ease-in-out infinite; background:rgba(255,215,90,.22) !important; border-color:var(--kb-discover) !important; }
   .ke-bonus-quiz{ position:absolute; inset:0; z-index:150; background:rgba(10,20,30,.78); display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; transition:opacity .25s ease; border-radius:inherit; }
@@ -5442,25 +5582,136 @@ async function showBonusQuiz(container, api, toolId, categories, onPass) {
 // secim ekrani gosteriyoruz - "cinsiyete gore ayri oyun" yerine HERKESE
 // acik iki farkli TEMPO (aksiyon vs sakin/yapboz) sunuyoruz, hangisini
 // oynayacagini cocuk kendi seciyor.
+// ============================================================
+// ÖDÜL OYUNLARI (v2) - "oyunları düzelt, çok amatör oldu, profesyonel ve
+// ilgi çekici hale getir" geri bildirimi üzerine baştan yazıldı.
+// Ortak altyapı: HiDPI canvas (telefonda bulanık değil), WebAudio ile
+// kod-içi üretilen ses efektleri (dosya/ağ yok), sessize alma, duraklatma,
+// uygulama arka plana gidince otomatik duraklama.
+// ============================================================
+const GAME_MUTE_KEY = 'ke_game_muted_v1';
+const GameSfx = {
+  ctx: null,
+  muted: (() => { try { return window.localStorage.getItem(GAME_MUTE_KEY) === '1'; } catch (e) { return false; } })(),
+  ensure() {
+    if (this.muted) return null;
+    try {
+      if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+    } catch (e) { return null; }
+    return this.ctx;
+  },
+  setMuted(m) {
+    this.muted = m;
+    try { window.localStorage.setItem(GAME_MUTE_KEY, m ? '1' : '0'); } catch (e) { /* yok say */ }
+    if (m && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+  },
+  tone(freq, dur, opts) {
+    const { type = 'sine', vol = 0.16, slide = 0, delay = 0 } = opts || {};
+    const ctx = this.ensure();
+    if (!ctx) return;
+    const t = ctx.currentTime + delay;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), t + dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.start(t);
+    o.stop(t + dur + 0.03);
+  },
+  noise(dur, vol) {
+    const ctx = this.ensure();
+    if (!ctx) return;
+    const len = Math.floor(ctx.sampleRate * dur);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    const s = ctx.createBufferSource();
+    s.buffer = buf;
+    const f = ctx.createBiquadFilter();
+    f.type = 'lowpass';
+    f.frequency.value = 900;
+    const g = ctx.createGain();
+    g.gain.value = vol;
+    s.connect(f); f.connect(g); g.connect(ctx.destination);
+    s.start();
+  },
+  shoot() { this.tone(760, 0.09, { type: 'triangle', vol: 0.07, slide: -420 }); },
+  pop() { this.tone(480, 0.12, { type: 'triangle', vol: 0.14, slide: 520 }); },
+  good() { this.tone(660, 0.1, { vol: 0.15 }); this.tone(990, 0.18, { vol: 0.15, delay: 0.09 }); },
+  bad() { this.tone(240, 0.22, { type: 'sawtooth', vol: 0.06, slide: -100 }); },
+  pickup() { this.tone(560, 0.07, { type: 'triangle', vol: 0.12 }); this.tone(840, 0.1, { type: 'triangle', vol: 0.12, delay: 0.06 }); },
+  crash() { this.noise(0.35, 0.3); this.tone(130, 0.3, { type: 'sawtooth', vol: 0.08, slide: -70 }); },
+  slide() { this.tone(320, 0.06, { type: 'triangle', vol: 0.08, slide: 90 }); },
+  countdown(final) { this.tone(final ? 880 : 440, final ? 0.32 : 0.14, { type: 'square', vol: 0.06 }); },
+  win() { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, 0.24, { type: 'triangle', vol: 0.14, delay: i * 0.11 })); },
+  lose() { [392, 330, 262].forEach((f, i) => this.tone(f, 0.26, { type: 'triangle', vol: 0.12, delay: i * 0.16 })); },
+};
+
+function gameStarsHTML(n) {
+  return [1, 2, 3].map((i) => `<span class="ke-gstar${i <= n ? ' on' : ''}" style="animation-delay:${0.15 * i}s">★</span>`).join('');
+}
+function fmtGameTime(sec) {
+  const s = Math.max(0, Math.floor(sec));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+function wireMuteButton(btn) {
+  const paint = () => {
+    btn.textContent = GameSfx.muted ? '🔇' : '🔊';
+    btn.setAttribute('aria-label', GameSfx.muted ? L('Sesi aç', 'Unmute') : L('Sesi kapat', 'Mute'));
+  };
+  paint();
+  btn.addEventListener('click', () => { GameSfx.setMuted(!GameSfx.muted); paint(); if (!GameSfx.muted) GameSfx.pickup(); });
+}
+
+const PUZZLE_BEST_KEY = 'ke_puzzle_best_v1';
+const PuzzleBest = {
+  key() { return `${PUZZLE_BEST_KEY}_${Profiles.active().id}`; },
+  get() { try { return JSON.parse(window.localStorage.getItem(this.key())) || {}; } catch (e) { return {}; } },
+  submit(level, stars, moves, secs) {
+    const d = this.get();
+    const cur = d[level];
+    const better = !cur || stars > cur.stars || (stars === cur.stars && moves < cur.moves);
+    if (better) {
+      d[level] = { stars, moves, secs };
+      try { window.localStorage.setItem(this.key(), JSON.stringify(d)); } catch (e) { /* yok say */ }
+    }
+    return better;
+  },
+};
+
 function showGamePicker(container, onExit) {
   const shell = container.querySelector('.ke-shell');
   const overlay = document.createElement('div');
   overlay.className = 'ke-river-overlay-msg ke-game-picker';
-  overlay.style.position = 'absolute'; overlay.style.zIndex = '90';
+  overlay.style.position = 'absolute';
+  overlay.style.zIndex = '90';
+  const pb = PuzzleBest.get();
+  const puzzleStars = Math.max(pb.easy ? pb.easy.stars : 0, pb.hard ? pb.hard.stars : 0);
   overlay.innerHTML = `
-    <div class="ke-river-msg-card ke-picker-card">
-      <h2>${L('Hangi Oyun?', 'Which Game?')}</h2>
-      <div class="ke-picker-row">
-        <button type="button" class="ke-picker-btn" id="kePickRiver">
-          <span class="ke-picker-emoji">🚤</span>
-          <span>${L('Nehir Macerası', 'River Adventure')}</span>
+    <div class="ke-game-panel ke-picker-panel">
+      <div class="ke-panel-title">🎮 ${L('Ödül Oyunu Seç', 'Pick a Reward Game')}</div>
+      <p class="ke-panel-sub">🎟️ ${L(`${GameTokens.get()} oyun hakkın var`, `You have ${GameTokens.get()} game ticket${GameTokens.get() === 1 ? '' : 's'}`)}</p>
+      <div class="ke-picker-grid">
+        <button type="button" class="ke-game-card ke-game-card-river" id="kePickRiver">
+          <span class="ke-game-card-art">🚤</span>
+          <span class="ke-game-card-name">${L('Nehir Macerası', 'River Adventure')}</span>
+          <span class="ke-game-card-desc">${L('Kelimeyi duy, doğru balonu vur!', 'Hear the word, pop the right balloon!')}</span>
+          <span class="ke-game-card-best">🏆 ${RiverHighScore.get()}</span>
         </button>
-        <button type="button" class="ke-picker-btn" id="kePickPuzzle">
-          <span class="ke-picker-emoji">🧩</span>
-          <span>${L('Resimli Yap-Boz', 'Picture Puzzle')}</span>
+        <button type="button" class="ke-game-card ke-game-card-puzzle" id="kePickPuzzle">
+          <span class="ke-game-card-art">🧩</span>
+          <span class="ke-game-card-name">${L('Resimli Yap-Boz', 'Picture Puzzle')}</span>
+          <span class="ke-game-card-desc">${L('Parçaları kaydır, resmi tamamla!', 'Slide the pieces, finish the picture!')}</span>
+          <span class="ke-game-card-best">${puzzleStars ? '★'.repeat(puzzleStars) + '☆'.repeat(3 - puzzleStars) : L('Yeni!', 'New!')}</span>
         </button>
       </div>
-      <button type="button" class="ke-btn-secondary" id="kePickCancel" style="margin-top:14px;">${L('Vazgeç', 'Cancel')}</button>
+      <button type="button" class="ke-game-btn ke-game-btn-ghost" id="kePickCancel">${L('Vazgeç', 'Cancel')}</button>
     </div>
   `;
   shell.appendChild(overlay);
@@ -5471,12 +5722,11 @@ function showGamePicker(container, onExit) {
   overlay.querySelector('#kePickCancel').addEventListener('click', close);
 }
 
-// "Github'ta ranking sayfasi... kullanicilar isterse buraya kendi
+// "Github'ta ranking sayfasi yapalim... kullanicilar isterse buraya kendi
 // skorlarini gondersin" - Supabase'e (bkz. Leaderboard nesnesi) baglı,
 // sadece River Adventure skoru icin, herkese acik bir siralama. Hicbir
-// otomatik gonderim yok - sadece oyun bitince "Skor Gonder" butonuna
-// basarsa (bkz. startRiverGame/endGame) profildeki takma isim + skoru
-// gonderiyor.
+// otomatik gonderim yok - sadece oyun bitince "Skoru Gonder" butonuna
+// basarsa profildeki isim + skoru gonderiyor.
 function showLeaderboard(container, onExit) {
   const shell = container.querySelector('.ke-shell');
   const overlay = document.createElement('div');
@@ -5509,11 +5759,9 @@ function showLeaderboard(container, onExit) {
   });
 }
 
-// Resimli kayan yap-boz (klasik "15 puzzle"): 3x3, bir hucre bos, bosluga
-// komsu bir parcaya dokunarak kaydiriyorsun. Resimler uygulamanin kendi
-// (bugun tek tek gorsel olarak dogrulanmis) varliklarindan - Aktapokus'un
-// kendisi + birkac sevimli hayvan fotografi - boylece "eglenceli resim"
-// hissi garanti, rastgele/dusuk kaliteli bir gorsele bagli degil.
+// Resimli kayan yap-boz: resim ve zorluk (3x3 / 4x4) seçimi, süre + hamle,
+// "bak" (👁 basılı tut) ile tam resmi görme, parça numarası ipucu, çözülünce
+// parçalar birleşip resim parlıyor, hamle sayısına göre 1-3 yıldız.
 const SLIDE_PUZZLE_IMAGES = [
   'mascot/mascot_idle.png',
   'photos/dog__animals_pixabay7.jpg',
@@ -5521,6 +5769,10 @@ const SLIDE_PUZZLE_IMAGES = [
   'photos/lion__animals_manual.jpg',
   'photos/butterfly__animals_pixabay7.jpg',
 ];
+const PUZZLE_LEVELS = {
+  easy: { n: 3, gap: 4, shuffle: 120, star3: 45, star2: 90 },
+  hard: { n: 4, gap: 3, shuffle: 260, star3: 150, star2: 280 },
+};
 function startSlidePuzzle(container, onExit) {
   if (!GameTokens.spend()) { onExit(); return; }
   refreshGameBadge(container);
@@ -5528,55 +5780,96 @@ function startSlidePuzzle(container, onExit) {
   const shell = container.querySelector('.ke-shell');
   const overlay = document.createElement('div');
   overlay.className = 'ke-puzzle-game';
+  const thumbs = SLIDE_PUZZLE_IMAGES.map((src, i) => `<button type="button" class="ke-puzzle-thumb${i === 0 ? ' ke-sel' : ''}" data-i="${i}" style="background-image:url('${new URL(src, ASSET_BASE_URL).href}')" aria-label="${L('Resim', 'Picture')} ${i + 1}"></button>`).join('');
   overlay.innerHTML = `
-    <div class="ke-puzzle-hud">
-      <div class="ke-puzzle-moves">🔢 <span id="kePuzzleMoves">0</span></div>
-      <button type="button" class="ke-river-close" id="kePuzzleClose" aria-label="${L('Kapat', 'Close')}">✕</button>
+    <div class="ke-game-hud">
+      <div class="ke-hud-group">
+        <div class="ke-hud-pill">🔢 <span id="kePuzzleMoves">0</span></div>
+        <div class="ke-hud-pill">⏱ <span id="kePuzzleTime">0:00</span></div>
+      </div>
+      <div class="ke-hud-group">
+        <button type="button" class="ke-hud-btn" id="kePuzzleNums" aria-label="${L('Numaraları göster', 'Show numbers')}">#</button>
+        <button type="button" class="ke-hud-btn" id="kePuzzlePeek" aria-label="${L('Resmin tamamına bak (basılı tut)', 'Peek at the picture (hold)')}">👁</button>
+        <button type="button" class="ke-hud-btn" id="kePuzzleMute"></button>
+        <button type="button" class="ke-hud-btn" id="kePuzzleClose" aria-label="${L('Kapat', 'Close')}">✕</button>
+      </div>
     </div>
     <div class="ke-puzzle-board-wrap"><div class="ke-puzzle-board" id="kePuzzleBoard"></div></div>
     <div class="ke-river-overlay-msg" id="kePuzzleStartMsg">
-      <div class="ke-river-msg-card">
-        <h2>${L('Resimli Yap-Boz', 'Picture Puzzle')}</h2>
-        <p>${L('Boşluğun yanındaki bir parçaya dokun, kaydır! Resmi tamamla 🧩', "Tap a piece next to the empty space to slide it! Complete the picture 🧩")}</p>
-        <button type="button" class="ke-btn-primary" id="kePuzzleStartBtn">${L('Başla', 'Start')} ▶</button>
+      <div class="ke-game-panel">
+        <div class="ke-panel-title">🧩 ${L('Resimli Yap-Boz', 'Picture Puzzle')}</div>
+        <p class="ke-panel-sub">${L('Bir resim seç', 'Pick a picture')}</p>
+        <div class="ke-puzzle-thumbs" id="kePuzzleThumbs">${thumbs}</div>
+        <div class="ke-seg" id="kePuzzleLevel">
+          <button type="button" class="ke-seg-btn ke-sel" data-level="easy">${L('Kolay', 'Easy')} · 3×3</button>
+          <button type="button" class="ke-seg-btn" data-level="hard">${L('Zor', 'Hard')} · 4×4</button>
+        </div>
+        <p class="ke-panel-tip">${L('Boşluğun yanındaki parçaya dokun ya da kaydır. Takılırsan 👁 düğmesini basılı tutup resmin tamamına bak.', 'Tap or drag a piece next to the gap. Stuck? Hold 👁 to peek at the whole picture.')}</p>
+        <button type="button" class="ke-game-btn" id="kePuzzleStartBtn">${L('Başla', 'Start')} ▶</button>
       </div>
     </div>
     <div class="ke-river-overlay-msg" id="kePuzzleWinMsg" style="display:none;">
       <div id="keConfettiHost"></div>
-      <div class="ke-river-msg-card">
-        <h2>🎉 ${L('Tamamladın!', 'Solved it!')}</h2>
-        <p id="kePuzzleFinalMoves"></p>
-        <div class="ke-btn-row">
-          <button type="button" class="ke-btn-secondary" id="kePuzzleExitBtn">${L('Çık', 'Exit')}</button>
-          <button type="button" class="ke-btn-primary" id="kePuzzleAgainBtn" style="display:none;">${L('Yeni Resim', 'New Picture')} 🧩</button>
+      <div class="ke-game-panel">
+        <div class="ke-panel-title">🎉 ${L('Harika! Tamamladın!', 'Amazing! You solved it!')}</div>
+        <div class="ke-gstars" id="kePuzzleStars"></div>
+        <div class="ke-gstat-row">
+          <div class="ke-gstat"><b id="kePuzzleFinalMoves">0</b><span>${L('hamle', 'moves')}</span></div>
+          <div class="ke-gstat"><b id="kePuzzleFinalTime">0:00</b><span>${L('süre', 'time')}</span></div>
+        </div>
+        <p class="ke-panel-note" id="kePuzzleBestNote"></p>
+        <div class="ke-panel-actions">
+          <button type="button" class="ke-game-btn ke-game-btn-ghost" id="kePuzzleExitBtn">${L('Çık', 'Exit')}</button>
+          <button type="button" class="ke-game-btn" id="kePuzzleAgainBtn">${L('Yeni Oyun', 'Play Again')} 🧩</button>
         </div>
       </div>
     </div>
   `;
   shell.appendChild(overlay);
+  const $ = (id) => overlay.querySelector(`#${id}`);
 
   const boardWrap = overlay.querySelector('.ke-puzzle-board-wrap');
-  const boardEl = overlay.querySelector('#kePuzzleBoard');
-  const N = 3; // 3x3 - 10 yas grubu icin makul zorluk
-  let boardSize = 0, tileSize = 0;
+  const boardEl = $('kePuzzleBoard');
+  let level = 'easy';
+  let imgIndex = 0;
+  let N = 3;
+  let gap = 4;
+  let boardSize = 0;
+  let tileSize = 0;
   let moves = 0;
-  let solved = false;
-  let cells = []; // cells[row*N+col] = orijinal parca indexi (0..7), 8 = bos
-  let tileEls = []; // tileEls[origIndex] = DOM elementi (bos icin null)
-  let blankIndex = N * N - 1;
+  let solved = true;
+  let cells = [];
+  let tileEls = [];
+  let blankIndex = 0;
+  let fullEl = null;
+  let startedAt = 0;
+  let elapsedBefore = 0;
+  let timerId = null;
+  let dragState = null;
+
+  function elapsed() { return elapsedBefore + (startedAt ? (performance.now() - startedAt) / 1000 : 0); }
+  function startTimer() {
+    if (startedAt || solved) return;
+    startedAt = performance.now();
+    if (!timerId) timerId = setInterval(() => { $('kePuzzleTime').textContent = fmtGameTime(elapsed()); }, 250);
+  }
+  function stopTimer() {
+    if (startedAt) { elapsedBefore += (performance.now() - startedAt) / 1000; startedAt = 0; }
+    if (timerId) { clearInterval(timerId); timerId = null; }
+  }
 
   function resize() {
+    if (!tileEls.length) return;
+    // İçerik kutusu (padding hariç) - yoksa tahta kabından taşıp sağ sütunu
+    // kesiyor, kare de olmuyordu.
     const r = boardWrap.getBoundingClientRect();
-    boardSize = Math.floor(Math.min(r.width, r.height) - 4);
-    tileSize = Math.floor(boardSize / N);
-    boardEl.style.width = boardSize + 'px';
-    boardEl.style.height = boardSize + 'px';
-    // BUG: sizeTiles() (parca genislik/yukseklik'ini gunceller) burada
-    // eskiden cagrilmiyordu - sadece POZISYON (layoutTile) yeni tileSize
-    // ile guncelleniyordu, parcalarin kendi width/height'i ESKI tileSize'da
-    // kaliyordu. Ekran donunce/klavye acilinca (mobil resize event) yeni
-    // konum + eski boyut cakisiyor, kareler dikdortgene donusuyordu
-    // ("kareler ayni degil, bazilari dikdortgen" geri bildirimi).
+    const cs = getComputedStyle(boardWrap);
+    const w = r.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const h = r.height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    boardSize = Math.floor(Math.min(w, h, 560));
+    tileSize = boardSize / N;
+    boardEl.style.width = `${boardSize}px`;
+    boardEl.style.height = `${boardSize}px`;
     sizeTiles();
     tileEls.forEach((el, orig) => { if (el) layoutTile(orig); });
   }
@@ -5584,26 +5877,42 @@ function startSlidePuzzle(container, onExit) {
 
   function origRowCol(orig) { return { r: Math.floor(orig / N), c: orig % N }; }
   function cellIndexOf(orig) { return cells.indexOf(orig); }
-  function layoutTile(orig) {
+  function layoutTile(orig, offX, offY) {
     const el = tileEls[orig];
     if (!el) return;
     const idx = cellIndexOf(orig);
-    const row = Math.floor(idx / N), col = idx % N;
-    el.style.transform = `translate(${col * tileSize}px, ${row * tileSize}px)`;
+    const row = Math.floor(idx / N);
+    const col = idx % N;
+    el.style.transform = `translate(${col * tileSize + gap / 2 + (offX || 0)}px, ${row * tileSize + gap / 2 + (offY || 0)}px)`;
+  }
+  function sizeTiles() {
+    tileEls.forEach((el, orig) => {
+      if (!el) return;
+      const { r, c } = origRowCol(orig);
+      el.style.width = `${tileSize - gap}px`;
+      el.style.height = `${tileSize - gap}px`;
+      el.style.backgroundSize = `${boardSize}px ${boardSize}px`;
+      el.style.backgroundPosition = `-${c * tileSize + gap / 2}px -${r * tileSize + gap / 2}px`;
+    });
   }
 
-  function buildBoard(imgSrc) {
-    boardEl.innerHTML = '';
+  function buildBoard() {
+    const cfg = PUZZLE_LEVELS[level];
+    N = cfg.n;
+    gap = cfg.gap;
+    const src = new URL(SLIDE_PUZZLE_IMAGES[imgIndex], ASSET_BASE_URL).href;
+    boardEl.innerHTML = `<div class="ke-puzzle-full" style="background-image:url('${src}')"></div>`;
+    boardEl.classList.remove('ke-solved');
+    fullEl = boardEl.querySelector('.ke-puzzle-full');
     cells = Array.from({ length: N * N }, (_, i) => i);
     blankIndex = N * N - 1;
     tileEls = [];
-    const src = new URL(imgSrc, ASSET_BASE_URL).href;
     for (let orig = 0; orig < N * N - 1; orig++) {
-      const { r, c } = origRowCol(orig);
       const el = document.createElement('button');
       el.type = 'button';
       el.className = 'ke-puzzle-tile';
-      el.style.backgroundImage = `url(${src})`;
+      el.style.backgroundImage = `url('${src}')`;
+      el.innerHTML = `<span class="ke-tile-num">${orig + 1}</span>`;
       el.addEventListener('pointerdown', (e) => { e.preventDefault(); beginDrag(e, orig); });
       el.addEventListener('pointermove', onDragMove);
       el.addEventListener('pointerup', endDrag);
@@ -5611,26 +5920,14 @@ function startSlidePuzzle(container, onExit) {
       boardEl.appendChild(el);
       tileEls.push(el);
     }
-    tileEls.push(null); // bosluk icin yer tutucu (orig index N*N-1)
+    tileEls.push(null);
     resize();
-    sizeTiles();
-    tileEls.forEach((el, orig) => { if (el) layoutTile(orig); });
-    shuffleBoard();
-  }
-
-  function sizeTiles() {
-    tileEls.forEach((el, orig) => {
-      if (!el) return;
-      const { r, c } = origRowCol(orig);
-      el.style.width = tileSize + 'px';
-      el.style.height = tileSize + 'px';
-      el.style.backgroundSize = `${boardSize}px ${boardSize}px`;
-      el.style.backgroundPosition = `-${c * tileSize}px -${r * tileSize}px`;
-    });
+    shuffleBoard(cfg.shuffle);
   }
 
   function neighborsOfBlank() {
-    const br = Math.floor(blankIndex / N), bc = blankIndex % N;
+    const br = Math.floor(blankIndex / N);
+    const bc = blankIndex % N;
     const out = [];
     if (br > 0) out.push(blankIndex - N);
     if (br < N - 1) out.push(blankIndex + N);
@@ -5638,64 +5935,64 @@ function startSlidePuzzle(container, onExit) {
     if (bc < N - 1) out.push(blankIndex + 1);
     return out;
   }
-  function swapCells(idxA, idxB) {
-    const t = cells[idxA]; cells[idxA] = cells[idxB]; cells[idxB] = t;
-  }
-  function shuffleBoard() {
-    for (let i = 0; i < 140; i++) {
-      const opts = neighborsOfBlank();
-      const pick = opts[Math.floor(Math.random() * opts.length)];
-      swapCells(pick, blankIndex);
-      blankIndex = pick;
-    }
+  function swapCells(a, b) { const t = cells[a]; cells[a] = cells[b]; cells[b] = t; }
+  function isSolved() { return cells.every((v, i) => v === i); }
+  // Rastgele yürüyüş, bir önceki hamleyi geri almadan - her karışım
+  // çözülebilir kalıyor ve gerçekten dağılıyor.
+  function shuffleBoard(steps) {
+    let prev = -1;
+    do {
+      for (let i = 0; i < steps; i++) {
+        const opts = neighborsOfBlank().filter((x) => x !== prev);
+        const pick = opts[Math.floor(Math.random() * opts.length)];
+        prev = blankIndex;
+        swapCells(pick, blankIndex);
+        blankIndex = pick;
+      }
+    } while (isSolved());
     tileEls.forEach((el, orig) => { if (el) layoutTile(orig); });
     moves = 0;
     solved = false;
-    overlay.querySelector('#kePuzzleMoves').textContent = moves;
+    elapsedBefore = 0;
+    startedAt = 0;
+    $('kePuzzleMoves').textContent = '0';
+    $('kePuzzleTime').textContent = '0:00';
   }
 
-  // "istediğin yere sürüklenmiyor" - önceden bu sadece tıkla-kaydır'dı
-  // (gerçek sürükleme hiç yoktu). Parça boşluğa bitişikse parmakla
-  // gerçekten peşinden gelir; kısa bir dokunuş (hiç ya da çok az hareket)
-  // hâlâ eskisi gibi tam bir kaydırma sayılır, %35'i geçen bir sürükleme
-  // de tamamlanır, azı geri döner. setPointerCapture ile parmak parça
-  // sınırının dışına taşsa da takip kesilmiyor (river oyunundaki aynı
-  // iOS "basılı tutunca gitmiyor" sınıfı sorunun önlenmesi).
-  let dragState = null; // {orig, idx, axis, dir, startX, startY, moved}
   function beginDrag(e, orig) {
+    if (solved) return;
     const idx = cellIndexOf(orig);
-    if (!neighborsOfBlank().includes(idx)) return;
-    const br = Math.floor(blankIndex / N), bc = blankIndex % N;
-    const tr = Math.floor(idx / N), tc = idx % N;
-    let axis, dir;
-    if (tr === br) { axis = 'x'; dir = bc > tc ? 1 : -1; }
-    else { axis = 'y'; dir = br > tr ? 1 : -1; }
-    dragState = { orig, idx, axis, dir, startX: e.clientX, startY: e.clientY, totalMoved: 0, maxAlong: 0 };
+    if (!neighborsOfBlank().includes(idx)) {
+      tileEls[orig].classList.remove('ke-nope');
+      void tileEls[orig].offsetWidth;
+      tileEls[orig].classList.add('ke-nope');
+      return;
+    }
+    const br = Math.floor(blankIndex / N);
+    const bc = blankIndex % N;
+    const tr = Math.floor(idx / N);
+    const tc = idx % N;
+    const axis = tr === br ? 'x' : 'y';
+    const dir = axis === 'x' ? (bc > tc ? 1 : -1) : (br > tr ? 1 : -1);
+    dragState = { orig, axis, dir, startX: e.clientX, startY: e.clientY, totalMoved: 0, maxAlong: 0 };
     try { tileEls[orig].setPointerCapture(e.pointerId); } catch (err) { /* yok say */ }
   }
   function onDragMove(e) {
     if (!dragState) return;
     const el = tileEls[dragState.orig];
-    const dx = e.clientX - dragState.startX, dy = e.clientY - dragState.startY;
-    let along = (dragState.axis === 'x' ? dx : dy) * dragState.dir;
-    along = Math.max(0, Math.min(tileSize, along));
+    const dx = e.clientX - dragState.startX;
+    const dy = e.clientY - dragState.startY;
+    const along = Math.max(0, Math.min(tileSize, (dragState.axis === 'x' ? dx : dy) * dragState.dir));
     dragState.totalMoved = Math.max(dragState.totalMoved, Math.hypot(dx, dy));
     dragState.maxAlong = Math.max(dragState.maxAlong, along);
-    const row = Math.floor(dragState.idx / N), col = dragState.idx % N;
-    const offX = dragState.axis === 'x' ? along * dragState.dir : 0;
-    const offY = dragState.axis === 'y' ? along * dragState.dir : 0;
     el.style.transition = 'none';
-    el.style.transform = `translate(${col * tileSize + offX}px, ${row * tileSize + offY}px)`;
+    layoutTile(dragState.orig, dragState.axis === 'x' ? along * dragState.dir : 0, dragState.axis === 'y' ? along * dragState.dir : 0);
   }
-  function endDrag(e) {
+  function endDrag() {
     if (!dragState) return;
     const { orig, totalMoved, maxAlong } = dragState;
-    const el = tileEls[orig];
-    el.style.transition = '';
+    tileEls[orig].style.transition = '';
     dragState = null;
-    // Duz bir dokunus (parmak hemen hemen hic kaymadi) eskisi gibi tam bir
-    // kaydirma sayilir; boslugun yonune dogru %35'i asan gercek bir
-    // surukleme de tamamlanir; yanlis yone veya yetersiz surukleme geri doner.
     if (totalMoved < 8 || maxAlong > tileSize * 0.35) tryMove(orig);
     else layoutTile(orig);
   }
@@ -5704,45 +6001,107 @@ function startSlidePuzzle(container, onExit) {
     if (solved) return;
     const idx = cellIndexOf(orig);
     if (!neighborsOfBlank().includes(idx)) return;
+    startTimer();
     swapCells(idx, blankIndex);
     blankIndex = idx;
     moves++;
-    overlay.querySelector('#kePuzzleMoves').textContent = moves;
+    $('kePuzzleMoves').textContent = moves;
     layoutTile(orig);
-    if (cells.every((v, i) => v === i)) { solved = true; setTimeout(onSolved, 260); }
+    GameSfx.slide();
+    if (isSolved()) { solved = true; stopTimer(); setTimeout(onSolved, 220); }
   }
 
   function onSolved() {
-    overlay.querySelector('#kePuzzleFinalMoves').textContent = L(`${moves} hamlede tamamladın! 🏆`, `Solved in ${moves} moves! 🏆`);
-    const again = overlay.querySelector('#kePuzzleAgainBtn');
-    again.style.display = GameTokens.get() > 0 ? '' : 'none';
-    overlay.querySelector('#kePuzzleWinMsg').style.display = 'flex';
-    launchConfetti(overlay);
+    const cfg = PUZZLE_LEVELS[level];
+    const secs = elapsed();
+    const stars = moves <= cfg.star3 ? 3 : moves <= cfg.star2 ? 2 : 1;
+    // Parçalar arasındaki boşluk kapanıp tek resim olarak birleşiyor.
+    gap = 0;
+    sizeTiles();
+    tileEls.forEach((el, orig) => { if (el) layoutTile(orig); });
+    boardEl.classList.add('ke-solved');
+    GameSfx.win();
+    const isBest = PuzzleBest.submit(level, stars, moves, secs);
+    setTimeout(() => {
+      $('kePuzzleStars').innerHTML = gameStarsHTML(stars);
+      $('kePuzzleFinalMoves').textContent = moves;
+      $('kePuzzleFinalTime').textContent = fmtGameTime(secs);
+      $('kePuzzleBestNote').textContent = isBest
+        ? `🏆 ${L('Bu seviyede yeni rekorun!', 'New personal best for this level!')}`
+        : (stars < 3 ? L(`3 yıldız için ${cfg.star3} hamleden az dene!`, `Try under ${cfg.star3} moves for 3 stars!`) : '');
+      $('kePuzzleAgainBtn').style.display = GameTokens.get() > 0 ? '' : 'none';
+      $('kePuzzleWinMsg').style.display = 'flex';
+      launchConfetti(overlay);
+    }, 1100);
   }
 
-  function pickImage() {
-    return SLIDE_PUZZLE_IMAGES[Math.floor(Math.random() * SLIDE_PUZZLE_IMAGES.length)];
+  function showSetup() {
+    $('kePuzzleWinMsg').style.display = 'none';
+    $('kePuzzleStartMsg').style.display = 'flex';
   }
-
   function startRun() {
-    overlay.querySelector('#kePuzzleStartMsg').style.display = 'none';
-    overlay.querySelector('#kePuzzleWinMsg').style.display = 'none';
-    buildBoard(pickImage());
+    $('kePuzzleStartMsg').style.display = 'none';
+    $('kePuzzleWinMsg').style.display = 'none';
+    stopTimer();
+    buildBoard();
   }
 
+  overlay.querySelector('#kePuzzleThumbs').addEventListener('click', (e) => {
+    const b = e.target.closest('.ke-puzzle-thumb');
+    if (!b) return;
+    imgIndex = Number(b.dataset.i);
+    overlay.querySelectorAll('.ke-puzzle-thumb').forEach((x) => x.classList.toggle('ke-sel', x === b));
+    GameSfx.pickup();
+  });
+  overlay.querySelector('#kePuzzleLevel').addEventListener('click', (e) => {
+    const b = e.target.closest('.ke-seg-btn');
+    if (!b) return;
+    level = b.dataset.level;
+    overlay.querySelectorAll('.ke-seg-btn').forEach((x) => x.classList.toggle('ke-sel', x === b));
+  });
+  const numsBtn = $('kePuzzleNums');
+  numsBtn.addEventListener('click', () => {
+    const on = boardEl.classList.toggle('ke-show-nums');
+    numsBtn.classList.toggle('ke-on', on);
+  });
+  const peekBtn = $('kePuzzlePeek');
+  const peek = (on) => { if (fullEl && !solved) fullEl.classList.toggle('ke-show', on); };
+  peekBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); peek(true); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => peekBtn.addEventListener(t, () => peek(false)));
+  wireMuteButton($('kePuzzleMute'));
+
+  const onVis = () => { if (document.hidden) stopTimer(); };
+  document.addEventListener('visibilitychange', onVis);
   function cleanup() {
+    stopTimer();
     window.removeEventListener('resize', resize);
+    document.removeEventListener('visibilitychange', onVis);
     overlay.remove();
   }
-  overlay.querySelector('#kePuzzleStartBtn').addEventListener('click', startRun);
-  overlay.querySelector('#kePuzzleClose').addEventListener('click', () => { cleanup(); onExit(); });
-  overlay.querySelector('#kePuzzleExitBtn').addEventListener('click', () => { cleanup(); onExit(); });
-  overlay.querySelector('#kePuzzleAgainBtn').addEventListener('click', () => {
+  $('kePuzzleStartBtn').addEventListener('click', startRun);
+  $('kePuzzleClose').addEventListener('click', () => { cleanup(); onExit(); });
+  $('kePuzzleExitBtn').addEventListener('click', () => { cleanup(); onExit(); });
+  $('kePuzzleAgainBtn').addEventListener('click', () => {
     if (!GameTokens.spend()) return;
     refreshGameBadge(container);
-    startRun();
+    showSetup();
   });
 }
+
+// Nehir Macerası: Aktapokus teknesiyle nehirde ilerliyor. Oyunun kalbi bir
+// İNGİLİZCE KELİME GÖREVİ: üstte bir resim (🍎) çıkıyor ve kelime sesli
+// okunuyor; çocuk balonların üzerindeki yazılardan doğru kelimeyi bulup
+// mürekkeple (ahtapot!) vuruyor. Arka arkaya doğrular kombo çarpanı
+// veriyor. Kayalar can götürüyor (3 can), yakıt sürekli azalıyor.
+const RIVER_WORDS = [
+  ['apple', '🍎'], ['banana', '🍌'], ['cat', '🐱'], ['dog', '🐶'], ['fish', '🐟'], ['bird', '🐦'],
+  ['sun', '☀️'], ['moon', '🌙'], ['star', '⭐'], ['tree', '🌳'], ['flower', '🌸'], ['car', '🚗'],
+  ['bus', '🚌'], ['ball', '⚽'], ['book', '📖'], ['house', '🏠'], ['cake', '🎂'], ['milk', '🥛'],
+  ['egg', '🥚'], ['hat', '🎩'], ['frog', '🐸'], ['duck', '🦆'], ['lion', '🦁'], ['bear', '🐻'],
+  ['pig', '🐷'], ['cow', '🐮'], ['boat', '⛵'], ['key', '🔑'], ['bread', '🍞'], ['pizza', '🍕'],
+];
+const BALLOON_COLORS = ['#FF6B6B', '#FFA94D', '#4DABF7', '#9775FA', '#38D9A9', '#F783AC'];
+const RIVER_MAX_HEARTS = 3;
 
 function startRiverGame(container, onExit) {
   if (!GameTokens.spend()) { onExit(); return; }
@@ -5751,93 +6110,156 @@ function startRiverGame(container, onExit) {
   const shell = container.querySelector('.ke-shell');
   const overlay = document.createElement('div');
   overlay.className = 'ke-river-game';
+  const best = RiverHighScore.get();
   overlay.innerHTML = `
     <canvas id="keRiverCanvas"></canvas>
-    <div class="ke-river-hud">
-      <div class="ke-river-score">⭐ <span id="keRiverScoreEl">0</span> <span class="ke-river-best">🏆<span id="keRiverBestEl">${RiverHighScore.get()}</span></span></div>
-      <div class="ke-river-fuel-wrap"><div class="ke-river-fuel-bar" id="keRiverFuelBar"></div></div>
-      <button type="button" class="ke-river-close" id="keRiverClose" aria-label="${L('Kapat', 'Close')}">✕</button>
+    <div class="ke-game-hud ke-river-hud2">
+      <div class="ke-hud-group">
+        <div class="ke-hud-pill ke-hud-score">⭐ <span id="keRiverScoreEl">0</span></div>
+        <div class="ke-hud-pill ke-hud-hearts" id="keRiverHearts"></div>
+      </div>
+      <div class="ke-hud-fuel" id="keRiverFuel"><span>⛽</span><div class="ke-hud-fuel-track"><div class="ke-hud-fuel-bar" id="keRiverFuelBar"></div></div></div>
+      <div class="ke-hud-group">
+        <button type="button" class="ke-hud-btn" id="keRiverMute"></button>
+        <button type="button" class="ke-hud-btn" id="keRiverPause" aria-label="${L('Duraklat', 'Pause')}">⏸</button>
+        <button type="button" class="ke-hud-btn" id="keRiverClose" aria-label="${L('Kapat', 'Close')}">✕</button>
+      </div>
     </div>
+    <div class="ke-river-target" id="keRiverTarget" hidden>
+      <span class="ke-target-label">🎯</span>
+      <span class="ke-target-emoji" id="keRiverTargetEmoji"></span>
+      <span class="ke-target-word" id="keRiverTargetWord"></span>
+      <button type="button" class="ke-target-say" id="keRiverSay" aria-label="${L('Kelimeyi dinle', 'Hear the word')}">🔊</button>
+      <span class="ke-target-combo" id="keRiverCombo"></span>
+    </div>
+    <div class="ke-river-countdown" id="keRiverCountdown"></div>
     <div class="ke-river-touch-zones">
-      <div class="ke-river-zone ke-river-zone-steer" id="keRiverSteerZone"><span class="ke-river-zone-hint">◀ ${L('SÜRÜKLE', 'DRAG')} ▶</span></div>
-      <div class="ke-river-zone ke-river-zone-fire" id="keRiverFireZone"><span class="ke-river-zone-hint">● ${L('ATEŞ', 'FIRE')}</span></div>
+      <div class="ke-river-zone ke-river-zone-steer" id="keRiverSteerZone"><span class="ke-river-zone-hint">👆 ${L('SÜRÜKLE', 'DRAG')} ↔</span></div>
+      <div class="ke-river-zone ke-river-zone-fire" id="keRiverFireZone"><span class="ke-river-zone-hint">💧 ${L('DOKUN: ATEŞ', 'TAP: SHOOT')}</span></div>
     </div>
     <div class="ke-river-overlay-msg" id="keRiverStartMsg">
-      <div class="ke-river-msg-card">
-        <h2>${L('Nehir Macerası', 'River Adventure')}</h2>
-        <p>${L('Kayalardan kaç, yakıt topla, balonları vur! Yakıtın sürekli azalır, istasyonları kaçırma! 🚤', "Dodge the rocks, collect fuel, pop the balloons! Fuel keeps dropping, don't miss the tanks! 🚤")}</p>
-        ${RiverHighScore.get() > 0 ? `<p style="font-weight:800;color:#B08718;">🏆 ${L('Rekorun', 'Your best')}: ${RiverHighScore.get()}</p>` : ''}
-        <button type="button" class="ke-btn-primary" id="keRiverStartBtn">${L('Başla', 'Start')} ▶</button>
+      <div class="ke-game-panel">
+        <div class="ke-panel-title">🚤 ${L('Nehir Macerası', 'River Adventure')}</div>
+        <div class="ke-howto">
+          <div class="ke-howto-row"><span class="ke-howto-ico">🎯</span><span>${L('Üstteki resmin <b>İngilizcesini</b> balonlarda bul ve vur!', 'Find the <b>English word</b> for the picture on the balloons and pop it!')}</span></div>
+          <div class="ke-howto-row"><span class="ke-howto-ico">👆</span><span>${L('Sol yarıda sürükle: tekneyi yönet', 'Drag on the left half: steer')}</span></div>
+          <div class="ke-howto-row"><span class="ke-howto-ico">💧</span><span>${L('Sağ yarıya dokun: mürekkep fırlat', 'Tap the right half: shoot ink')}</span></div>
+          <div class="ke-howto-row"><span class="ke-howto-ico">⛽</span><span>${L('Yakıt topla, kayalara çarpma — 3 canın var', 'Grab fuel, dodge rocks — you have 3 lives')}</span></div>
+        </div>
+        <p class="ke-panel-note">${best > 0 ? `🏆 ${L('Rekorun', 'Your best')}: <b>${best}</b>` : ''}<span class="ke-kbd-hint"> · ${L('Klavye: ← → ve Boşluk', 'Keyboard: ← → and Space')}</span></p>
+        <button type="button" class="ke-game-btn" id="keRiverStartBtn">${L('Başla', 'Start')} ▶</button>
+      </div>
+    </div>
+    <div class="ke-river-overlay-msg" id="keRiverPauseMsg" style="display:none;">
+      <div class="ke-game-panel">
+        <div class="ke-panel-title">⏸ ${L('Duraklatıldı', 'Paused')}</div>
+        <div class="ke-panel-actions">
+          <button type="button" class="ke-game-btn ke-game-btn-ghost" id="keRiverQuitBtn">${L('Çık', 'Quit')}</button>
+          <button type="button" class="ke-game-btn" id="keRiverResumeBtn">${L('Devam', 'Resume')} ▶</button>
+        </div>
       </div>
     </div>
     <div class="ke-river-overlay-msg" id="keRiverOverMsg" style="display:none;">
-      <div class="ke-river-msg-card">
-        <h2>${L('Oyun Bitti!', 'Game Over!')}</h2>
-        <p id="keRiverFinalScore"></p>
-        <div class="ke-lb-submit-row" id="keRiverSubmitRow">
-          <button type="button" class="ke-btn-primary" id="keRiverSubmitBtn" style="font-size:13px !important;padding:10px 16px !important;">🏆 ${L('Skoru Gönder', 'Submit Score')}</button>
+      <div id="keConfettiHost"></div>
+      <div class="ke-game-panel">
+        <div class="ke-panel-title" id="keRiverOverTitle"></div>
+        <div class="ke-gstars" id="keRiverStars"></div>
+        <div class="ke-big-score" id="keRiverFinalScore">0</div>
+        <div class="ke-gstat-row">
+          <div class="ke-gstat"><b id="keRiverStatWords">0</b><span>${L('kelime', 'words')}</span></div>
+          <div class="ke-gstat"><b id="keRiverStatDist">0</b><span>${L('mesafe', 'distance')}</span></div>
+          <div class="ke-gstat"><b id="keRiverStatCoins">0</b><span>${L('altın', 'coins')}</span></div>
         </div>
-        <div id="keRiverSubmitStatus" style="min-height:18px;font-size:12px;font-weight:800;margin-top:4px;"></div>
-        <div class="ke-btn-row">
-          <button type="button" class="ke-btn-secondary" id="keRiverExitBtn">${L('Çık', 'Exit')}</button>
-          <button type="button" class="ke-btn-primary" id="keRiverAgainBtn" style="display:none;">${L('Tekrar Oyna', 'Play Again')} 🎮</button>
+        <div class="ke-word-chips" id="keRiverWordChips"></div>
+        <div class="ke-lb-submit-row">
+          <button type="button" class="ke-game-btn ke-game-btn-small" id="keRiverSubmitBtn">🏆 ${L('Sıralamaya Gönder', 'Submit to Leaderboard')}</button>
+        </div>
+        <div class="ke-submit-status" id="keRiverSubmitStatus"></div>
+        <div class="ke-panel-actions">
+          <button type="button" class="ke-game-btn ke-game-btn-ghost" id="keRiverExitBtn">${L('Çık', 'Exit')}</button>
+          <button type="button" class="ke-game-btn" id="keRiverAgainBtn">${L('Tekrar Oyna', 'Play Again')} 🎮</button>
         </div>
       </div>
     </div>
   `;
   shell.appendChild(overlay);
+  const $ = (id) => overlay.querySelector(`#${id}`);
 
-  const canvas = overlay.querySelector('#keRiverCanvas');
+  const canvas = $('keRiverCanvas');
   const ctx = canvas.getContext('2d');
-  let W = 0, H = 0;
-  function resize() {
-    const r = overlay.getBoundingClientRect();
-    W = canvas.width = Math.round(r.width);
-    H = canvas.height = Math.round(r.height);
-  }
-  resize();
-  window.addEventListener('resize', resize);
+  const CHECK_GAP = 40;
 
   // --- durum ---
+  let W = 1;
+  let H = 1;
   const keys = { left: false, right: false };
-  let player = { x: 0, y: 0, r: 16, angle: 0 };
-  let terrain = []; // {y, cx, half}
-  let items = []; // {y, x, type: 'rock'|'fuel'|'balloon'|'star', alive}
-  let bullets = []; // {y, x}
-  let particles = []; // basit patlama efekti {x,y,vx,vy,life}
-  let trail = []; // teknenin arkasindaki dalga izi {x,y,life}
-  let waterPhase = 0; // suyun parildama animasyonu icin
-  let shakeTime = 0;
-  // Tekne olarak gercek Aktapokus gorseli - oyunu jenerik sekillerden
-  // cikarip uygulamanin kendi kimligine baglayan, "gorseller cok basarili
-  // olmali" geri bildirimine karsilik gelen ana dokunus.
-  const boatImg = new Image();
-  let boatImgReady = false;
-  boatImg.onload = () => { boatImgReady = true; };
-  boatImg.src = new URL('mascot/mascot_idle.png', ASSET_BASE_URL).href;
+  let player = { x: 0, y: 0, r: 18, angle: 0, prevX: 0 };
+  let terrain = [];
+  let items = [];
+  let bullets = [];
+  let particles = [];
+  let floaters = [];
+  let decor = [];
   let score = 0;
   let fuel = 100;
-  let scrollSpeed = 120; // px/sn
-  let running = false;
-  let lastSpawnY = 0;
+  let hearts = RIVER_MAX_HEARTS;
+  let invuln = 0;
+  let scrollSpeed = 125;
+  let spawnAcc = 0;
   let shootCooldown = 0;
-  let hitFlash = 0;
+  let shakeTime = 0;
+  let waterPhase = 0;
+  let scrollTotal = 0;
+  let distance = 0;
+  let coinsGot = 0;
+  let running = false;
+  let paused = false;
   let lastTime = null;
   let rafId = null;
-  let isNewBest = false;
+  let target = null;
+  let lastTargetWord = null;
+  let wrongOnTarget = 0;
+  let targetSince = 0;
+  let combo = 1;
+  let balloonsSinceTarget = 0;
+  let wordsHit = [];
   let lastFinalScore = 0;
-  // Nehir "tek tip rastgele" hissetmesin diye - her checkpoint bagimsiz
-  // zar atmak yerine, bir SURE boyunca ayni "mod"da devam ediyoruz
-  // (duz surukleme, S-kivrimi, dar gecit, genis acik alan) - gercek
-  // bir parkurun hissettirdigi gibi degisen boluler yaratiyor.
   let driftMode = 'drift';
   let driftLeft = 0;
   let driftDir = 1;
   let driftPhase = 0;
+  let countdownTimer = null;
 
-  const CHECK_GAP = 40;
-  const FUEL_DRAIN_PER_SEC = 3.2; // "her seferinde ayni degil" - yakit surekli azalir, toplamak zorunlu
-  function nextTerrainStep(prevCx, prevHalf, stepIndex) {
+  const boatImg = new Image();
+  let boatImgReady = false;
+  boatImg.onload = () => { boatImgReady = true; if (!running) draw(); };
+  boatImg.src = new URL('mascot/mascot_idle.png', ASSET_BASE_URL).href;
+
+  const grassPattern = (() => {
+    const c = document.createElement('canvas');
+    c.width = 96; c.height = 96;
+    const g = c.getContext('2d');
+    g.fillStyle = '#4f9a52';
+    g.fillRect(0, 0, 96, 96);
+    for (let i = 0; i < 300; i++) {
+      g.fillStyle = Math.random() < 0.5 ? 'rgba(28,84,40,.32)' : 'rgba(150,210,110,.28)';
+      g.fillRect(Math.random() * 96, Math.random() * 96, 2, 3 + Math.random() * 4);
+    }
+    return ctx.createPattern(c, 'repeat');
+  })();
+
+  function resize() {
+    const r = overlay.getBoundingClientRect();
+    const dpr = Math.min(2.5, window.devicePixelRatio || 1);
+    W = Math.max(1, Math.round(r.width));
+    H = Math.max(1, Math.round(r.height));
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (!running) draw();
+  }
+
+  function nextTerrainStep(prevCx, prevHalf) {
     if (driftLeft <= 0) {
       const roll = Math.random();
       if (roll < 0.35) { driftMode = 'drift'; driftLeft = 6 + Math.floor(Math.random() * 8); }
@@ -5847,51 +6269,64 @@ function startRiverGame(container, onExit) {
     }
     driftLeft--;
     let cx = prevCx;
-    let targetHalf = Math.min(150, W * 0.34);
-    if (driftMode === 'drift') {
-      cx += (Math.random() - 0.5) * 46;
-    } else if (driftMode === 'curve') {
-      driftPhase += 0.35;
-      cx += driftDir * (16 + Math.sin(driftPhase) * 10);
-    } else if (driftMode === 'narrow') {
-      targetHalf = Math.max(62, targetHalf * 0.55);
-      cx += (Math.random() - 0.5) * 24;
-    } else { // wide
-      cx += (Math.random() - 0.5) * 30;
-    }
-    const half = prevHalf + (targetHalf - prevHalf) * 0.15;
-    const clampedHalf = Math.max(62, Math.min(Math.min(150, W * 0.34), half));
-    cx = Math.max(clampedHalf + 24, Math.min(W - clampedHalf - 24, cx));
-    return { cx, half: clampedHalf };
+    const maxHalf = Math.min(165, W * 0.36);
+    let targetHalf = maxHalf;
+    if (driftMode === 'drift') cx += (Math.random() - 0.5) * 40;
+    else if (driftMode === 'curve') { driftPhase += 0.35; cx += driftDir * (14 + Math.sin(driftPhase) * 9); }
+    else if (driftMode === 'narrow') { targetHalf = Math.max(80, maxHalf * 0.62); cx += (Math.random() - 0.5) * 22; }
+    else cx += (Math.random() - 0.5) * 28;
+    const half = Math.max(80, Math.min(maxHalf, prevHalf + (targetHalf - prevHalf) * 0.15));
+    cx = Math.max(half + 24, Math.min(W - half - 24, cx));
+    return { cx, half };
   }
+  function makeDecor(x, y) {
+    const r = Math.random();
+    const kind = r < 0.45 ? 'tree' : r < 0.75 ? 'bush' : r < 0.9 ? 'flowers' : 'stone';
+    return { x, y, kind, s: 0.75 + Math.random() * 0.55, v: Math.random() };
+  }
+  function addDecorAt(y, cx, half) {
+    const leftW = cx - half - 18;
+    const rightX = cx + half + 18;
+    if (leftW > 24 && Math.random() < 0.6) decor.push(makeDecor(6 + Math.random() * (leftW - 12), y));
+    if (W - rightX > 24 && Math.random() < 0.6) decor.push(makeDecor(rightX + 6 + Math.random() * (W - rightX - 12), y));
+  }
+  function rockVerts() {
+    const n = 8;
+    return Array.from({ length: n }, (_, i) => {
+      const a = (i / n) * Math.PI * 2;
+      const k = 0.78 + Math.random() * 0.3;
+      return [Math.cos(a) * k, Math.sin(a) * k];
+    });
+  }
+
   function resetGame() {
-    player = { x: W / 2, y: H - 90, r: 16 };
+    player = { x: W / 2, y: H - 110, r: 18, angle: 0, prevX: W / 2 };
     terrain = [];
+    decor = [];
     driftMode = 'drift'; driftLeft = 0; driftDir = 1; driftPhase = 0;
-    let cx = W / 2, half = Math.min(140, W * 0.32);
-    let i = 0;
-    for (let y = -CHECK_GAP * 3; y < H + CHECK_GAP * 2; y += CHECK_GAP) {
-      const step = nextTerrainStep(cx, half, i++);
+    let cx = W / 2;
+    let half = Math.min(165, W * 0.36);
+    for (let y = -CHECK_GAP * 3; y < H + CHECK_GAP * 3; y += CHECK_GAP) {
+      const step = nextTerrainStep(cx, half);
       cx = step.cx; half = step.half;
       terrain.push({ y, cx, half });
+      addDecorAt(y, cx, half);
     }
-    items = [];
-    bullets = [];
-    particles = [];
-    trail = [];
-    waterPhase = 0;
-    shakeTime = 0;
-    score = 0;
-    fuel = 100;
-    scrollSpeed = 120;
-    lastSpawnY = 0;
-    shootCooldown = 0;
-    hitFlash = 0;
-    isNewBest = false;
+    // İlk ekranda nehir teknenin altında ortalı olsun.
+    terrain.forEach((t) => { t.cx = Math.max(t.half + 24, Math.min(W - t.half - 24, t.cx * 0.3 + (W / 2) * 0.7)); });
+    items = []; bullets = []; particles = []; floaters = [];
+    score = 0; fuel = 100; hearts = RIVER_MAX_HEARTS; invuln = 0;
+    scrollSpeed = 125; spawnAcc = 0; shootCooldown = 0; shakeTime = 0;
+    scrollTotal = 0; distance = 0; coinsGot = 0;
+    target = null; lastTargetWord = null; combo = 1; wordsHit = [];
+    renderHearts();
+    updateCombo();
+    updateHud();
   }
 
   function channelAt(y) {
-    let a = terrain[0], b = terrain[terrain.length - 1];
+    let a = terrain[0];
+    let b = terrain[terrain.length - 1];
     for (let i = 0; i < terrain.length - 1; i++) {
       if (terrain[i].y <= y && terrain[i + 1].y >= y) { a = terrain[i]; b = terrain[i + 1]; break; }
     }
@@ -5899,148 +6334,206 @@ function startRiverGame(container, onExit) {
     return { cx: a.cx + (b.cx - a.cx) * t, half: a.half + (b.half - a.half) * t };
   }
 
-  function spawnItem() {
-    const topY = terrain[0].y;
-    const ch = channelAt(topY + 10);
-    const margin = 22;
-    const x = ch.cx + (Math.random() - 0.5) * 2 * Math.max(10, ch.half - margin);
-    // Yakit her zaman aktif tuketildigi icin (bkz. FUEL_DRAIN_PER_SEC)
-    // havuzun makul bir payi yakit olmali yoksa hayatta kalmak imkansiz
-    // olur - ama %100 garanti degil, dikkatli navigasyon hala gerekli.
-    const roll = Math.random();
-    let type;
-    if (roll < 0.38) type = 'rock';
-    else if (roll < 0.66) type = 'fuel';
-    else if (roll < 0.92) type = 'balloon';
-    else type = 'star'; // nadir bonus - +50 puan
-    items.push({ y: topY - 10, x, type, alive: true });
+  // --- kelime görevi ---
+  function sayTarget() {
+    if (!target || GameSfx.muted) return;
+    speakWord(target[0], { classList: { add() {}, remove() {} } });
+  }
+  function setTarget() {
+    let w;
+    do { w = RIVER_WORDS[Math.floor(Math.random() * RIVER_WORDS.length)]; } while (w[0] === lastTargetWord);
+    target = w;
+    lastTargetWord = w[0];
+    wrongOnTarget = 0;
+    targetSince = 0;
+    balloonsSinceTarget = 2;
+    $('keRiverTargetEmoji').textContent = w[1];
+    const wordEl = $('keRiverTargetWord');
+    wordEl.textContent = w[0];
+    wordEl.classList.remove('ke-show');
+    const box = $('keRiverTarget');
+    box.hidden = false;
+    box.classList.remove('ke-bump');
+    void box.offsetWidth;
+    box.classList.add('ke-bump');
+    sayTarget();
+  }
+  function flashTarget(kind) {
+    const box = $('keRiverTarget');
+    box.classList.remove('ke-ok', 'ke-bad');
+    void box.offsetWidth;
+    box.classList.add(kind === 'ok' ? 'ke-ok' : 'ke-bad');
+  }
+  function updateCombo() {
+    const el = $('keRiverCombo');
+    el.textContent = combo > 1 ? `x${combo}` : '';
+    el.classList.toggle('ke-show', combo > 1);
+  }
+  function renderHearts() {
+    $('keRiverHearts').innerHTML = Array.from({ length: RIVER_MAX_HEARTS }, (_, i) => `<span class="${i < hearts ? '' : 'ke-lost'}">❤️</span>`).join('');
+  }
+  function updateHud() {
+    $('keRiverScoreEl').textContent = Math.floor(score);
+    const bar = $('keRiverFuelBar');
+    bar.style.width = `${Math.max(0, fuel)}%`;
+    $('keRiverFuel').classList.toggle('ke-low', fuel < 25);
   }
 
-  function burst(x, y, color) {
-    for (let i = 0; i < 10; i++) {
-      const a = (Math.PI * 2 * i) / 10;
-      particles.push({ x, y, vx: Math.cos(a) * 90, vy: Math.sin(a) * 90, life: 0.5, color });
+  // --- nesneler ---
+  function spawnBalloon(x, y) {
+    let word;
+    if (target && (balloonsSinceTarget >= 3 || Math.random() < 0.42)) { word = target; balloonsSinceTarget = 0; }
+    else {
+      do { word = RIVER_WORDS[Math.floor(Math.random() * RIVER_WORDS.length)]; } while (target && word[0] === target[0]);
+      balloonsSinceTarget++;
     }
+    ctx.font = '800 15px Fredoka, "Baloo 2", sans-serif';
+    const r = Math.max(25, ctx.measureText(word[0]).width / 2 + 12);
+    const ch = channelAt(y);
+    const bx = Math.max(ch.cx - ch.half + r + 6, Math.min(ch.cx + ch.half - r - 6, x));
+    items.push({ type: 'balloon', x: bx, y, word, r, color: BALLOON_COLORS[Math.floor(Math.random() * BALLOON_COLORS.length)], bob: Math.random() * 6, alive: true });
+  }
+  function spawnItem() {
+    const y = -36;
+    const ch = channelAt(y);
+    const x = ch.cx + (Math.random() - 0.5) * 2 * Math.max(8, ch.half - 28);
+    const roll = Math.random();
+    if (roll < 0.4) spawnBalloon(x, y);
+    else if (roll < 0.66) items.push({ type: 'rock', x, y, r: 15 + Math.random() * 6, verts: rockVerts(), alive: true });
+    else if (roll < 0.8) items.push({ type: 'fuel', x, y, r: 16, alive: true });
+    else items.push({ type: 'coin', x, y, r: 12, alive: true, phase: Math.random() * 6 });
+  }
+  function burst(x, y, color, n) {
+    const count = n || 12;
+    for (let i = 0; i < count; i++) {
+      const a = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+      const sp = 70 + Math.random() * 90;
+      particles.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, g: 120, life: 0.6, max: 0.6, r: 2 + Math.random() * 3, color });
+    }
+  }
+  function addFloater(x, y, text, color, size) {
+    floaters.push({ x, y, text, color, life: 1, max: 1, size: size || 18 });
+  }
+  function addScore(pts, x, y, color, text) {
+    score += pts;
+    addFloater(x, y, text || `+${pts}`, color);
   }
 
   function shoot() {
-    if (shootCooldown > 0) return;
-    shootCooldown = 0.28;
-    bullets.push({ x: player.x, y: player.y - player.r });
+    if (!running || shootCooldown > 0) return;
+    shootCooldown = 0.22;
+    bullets.push({ x: player.x, y: player.y - 34, vy: -560 });
+    GameSfx.shoot();
+  }
+  function popBalloon(it) {
+    it.alive = false;
+    burst(it.x, it.y, it.color, 16);
+    if (target && it.word[0] === target[0]) {
+      const pts = 50 * combo;
+      addScore(pts, it.x, it.y - 24, '#FFE066', `+${pts}  ${it.word[1]} ${it.word[0]}!`);
+      wordsHit.push(it.word);
+      combo = Math.min(5, combo + 1);
+      GameSfx.good();
+      flashTarget('ok');
+      setTarget();
+    } else {
+      combo = 1;
+      wrongOnTarget++;
+      if (wrongOnTarget >= 2) $('keRiverTargetWord').classList.add('ke-show');
+      addFloater(it.x, it.y - 12, L('Olmadı!', 'Oops!'), '#FFFFFF', 17);
+      GameSfx.bad();
+      flashTarget('bad');
+    }
+    updateCombo();
+  }
+  function loseHeart() {
+    hearts--;
+    invuln = 1.6;
+    shakeTime = 0.35;
+    combo = 1;
+    updateCombo();
+    renderHearts();
+    GameSfx.crash();
+    if (hearts <= 0) finishRun();
   }
 
-  function endGame() {
-    running = false;
-    if (rafId) cancelAnimationFrame(rafId);
-    const finalScore = Math.floor(score);
-    lastFinalScore = finalScore;
-    isNewBest = RiverHighScore.submit(finalScore);
-    const bestEl = overlay.querySelector('#keRiverBestEl');
-    if (bestEl) bestEl.textContent = RiverHighScore.get();
-    overlay.querySelector('#keRiverFinalScore').innerHTML = isNewBest
-      ? L(`Skor: ${finalScore} ⭐<br><b>🏆 Yeni rekor!</b>`, `Score: ${finalScore} ⭐<br><b>🏆 New high score!</b>`)
-      : L(`Skor: ${finalScore} ⭐<br>Rekor: ${RiverHighScore.get()} 🏆`, `Score: ${finalScore} ⭐<br>Best: ${RiverHighScore.get()} 🏆`);
-    const again = overlay.querySelector('#keRiverAgainBtn');
-    again.style.display = GameTokens.get() > 0 ? '' : 'none';
-    // Her oyun sonunda gonder butonu/durumu sifirlaniyor - ayni DOM
-    // "Tekrar Oyna" ile yeniden kullaniliyor.
-    const submitBtn = overlay.querySelector('#keRiverSubmitBtn');
-    submitBtn.disabled = false;
-    submitBtn.style.display = '';
-    overlay.querySelector('#keRiverSubmitStatus').textContent = '';
-    overlay.querySelector('#keRiverOverMsg').style.display = 'flex';
-  }
-
+  // --- döngü ---
   function update(dt) {
-    // guclesme: zamanla biraz hizlanir, ustten sinirli
-    scrollSpeed = Math.min(230, scrollSpeed + dt * 2.2);
+    const t01 = Math.min(1, distance / 5000);
+    scrollSpeed = 125 + t01 * 110;
     const scroll = scrollSpeed * dt;
+    scrollTotal += scroll;
+    distance += scroll;
+    waterPhase += dt;
 
-    // terrain kaydir + yenisini uret (cesitli modlarla - bkz. nextTerrainStep)
     terrain.forEach((t) => { t.y += scroll; });
     while (terrain[0].y > -CHECK_GAP) {
       const first = terrain[0];
       const step = nextTerrainStep(first.cx, first.half);
-      terrain.unshift({ y: first.y - CHECK_GAP, cx: step.cx, half: step.half });
+      const y = first.y - CHECK_GAP;
+      terrain.unshift({ y, cx: step.cx, half: step.half });
+      addDecorAt(y, step.cx, step.half);
     }
     terrain = terrain.filter((t) => t.y < H + CHECK_GAP * 3);
+    decor.forEach((d) => { d.y += scroll; });
+    decor = decor.filter((d) => d.y < H + 60);
+    items.forEach((it) => { it.y += scroll; if (it.type === 'balloon') it.bob += dt * 2.2; if (it.type === 'coin') it.phase += dt * 5; });
+    items = items.filter((it) => it.alive && it.y < H + 60);
+    spawnAcc += scroll;
+    if (spawnAcc > 100 - t01 * 30) { spawnAcc = 0; spawnItem(); }
 
-    // oge kaydir
-    items.forEach((it) => { it.y += scroll; });
-    items = items.filter((it) => it.alive && it.y < H + 40);
-    lastSpawnY += scroll;
-    if (lastSpawnY > 90) { lastSpawnY = 0; spawnItem(); }
-
-    // mermi
-    bullets.forEach((b) => { b.y -= 420 * dt; });
-    bullets = bullets.filter((b) => b.y > -20);
-
-    // parcaciklar
-    particles.forEach((p) => { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; });
+    bullets.forEach((b) => { b.y += b.vy * dt; });
+    particles.forEach((p) => { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.g || 0) * dt; p.life -= dt; });
     particles = particles.filter((p) => p.life > 0);
-
-    // su parildamasi + tekne dalga izi
-    waterPhase += dt * 1.6;
-    trail.push({ x: player.x, y: player.y + 14, life: 0.45 });
-    trail.forEach((t) => { t.life -= dt; t.y += scroll; });
-    trail = trail.filter((t) => t.life > 0);
+    floaters.forEach((f) => { f.y -= 46 * dt; f.life -= dt; });
+    floaters = floaters.filter((f) => f.life > 0);
     if (shakeTime > 0) shakeTime -= dt;
+    if (invuln > 0) invuln -= dt;
+    if (shootCooldown > 0) shootCooldown -= dt;
+    targetSince += dt;
+    if (target && targetSince > 8) $('keRiverTargetWord').classList.add('ke-show');
 
-    // oyuncu hareketi (yon acisi = hafif yatirma, "canli" bir his icin)
-    const moveSpeed = 260;
+    const moveSpeed = 290;
     let vx = 0;
     if (keys.left) vx -= moveSpeed;
     if (keys.right) vx += moveSpeed;
-    player.x += vx * dt;
-    player.x = Math.max(18, Math.min(W - 18, player.x));
-    player.angle += ((vx / moveSpeed) * 0.32 - player.angle) * Math.min(1, dt * 8);
-    if (shootCooldown > 0) shootCooldown -= dt;
-    if (hitFlash > 0) hitFlash -= dt;
+    player.x = Math.max(20, Math.min(W - 20, player.x + vx * dt));
+    const dx = player.x - player.prevX;
+    player.prevX = player.x;
+    player.angle += (Math.max(-0.4, Math.min(0.4, (dx / Math.max(dt, 0.001)) / 700)) - player.angle) * Math.min(1, dt * 10);
 
-    // kiyi carpismasi
     const ch = channelAt(player.y);
     if (player.x - player.r < ch.cx - ch.half || player.x + player.r > ch.cx + ch.half) {
-      fuel -= 55 * dt; // kiyiya surtunme - hizli tukeniyor ama aninda oyun bitmiyor
-      hitFlash = 0.15;
-      shakeTime = 0.2;
+      fuel -= 28 * dt;
+      shakeTime = Math.max(shakeTime, 0.1);
+      player.x += (ch.cx - player.x) * Math.min(1, dt * 2.5);
+      if (Math.random() < 0.6) particles.push({ x: player.x + (player.x < ch.cx ? -player.r : player.r), y: player.y + 6, vx: (Math.random() - 0.5) * 90, vy: -70 - Math.random() * 60, g: 280, life: 0.45, max: 0.45, r: 2.5, color: '#E0C98F' });
     }
 
-    // mermi-hedef carpismasi
-    bullets.forEach((b) => {
-      items.forEach((it) => {
-        if (!it.alive || it.type !== 'balloon') return;
-        if (Math.hypot(b.x - it.x, b.y - it.y) < 22) {
-          it.alive = false; b.y = -999;
-          score += 25;
-          burst(it.x, it.y, '#FF6B6B');
-        }
-      });
-    });
-    bullets = bullets.filter((b) => b.y > -900);
-
-    // oyuncu-oge carpismasi
-    items.forEach((it) => {
-      if (!it.alive) return;
-      if (Math.hypot(player.x - it.x, player.y - it.y) < player.r + 16) {
-        it.alive = false;
-        if (it.type === 'fuel') { fuel = Math.min(100, fuel + 22); score += 10; burst(it.x, it.y, '#6EC8FF'); }
-        else if (it.type === 'rock') { fuel -= 25; hitFlash = 0.2; shakeTime = 0.22; burst(it.x, it.y, '#B08968'); }
-        else if (it.type === 'balloon') { fuel -= 12; hitFlash = 0.15; shakeTime = 0.15; burst(it.x, it.y, '#FF6B6B'); }
-        else if (it.type === 'star') { score += 50; burst(it.x, it.y, '#FFD75A'); }
+    for (const b of bullets) {
+      if (b.dead) continue;
+      for (const it of items) {
+        if (!it.alive || it.type !== 'balloon') continue;
+        const by = it.y + Math.sin(it.bob) * 3;
+        if (Math.hypot(b.x - it.x, b.y - by) < it.r + 6) { b.dead = true; popBalloon(it); break; }
       }
-    });
+    }
+    bullets = bullets.filter((b) => !b.dead && b.y > -30);
+
+    for (const it of items) {
+      if (!it.alive) continue;
+      if (Math.hypot(player.x - it.x, player.y - 8 - it.y) > player.r + it.r - 4) continue;
+      if (it.type === 'fuel') { it.alive = false; fuel = Math.min(100, fuel + 26); addScore(5, it.x, it.y - 16, '#74C0FC', '+⛽'); burst(it.x, it.y, '#74C0FC'); GameSfx.pickup(); }
+      else if (it.type === 'coin') { it.alive = false; coinsGot++; addScore(10, it.x, it.y - 16, '#FFE066'); burst(it.x, it.y, '#FFD43B', 8); GameSfx.pickup(); }
+      else if (it.type === 'rock') { if (invuln <= 0) { it.alive = false; burst(it.x, it.y, '#8D7B68', 14); loseHeart(); if (!running) return; } }
+      else if (it.type === 'balloon') { it.alive = false; burst(it.x, it.y, it.color, 10); GameSfx.pop(); }
+    }
     items = items.filter((it) => it.alive);
 
-    // Yakit gercek bir kaynak yonetimi olsun diye SUREKLI azalir - sadece
-    // kayalardan kacmak yetmiyor, yakit istasyonlarini da aktif toplamak
-    // gerekiyor (River Raid'in kendi cekirdek dongusu tam olarak bu).
-    fuel -= FUEL_DRAIN_PER_SEC * dt;
-    score += dt * 4; // hayatta kalma puani
-    if (fuel <= 0) { fuel = 0; endGame(); return; }
-
-    overlay.querySelector('#keRiverScoreEl').textContent = Math.floor(score);
-    overlay.querySelector('#keRiverFuelBar').style.width = fuel + '%';
-    overlay.querySelector('#keRiverFuelBar').style.background = fuel < 25 ? '#FF5252' : fuel < 55 ? '#FFB74D' : '#6EC8FF';
+    fuel -= (2.3 + t01 * 1.2) * dt;
+    score += dt * 3;
+    if (fuel <= 0) { fuel = 0; updateHud(); finishRun(); return; }
+    updateHud();
   }
 
   function riverPath() {
@@ -6050,139 +6543,231 @@ function startRiverGame(container, onExit) {
     for (let i = terrain.length - 1; i >= 0; i--) ctx.lineTo(terrain[i].cx + terrain[i].half, terrain[i].y);
     ctx.closePath();
   }
-
-  function draw() {
+  function drawDecor(d) {
     ctx.save();
-    // carpma "screen shake" - kiyiya/engele carpinca ekran kisa sure titrer
-    if (shakeTime > 0) {
-      const k = shakeTime / 0.22;
-      ctx.translate((Math.random() - 0.5) * 10 * k, (Math.random() - 0.5) * 10 * k);
-    }
-
-    // kiyilar: cim dokusu hissi veren dikey degrade
-    const bankGrad = ctx.createLinearGradient(0, 0, 0, H);
-    bankGrad.addColorStop(0, '#3a7050');
-    bankGrad.addColorStop(1, '#254a34');
-    ctx.fillStyle = bankGrad;
-    ctx.fillRect(0, 0, W, H);
-
-    // nehir: derinlik hissi veren mavi degrade + kiyi seridi (kum tonu)
-    ctx.save();
-    riverPath();
-    ctx.clip();
-    const waterGrad = ctx.createLinearGradient(0, 0, 0, H);
-    waterGrad.addColorStop(0, '#3f8fc4');
-    waterGrad.addColorStop(1, '#1c5a86');
-    ctx.fillStyle = waterGrad;
-    ctx.fillRect(0, 0, W, H);
-    // parildayan su cizgileri - waterPhase ile yavasca kayar
-    ctx.strokeStyle = 'rgba(255,255,255,.22)';
-    ctx.lineWidth = 3;
-    for (let row = -1; row * 34 < H + 40; row++) {
-      const y = ((row * 34 + waterPhase * 60) % (H + 80)) - 40;
-      ctx.beginPath();
-      for (let x = 0; x <= W; x += 14) ctx.lineTo(x, y + Math.sin(x * 0.05 + waterPhase * 2) * 4);
-      ctx.stroke();
+    ctx.translate(d.x, d.y);
+    ctx.scale(d.s, d.s);
+    if (d.kind === 'tree') {
+      ctx.fillStyle = 'rgba(0,0,0,.2)';
+      ctx.beginPath(); ctx.ellipse(6, 8, 20, 12, 0, 0, Math.PI * 2); ctx.fill();
+      const tones = d.v < 0.5 ? ['#2B7A3D', '#3C9A4E', '#63C06F'] : ['#2F6B34', '#3F8A44', '#7CC46B'];
+      ctx.fillStyle = tones[0];
+      ctx.beginPath(); ctx.arc(-7, 2, 12, 0, Math.PI * 2); ctx.arc(8, 3, 12, 0, Math.PI * 2); ctx.arc(0, -8, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = tones[1];
+      ctx.beginPath(); ctx.arc(-4, -3, 10, 0, Math.PI * 2); ctx.arc(6, -5, 9, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = tones[2];
+      ctx.beginPath(); ctx.arc(-3, -10, 5, 0, Math.PI * 2); ctx.fill();
+    } else if (d.kind === 'bush') {
+      ctx.fillStyle = 'rgba(0,0,0,.16)';
+      ctx.beginPath(); ctx.ellipse(3, 5, 13, 7, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#4FA35A';
+      ctx.beginPath(); ctx.arc(-6, 0, 7, 0, Math.PI * 2); ctx.arc(5, 0, 7, 0, Math.PI * 2); ctx.arc(0, -5, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#86D07A';
+      ctx.beginPath(); ctx.arc(-2, -7, 3, 0, Math.PI * 2); ctx.fill();
+    } else if (d.kind === 'flowers') {
+      const cols = ['#FF8FAB', '#FFD43B', '#FFFFFF'];
+      for (let i = 0; i < 4; i++) {
+        const fx = (i - 1.5) * 7;
+        const fy = (i % 2) * 5 - 2;
+        ctx.fillStyle = cols[(i + Math.floor(d.v * 3)) % 3];
+        ctx.beginPath(); ctx.arc(fx, fy, 3.2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#F59F00';
+        ctx.beginPath(); ctx.arc(fx, fy, 1.2, 0, Math.PI * 2); ctx.fill();
+      }
+    } else {
+      ctx.fillStyle = 'rgba(0,0,0,.18)';
+      ctx.beginPath(); ctx.ellipse(2, 4, 10, 5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#9AA0A6';
+      ctx.beginPath(); ctx.ellipse(0, 0, 9, 6, 0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#C4C9CE';
+      ctx.beginPath(); ctx.ellipse(-2, -2, 4, 2.5, 0.3, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
-    // kiyi cizgisi - kum/tas seridi, nehrin kenarini belirginlestirir
-    riverPath();
-    ctx.strokeStyle = '#e8d9a8';
-    ctx.lineWidth = 5;
-    ctx.stroke();
+  }
+  function drawItem(it) {
+    ctx.save();
+    if (it.type === 'rock') {
+      ctx.translate(it.x, it.y);
+      const rip = 1 + (Math.sin(waterPhase * 3 + it.x) + 1) * 0.08;
+      ctx.strokeStyle = 'rgba(255,255,255,.35)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(0, 4, it.r * 1.35 * rip, it.r * 0.7 * rip, 0, 0, Math.PI * 2); ctx.stroke();
+      const g = ctx.createRadialGradient(-it.r * 0.35, -it.r * 0.4, 2, 0, 0, it.r * 1.1);
+      g.addColorStop(0, '#B5A48F'); g.addColorStop(1, '#6A5A47');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      it.verts.forEach(([vx, vy], i) => (i ? ctx.lineTo(vx * it.r, vy * it.r) : ctx.moveTo(vx * it.r, vy * it.r)));
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(40,30,20,.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = 'rgba(90,150,70,.7)';
+      ctx.beginPath(); ctx.ellipse(it.r * 0.25, -it.r * 0.35, it.r * 0.35, it.r * 0.2, 0.4, 0, Math.PI * 2); ctx.fill();
+    } else if (it.type === 'fuel') {
+      ctx.translate(it.x, it.y);
+      const glow = 0.3 + (Math.sin(waterPhase * 5 + it.x) + 1) * 0.12;
+      ctx.fillStyle = `rgba(116,192,252,${glow})`;
+      ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI * 2); ctx.fill();
+      const cg = ctx.createLinearGradient(-11, 0, 11, 0);
+      cg.addColorStop(0, '#E03131'); cg.addColorStop(0.5, '#FF6B6B'); cg.addColorStop(1, '#C92A2A');
+      ctx.fillStyle = cg;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-11, -13, 22, 28, 5); else ctx.rect(-11, -13, 22, 28);
+      ctx.fill();
+      ctx.fillStyle = '#343A40';
+      ctx.fillRect(-4, -19, 8, 6);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath(); ctx.moveTo(0, -6); ctx.quadraticCurveTo(6, 3, 0, 8); ctx.quadraticCurveTo(-6, 3, 0, -6); ctx.fill();
+    } else if (it.type === 'coin') {
+      ctx.translate(it.x, it.y);
+      ctx.scale(Math.max(0.15, Math.abs(Math.cos(it.phase))), 1);
+      ctx.fillStyle = '#E8A500';
+      ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#FFD43B';
+      ctx.beginPath(); ctx.arc(0, 0, 9.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#FFF3BF';
+      ctx.beginPath();
+      for (let i = 0; i < 5; i++) {
+        const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+        ctx.lineTo(Math.cos(a) * 5.5, Math.sin(a) * 5.5);
+        ctx.lineTo(Math.cos(a + Math.PI / 5) * 2.4, Math.sin(a + Math.PI / 5) * 2.4);
+      }
+      ctx.closePath(); ctx.fill();
+    } else if (it.type === 'balloon') {
+      const by = it.y + Math.sin(it.bob) * 3;
+      ctx.translate(it.x, by);
+      ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(0, it.r * 1.1); ctx.quadraticCurveTo(5, it.r * 1.1 + 10, 0, it.r * 1.1 + 20); ctx.stroke();
+      ctx.fillStyle = 'rgba(0,0,0,.18)';
+      ctx.beginPath(); ctx.ellipse(4, it.r * 0.25 + 6, it.r, it.r * 1.1, 0, 0, Math.PI * 2); ctx.fill();
+      const g = ctx.createRadialGradient(-it.r * 0.35, -it.r * 0.45, 2, 0, 0, it.r * 1.2);
+      g.addColorStop(0, '#FFFFFF'); g.addColorStop(0.25, it.color); g.addColorStop(1, it.color);
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.ellipse(0, 0, it.r, it.r * 1.1, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = it.color;
+      ctx.beginPath(); ctx.moveTo(-4, it.r * 1.1 - 1); ctx.lineTo(4, it.r * 1.1 - 1); ctx.lineTo(0, it.r * 1.1 + 5); ctx.closePath(); ctx.fill();
+      ctx.font = '800 15px Fredoka, "Baloo 2", sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,.35)';
+      ctx.strokeText(it.word[0], 0, 1);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(it.word[0], 0, 1);
+    }
+    ctx.restore();
+  }
+  function drawPlayer() {
+    ctx.save();
+    ctx.translate(player.x, player.y);
+    // köpük izi (V dalga)
+    const wob = Math.sin(waterPhase * 12) * 2;
+    ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-10, 14); ctx.lineTo(-26 + wob, 58); ctx.moveTo(10, 14); ctx.lineTo(26 - wob, 58); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.moveTo(0, 22); ctx.lineTo(0, 64); ctx.stroke();
+    ctx.rotate(player.angle);
+    if (invuln > 0 && Math.floor(invuln * 12) % 2 === 0) ctx.globalAlpha = 0.35;
+    ctx.fillStyle = 'rgba(0,0,0,.22)';
+    ctx.beginPath(); ctx.ellipse(3, 8, 20, 26, 0, 0, Math.PI * 2); ctx.fill();
+    const hull = ctx.createLinearGradient(-18, 0, 18, 0);
+    hull.addColorStop(0, '#7B4A22'); hull.addColorStop(0.5, '#A8672F'); hull.addColorStop(1, '#6A3E1B');
+    ctx.fillStyle = hull;
+    ctx.beginPath();
+    ctx.moveTo(0, -30); ctx.quadraticCurveTo(20, -14, 18, 12); ctx.quadraticCurveTo(16, 24, 0, 26); ctx.quadraticCurveTo(-16, 24, -18, 12); ctx.quadraticCurveTo(-20, -14, 0, -30);
+    ctx.fill();
+    ctx.strokeStyle = '#F8F0E3'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(-17, 8); ctx.quadraticCurveTo(0, 12, 17, 8); ctx.stroke();
+    ctx.fillStyle = '#5A3417';
+    ctx.beginPath(); ctx.ellipse(0, 2, 11, 15, 0, 0, Math.PI * 2); ctx.fill();
+    if (boatImgReady) ctx.drawImage(boatImg, -21, -44, 42, 63);
+    ctx.restore();
+  }
+  function draw() {
+    if (!terrain.length) return;
+    ctx.save();
+    if (shakeTime > 0) {
+      const k = Math.min(1, shakeTime / 0.35);
+      ctx.translate((Math.random() - 0.5) * 12 * k, (Math.random() - 0.5) * 12 * k);
+    }
+    ctx.save();
+    ctx.translate(0, scrollTotal % 96);
+    ctx.fillStyle = grassPattern;
+    ctx.fillRect(-10, -106, W + 20, H + 212);
+    ctx.restore();
 
-    // teknenin arkasindaki dalga izi
-    trail.forEach((t) => {
-      ctx.globalAlpha = Math.max(0, t.life / 0.45) * 0.5;
-      ctx.fillStyle = '#EAF6FF';
-      ctx.beginPath(); ctx.ellipse(t.x, t.y, 10, 5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.lineJoin = 'round';
+    riverPath(); ctx.strokeStyle = '#B89B5E'; ctx.lineWidth = 30; ctx.stroke();
+    riverPath(); ctx.strokeStyle = '#E8D5A0'; ctx.lineWidth = 22; ctx.stroke();
+
+    ctx.save();
+    riverPath(); ctx.clip();
+    const wg = ctx.createLinearGradient(0, 0, 0, H);
+    wg.addColorStop(0, '#2F9BD6'); wg.addColorStop(1, '#17659E');
+    ctx.fillStyle = wg;
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(255,255,255,.14)'; ctx.lineWidth = 2;
+    const period = H + 80;
+    for (let row = 0; row * 40 < period; row++) {
+      const y = (((row * 40 + scrollTotal) % period) + period) % period - 40;
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 16) ctx.lineTo(x, y + Math.sin(x * 0.045 + waterPhase * 2 + row) * 4);
+      ctx.stroke();
+    }
+    for (let i = 0; i < 18; i++) {
+      const a = Math.sin(waterPhase * 2.4 + i * 1.7);
+      if (a < 0.55) continue;
+      const sx = (i * 137.5) % W;
+      const sy = (((i * 91 + scrollTotal * 0.6) % period) + period) % period - 40;
+      ctx.fillStyle = `rgba(255,255,255,${(a - 0.55) * 1.6})`;
+      ctx.fillRect(sx - 1, sy - 4, 2, 8);
+      ctx.fillRect(sx - 4, sy - 1, 8, 2);
+    }
+    ctx.restore();
+
+    riverPath();
+    ctx.setLineDash([12, 9]);
+    ctx.lineDashOffset = -scrollTotal;
+    ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    decor.forEach(drawDecor);
+    items.forEach(drawItem);
+
+    bullets.forEach((b) => {
+      ctx.fillStyle = 'rgba(111,66,193,.35)';
+      ctx.beginPath(); ctx.arc(b.x, b.y + 12, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#5F3DC4';
+      ctx.beginPath(); ctx.arc(b.x, b.y, 6.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.7)';
+      ctx.beginPath(); ctx.arc(b.x - 2, b.y - 2, 2, 0, Math.PI * 2); ctx.fill();
+    });
+
+    drawPlayer();
+
+    particles.forEach((p) => {
+      ctx.globalAlpha = Math.max(0, p.life / p.max);
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
     });
     ctx.globalAlpha = 1;
 
-    // ogeler
-    items.forEach((it) => {
-      ctx.save();
-      ctx.translate(it.x, it.y);
-      if (it.type === 'rock') {
-        const g = ctx.createRadialGradient(-5, -6, 2, 0, 0, 16);
-        g.addColorStop(0, '#a98c6a'); g.addColorStop(1, '#6e563b');
-        ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 1.5; ctx.stroke();
-      } else if (it.type === 'fuel') {
-        const pulse = 1 + Math.sin(waterPhase * 4 + it.x) * 0.06;
-        ctx.scale(pulse, pulse);
-        ctx.fillStyle = 'rgba(110,200,255,.35)';
-        ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI * 2); ctx.fill(); // hafif parlama halkasi
-        ctx.fillStyle = '#FFD75A';
-        ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-10, -14, 20, 28, 4) : ctx.rect(-10, -14, 20, 28); ctx.fill();
-        ctx.fillStyle = '#0b1e33'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('⛽', 0, 5);
-      } else if (it.type === 'balloon') {
-        ctx.beginPath(); ctx.moveTo(0, 15); ctx.lineTo(0, 26);
-        ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 1.5; ctx.stroke();
-        ctx.fillStyle = '#FF6B6B';
-        ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#B03A3A'; ctx.lineWidth = 2; ctx.stroke();
-        ctx.fillStyle = 'rgba(255,255,255,.55)';
-        ctx.beginPath(); ctx.ellipse(-5, -6, 4, 6, -0.4, 0, Math.PI * 2); ctx.fill();
-      } else { // star - nadir bonus, donen + nefes alan
-        const spin = waterPhase * 2.2;
-        const pulse = 1 + Math.sin(waterPhase * 5) * 0.12;
-        ctx.rotate(spin);
-        ctx.scale(pulse, pulse);
-        ctx.fillStyle = '#FFD75A';
-        ctx.shadowColor = 'rgba(255,215,90,.8)'; ctx.shadowBlur = 12;
-        ctx.beginPath();
-        for (let i = 0; i < 5; i++) {
-          const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
-          const a2 = a + Math.PI / 5;
-          ctx.lineTo(Math.cos(a) * 14, Math.sin(a) * 14);
-          ctx.lineTo(Math.cos(a2) * 6, Math.sin(a2) * 6);
-        }
-        ctx.closePath(); ctx.fill();
-        ctx.shadowBlur = 0;
-      }
-      ctx.restore();
+    floaters.forEach((f) => {
+      ctx.globalAlpha = Math.max(0, Math.min(1, f.life / f.max * 1.5));
+      ctx.font = `800 ${f.size}px Fredoka, "Baloo 2", sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,.55)';
+      ctx.strokeText(f.text, f.x, f.y);
+      ctx.fillStyle = f.color;
+      ctx.fillText(f.text, f.x, f.y);
     });
+    ctx.globalAlpha = 1;
+    ctx.restore();
 
-    // mermiler - kucuk alev izi
-    bullets.forEach((b) => {
-      ctx.fillStyle = 'rgba(255,215,90,.4)';
-      ctx.fillRect(b.x - 2, b.y + 4, 4, 10);
-      ctx.fillStyle = '#FFD75A';
-      ctx.fillRect(b.x - 3, b.y - 8, 6, 12);
-    });
-
-    // parcaciklar
-    particles.forEach((p) => {
-      ctx.globalAlpha = Math.max(0, p.life / 0.5);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(p.x - 3, p.y - 3, 6, 6);
-      ctx.globalAlpha = 1;
-    });
-
-    // oyuncu: gercek Aktapokus + basit tekne govdesi, donuslerde hafif yatiyor
-    ctx.save();
-    ctx.translate(player.x, player.y);
-    ctx.rotate(player.angle);
-    if (hitFlash > 0 && Math.floor(hitFlash * 30) % 2 === 0) ctx.globalAlpha = 0.4;
-    // tekne govdesi
-    ctx.fillStyle = '#C0392B';
-    ctx.beginPath();
-    ctx.moveTo(0, 20); ctx.lineTo(18, 10); ctx.lineTo(14, -4); ctx.lineTo(-14, -4); ctx.lineTo(-18, 10);
-    ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,.2)'; ctx.lineWidth = 1.5; ctx.stroke();
-    // Aktapokus - yuklendiyse gercek gorsel, yuklenmediyse basit yedek sekil
-    if (boatImgReady) {
-      const bw = 34, bh = 51;
-      ctx.drawImage(boatImg, -bw / 2, -bh - 6, bw, bh);
-    } else {
-      ctx.fillStyle = '#FFD75A';
-      ctx.beginPath(); ctx.arc(0, -18, 13, 0, Math.PI * 2); ctx.fill();
+    if (running && fuel < 25) {
+      const a = 0.18 + Math.sin(waterPhase * 8) * 0.1;
+      const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.75);
+      vg.addColorStop(0, 'rgba(255,0,0,0)'); vg.addColorStop(1, `rgba(255,40,40,${a})`);
+      ctx.fillStyle = vg;
+      ctx.fillRect(0, 0, W, H);
     }
-    ctx.restore();
-    ctx.restore();
   }
 
   function loop(ts) {
@@ -6191,16 +6776,79 @@ function startRiverGame(container, onExit) {
     const dt = Math.min(0.05, (ts - lastTime) / 1000);
     lastTime = ts;
     update(dt);
-    if (running) { draw(); rafId = requestAnimationFrame(loop); }
+    draw();
+    if (running) rafId = requestAnimationFrame(loop);
   }
 
-  function startRun() {
-    resetGame();
-    overlay.querySelector('#keRiverStartMsg').style.display = 'none';
-    overlay.querySelector('#keRiverOverMsg').style.display = 'none';
+  function beginRunning() {
     running = true;
+    paused = false;
     lastTime = null;
     rafId = requestAnimationFrame(loop);
+  }
+  function runCountdown(done) {
+    const el = $('keRiverCountdown');
+    const steps = ['3', '2', '1', L('BAŞLA!', 'GO!')];
+    let i = 0;
+    const tick = () => {
+      if (i >= steps.length) { el.className = 'ke-river-countdown'; el.textContent = ''; done(); return; }
+      el.textContent = steps[i];
+      el.className = 'ke-river-countdown';
+      void el.offsetWidth;
+      el.className = 'ke-river-countdown ke-show';
+      GameSfx.countdown(i === steps.length - 1);
+      i++;
+      countdownTimer = setTimeout(tick, i === steps.length ? 500 : 650);
+    };
+    tick();
+  }
+  function startRun() {
+    resetGame();
+    $('keRiverStartMsg').style.display = 'none';
+    $('keRiverOverMsg').style.display = 'none';
+    $('keRiverTarget').hidden = true;
+    draw();
+    runCountdown(() => { setTarget(); beginRunning(); });
+  }
+  function pauseGame() {
+    if (!running) return;
+    running = false;
+    paused = true;
+    if (rafId) cancelAnimationFrame(rafId);
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    $('keRiverPauseMsg').style.display = 'flex';
+  }
+  function resumeGame() {
+    if (!paused) return;
+    $('keRiverPauseMsg').style.display = 'none';
+    beginRunning();
+  }
+  function finishRun() {
+    running = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    const finalScore = Math.floor(score);
+    lastFinalScore = finalScore;
+    const isNewBest = RiverHighScore.submit(finalScore);
+    if (isNewBest) GameSfx.win(); else GameSfx.lose();
+    draw();
+    setTimeout(() => {
+      const stars = finalScore >= 900 ? 3 : finalScore >= 400 ? 2 : 1;
+      $('keRiverOverTitle').textContent = isNewBest ? `🏆 ${L('Yeni Rekor!', 'New Record!')}` : (hearts <= 0 ? `💥 ${L('Tekne battı!', 'Boat sank!')}` : `⛽ ${L('Yakıt bitti!', 'Out of fuel!')}`);
+      $('keRiverStars').innerHTML = gameStarsHTML(stars);
+      $('keRiverFinalScore').textContent = finalScore;
+      $('keRiverStatWords').textContent = wordsHit.length;
+      $('keRiverStatDist').textContent = `${Math.floor(distance / 12)} m`;
+      $('keRiverStatCoins').textContent = coinsGot;
+      const seen = new Set();
+      $('keRiverWordChips').innerHTML = wordsHit.filter((w) => !seen.has(w[0]) && seen.add(w[0])).map((w) => `<span class="ke-word-chip">${w[1]} ${w[0]}</span>`).join('');
+      const submitBtn = $('keRiverSubmitBtn');
+      submitBtn.disabled = finalScore <= 0;
+      submitBtn.style.display = '';
+      $('keRiverSubmitStatus').textContent = '';
+      $('keRiverAgainBtn').style.display = GameTokens.get() > 0 ? '' : 'none';
+      $('keRiverOverMsg').style.display = 'flex';
+      if (isNewBest) launchConfetti(overlay);
+    }, 650);
   }
 
   // --- kontroller ---
@@ -6208,6 +6856,7 @@ function startRiverGame(container, onExit) {
     if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
     if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
     if (e.key === ' ') { e.preventDefault(); shoot(); }
+    if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') { if (running) pauseGame(); else resumeGame(); }
   }
   function onKeyUp(e) {
     if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
@@ -6216,20 +6865,13 @@ function startRiverGame(container, onExit) {
   document.addEventListener('keydown', onKeyDown);
   document.addEventListener('keyup', onKeyUp);
 
-  // "tek parmakla ucak yonlenmeli diger parmakla ates edilmeli", "Apple
-  // versiyonunda basili tutunca gitmiyor" - eski uc-kucuk-yuvarlak-dugme
-  // semasi yerine tam yukseklikte iki gen dokunma bolgesi. Sol bolge:
-  // parmak SURUKLENDIGI kadar tekne kayar (mutlak konum degil, GORECELI
-  // delta - "parmagimin altinda" hissi verir, tek bir noktaya ziplama
-  // yok). setPointerCapture SAYESINDE parmak bolgenin disina tasa bile
-  // (kucuk dugmede oldugu gibi) hareket TAKIP EDILMEYE devam eder - eski
-  // pointerleave-ile-durma hatasi boylece ortadan kalkiyor.
-  const steerZone = overlay.querySelector('#keRiverSteerZone');
-  const fireZone = overlay.querySelector('#keRiverFireZone');
+  // Sol yarı: parmak sürüklendiği kadar tekne kayar (göreli delta, pointer
+  // capture ile parmak bölgeden taşsa da takip kesilmez). Sağ yarı: dokun-ateş.
+  const steerZone = $('keRiverSteerZone');
+  const fireZone = $('keRiverFireZone');
   let steerPointerId = null;
   let steerStartClientX = 0;
   let steerStartPlayerX = 0;
-  const STEER_SENSITIVITY = 1.6;
   steerZone.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     steerPointerId = e.pointerId;
@@ -6238,34 +6880,63 @@ function startRiverGame(container, onExit) {
     try { steerZone.setPointerCapture(e.pointerId); } catch (err) { /* yok say */ }
   });
   steerZone.addEventListener('pointermove', (e) => {
-    if (steerPointerId !== e.pointerId) return;
-    const delta = (e.clientX - steerStartClientX) * STEER_SENSITIVITY;
-    player.x = Math.max(18, Math.min(W - 18, steerStartPlayerX + delta));
-    keys.left = false; keys.right = false; // dogrudan konum sürüyoruz, klavye hizi devre disi
+    if (steerPointerId !== e.pointerId || !running) return;
+    player.x = Math.max(20, Math.min(W - 20, steerStartPlayerX + (e.clientX - steerStartClientX) * 1.6));
+    keys.left = false; keys.right = false;
   });
   const endSteer = (e) => { if (steerPointerId === e.pointerId) steerPointerId = null; };
   steerZone.addEventListener('pointerup', endSteer);
   steerZone.addEventListener('pointercancel', endSteer);
   fireZone.addEventListener('pointerdown', (e) => { e.preventDefault(); shoot(); });
 
+  const onVis = () => { if (document.hidden) pauseGame(); };
+  document.addEventListener('visibilitychange', onVis);
+  window.addEventListener('resize', resize);
+
   function cleanup() {
     running = false;
     if (rafId) cancelAnimationFrame(rafId);
+    if (countdownTimer) clearTimeout(countdownTimer);
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     document.removeEventListener('keydown', onKeyDown);
     document.removeEventListener('keyup', onKeyUp);
+    document.removeEventListener('visibilitychange', onVis);
     window.removeEventListener('resize', resize);
     overlay.remove();
   }
 
-  overlay.querySelector('#keRiverStartBtn').addEventListener('click', startRun);
-  overlay.querySelector('#keRiverClose').addEventListener('click', () => { cleanup(); onExit(); });
-  overlay.querySelector('#keRiverExitBtn').addEventListener('click', () => { cleanup(); onExit(); });
-  overlay.querySelector('#keRiverAgainBtn').addEventListener('click', () => {
+  wireMuteButton($('keRiverMute'));
+  $('keRiverSay').addEventListener('click', () => { if (target) speakWord(target[0], { classList: { add() {}, remove() {} } }); });
+  $('keRiverPause').addEventListener('click', () => { if (running) pauseGame(); else resumeGame(); });
+  $('keRiverResumeBtn').addEventListener('click', resumeGame);
+  $('keRiverQuitBtn').addEventListener('click', () => { cleanup(); onExit(); });
+  $('keRiverStartBtn').addEventListener('click', startRun);
+  $('keRiverClose').addEventListener('click', () => { cleanup(); onExit(); });
+  $('keRiverExitBtn').addEventListener('click', () => { cleanup(); onExit(); });
+  $('keRiverAgainBtn').addEventListener('click', () => {
     if (!GameTokens.spend()) return;
     refreshGameBadge(container);
     startRun();
   });
+  // Bu buton önceden hiçbir şeye bağlı değildi (tıklayınca hiçbir şey olmuyordu).
+  $('keRiverSubmitBtn').addEventListener('click', async () => {
+    const btn = $('keRiverSubmitBtn');
+    const status = $('keRiverSubmitStatus');
+    btn.disabled = true;
+    status.textContent = `⏳ ${L('Gönderiliyor...', 'Sending...')}`;
+    try {
+      await Leaderboard.submit(Profiles.active().name || 'Friend', lastFinalScore, 'river');
+      status.textContent = `✅ ${L('Sıralamaya eklendi!', 'Added to the leaderboard!')}`;
+      btn.style.display = 'none';
+    } catch (e) {
+      status.textContent = e && e.message === 'name-not-allowed'
+        ? `⚠️ ${L('Bu isim kullanılamıyor, profilden değiştir.', "This name can't be used — change it in your profile.")}`
+        : `⚠️ ${L('Gönderilemedi, internetini kontrol et.', "Couldn't send — check your connection.")}`;
+      btn.disabled = false;
+    }
+  });
 
+  resize();
   resetGame();
   draw();
 }
