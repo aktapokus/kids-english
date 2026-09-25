@@ -1909,6 +1909,62 @@ ${FONT_FACES}
   .ke-bonus-choice.ke-bonus-wrong{ background:#FFEDED !important; border-color:#E5484D !important; opacity:.7; }
   .ke-bonus-card p{ font-size:14.5px; font-weight:700; margin:0 0 14px; }
   .ke-profile-chip .ke-avatar-mini{ position:relative; width:34px; height:34px; flex:none; }
+  /* ---- UX paketi: alt gezinme, karsilama, ebeveyn, tepki, sohbet ---- */
+  .ke-bnav{
+    position:sticky; bottom:0; z-index:40; display:grid; grid-template-columns:repeat(4,1fr); gap:4px;
+    margin:18px -16px 0; padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));
+    background:rgba(18,26,22,.94); border-top:2px solid rgba(255,255,255,.14); backdrop-filter:blur(6px);
+  }
+  .ke-shell .ke-bnav-btn{
+    display:flex; flex-direction:column; align-items:center; gap:1px; min-height:52px; padding:4px 2px !important;
+    background:transparent !important; box-shadow:none !important; border:none !important; top:0 !important;
+    color:var(--kb-chalk-dim,#ccc) !important; font-size:11.5px !important; font-weight:800 !important; border-radius:14px !important;
+  }
+  .ke-bnav-btn span{ font-size:21px; line-height:1.1; }
+  .ke-shell .ke-bnav-btn.ke-sel{ color:#3a2a00 !important; background:#FFD84D !important; }
+  .ke-shell .ke-say-btn{
+    display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; min-width:34px; margin-left:6px;
+    padding:0 !important; border-radius:50% !important; font-size:16px !important; vertical-align:middle;
+    background:rgba(0,0,0,.08) !important; box-shadow:none !important; border:none !important; top:0 !important;
+  }
+  .ke-welcome{ max-width:460px; margin:0 auto; text-align:center; display:flex; flex-direction:column; align-items:center; gap:10px; padding-top:44px; position:relative; z-index:1; }
+  .ke-welcome-lang{ display:flex; gap:8px; }
+  .ke-welcome-bubble{ position:relative; background:#FFFDF4; color:#233; border-radius:22px; padding:12px 16px; text-align:left; font-weight:700; font-size:15.5px; line-height:1.4; box-shadow:0 5px 0 rgba(0,0,0,.25); }
+  .ke-welcome-bubble p{ margin:0 0 6px; } .ke-welcome-bubble p:first-child{ font-size:19px; font-weight:800; }
+  .ke-welcome-bubble::before{ content:''; position:absolute; top:-12px; left:50%; margin-left:-12px; border:12px solid transparent; border-top:0; border-bottom-color:#FFFDF4; }
+  .ke-welcome-steps{ display:flex; gap:6px; } .ke-welcome-steps i{ width:28px; height:6px; border-radius:3px; background:rgba(255,255,255,.25); } .ke-welcome-steps i.on{ background:#FFD84D; }
+  .ke-shell .ke-welcome-go{ width:min(320px,100%); min-height:58px; font-size:20px !important; font-weight:800 !important; border-radius:18px !important; background:#FFD84D !important; color:#3a2a00 !important; border:none !important; box-shadow:0 6px 0 #C99A12 !important; }
+  .ke-parent-gate{ max-width:320px; text-align:center; }
+  .ke-parent-q{ font-size:34px; font-weight:800; margin:8px 0; }
+  .ke-parent-card{ margin-bottom:12px; }
+  .ke-parent-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:8px 0; text-align:center; }
+  .ke-parent-grid b{ display:block; font-size:22px; color:var(--kb-chalk,#fff); } .ke-parent-grid span{ font-size:11px; font-weight:700; color:var(--kb-chalk-dim,#ccc); }
+  .ke-parent-p{ font-size:14px; font-weight:600; color:var(--kb-chalk,#fff); margin:6px 0; line-height:1.45; }
+  .ke-parent-note{ font-size:11.5px; font-weight:600; color:var(--kb-chalk-dim,#ccc); margin:4px 0 0; }
+  .ke-parent-hard{ list-style:none; padding:0; margin:6px 0 0; display:grid; gap:4px; }
+  .ke-parent-hard li{ font-size:13.5px; color:var(--kb-chalk,#fff); } .ke-parent-hard span{ opacity:.8; } .ke-parent-hard small{ opacity:.6; }
+  .ke-quickmenu-tile.qm-parent{ background:#6D4C9E !important; --btn-shadow:#533a7a; }
+  .ke-react{
+    position:absolute; right:10px; top:10px; z-index:30; display:flex; align-items:center; gap:6px; pointer-events:none;
+    background:#fff; color:#233; border-radius:999px; padding:4px 12px 4px 4px; font-weight:800; font-size:15px;
+    box-shadow:0 4px 0 rgba(0,0,0,.2); animation:ke-react-in .35s cubic-bezier(.3,1.6,.5,1);
+  }
+  .ke-react.good{ border:3px solid #4CAF50; } .ke-react.bad{ border:3px solid #FFB020; }
+  .ke-react.out{ opacity:0; transform:translateY(-8px); transition:all .35s; }
+  .ke-react-av{ width:34px; height:34px; }
+  @keyframes ke-react-in{ from{ transform:scale(.5); opacity:0; } to{ transform:none; opacity:1; } }
+  .ke-chat{ display:flex; flex-direction:column; gap:6px; width:100%; max-width:460px; margin:6px auto; max-height:210px; overflow:auto; }
+  .ke-chat-row{ display:flex; align-items:flex-end; gap:6px; }
+  .ke-chat-row.me{ justify-content:flex-end; }
+  .ke-chat-who{ width:34px; height:34px; flex:none; border-radius:50%; background:#FFD84D; display:flex; align-items:center; justify-content:center; font-size:19px; }
+  .ke-chat-av{ width:34px; height:34px; }
+  .ke-chat-b{ max-width:78%; padding:8px 12px; border-radius:18px; font-weight:700; font-size:15px; line-height:1.3; text-align:left; }
+  .ke-chat-row.bot .ke-chat-b{ background:#fff; color:#233; border-bottom-left-radius:6px; }
+  .ke-chat-row.me .ke-chat-b{ background:#DDF5D0; color:#1f4a17; border-bottom-right-radius:6px; }
+  .ke-shell .ke-chat-mic{ margin:4px auto; font-size:14px !important; }
+  .ke-jr-story{ display:flex; align-items:center; gap:10px; margin:0 auto 18px; max-width:300px; text-align:left; padding:8px 12px !important; border-radius:16px !important; background:linear-gradient(135deg,#8D6E63,#5D4037) !important; color:#fff !important; border:2px solid rgba(255,255,255,.5) !important; box-shadow:0 4px 0 rgba(0,0,0,.3) !important; top:0 !important; position:relative; }
+  .ke-jr-story.locked{ opacity:.55; }
+  .ke-jr-story-ic{ font-size:26px; } .ke-jr-story b{ display:block; font-size:13px; } .ke-jr-story small{ font-size:12px; font-weight:700; opacity:.9; }
   /* ---- Uzay Yolculugu ---- */
   .ke-journey{ max-width:560px; margin:0 auto; text-align:center; position:relative; z-index:1; }
   .ke-jr-hint{ font-size:12.5px; font-weight:700; color:var(--kb-chalk-dim,#ccc); margin:0 auto 10px; max-width:420px; line-height:1.4; }
@@ -2525,7 +2581,13 @@ const LANG_KEY = 'ke_lang';
 let _lang = 'en';
 try { _lang = window.localStorage.getItem(LANG_KEY) === 'tr' ? 'tr' : 'en'; } catch (e) { /* yok say */ }
 function L(tr, en) { return _lang === 'tr' ? tr : en; }
-function setLang(l) { _lang = l === 'tr' ? 'tr' : 'en'; try { window.localStorage.setItem(LANG_KEY, _lang); } catch (e) { /* yok say */ } }
+// lang ozelligi CSS text-transform:uppercase'in Turkce i->İ kuralini
+// uygulamasi icin gerekli ("SEVIYE" yerine "SEVİYE").
+function setLang(l) {
+  _lang = l === 'tr' ? 'tr' : 'en';
+  try { window.localStorage.setItem(LANG_KEY, _lang); } catch (e) { /* yok say */ }
+  document.querySelectorAll('.ke-shell').forEach((el) => el.setAttribute('lang', _lang));
+}
 function catLabel(c) {
   const parts = c.title.split('–');
   return _lang === 'tr' && parts[1] ? parts[1].trim() : parts[0].trim();
@@ -2967,7 +3029,7 @@ export async function mount(container, api, toolId) {
     });
   });
   container.innerHTML = STYLE + `
-    <div class="ke-shell notranslate" translate="no">
+    <div class="ke-shell notranslate" translate="no" lang="${_lang}">
       <button class="ke-fullscreen-btn" id="keFullscreenBtn" title="${L('Tam ekran', 'Full screen')}" aria-label="${L('Tam ekran', 'Full screen')}">${ICON_EXPAND}<span id="keFullscreenLabel">${L('Tam Ekran', 'Full screen')}</span></button>
       <div class="ke-screen-host" id="keScreenHost"></div>
     </div>
@@ -3009,7 +3071,7 @@ export async function mount(container, api, toolId) {
   }
 
   if (Profiles.exists()) resumeLastScreen(container, api, toolId, categories);
-  else showProfileScreen(container, api, toolId, categories, { first: true });
+  else showWelcome(container, api, toolId, categories);
   // Guard, ILK render'DAN SONRA kuruluyor - once .ke-carnival-hero/
   // .ke-profile-screen'in kendisi "yeni bir ekrana gecis" sanilip
   // 350ms'lik dokunma-yutma penceresi aciliyordu, TAM DA kullanicinin
@@ -3224,6 +3286,7 @@ function showQuickMenu(container, api, toolId, categories) {
         <button type="button" class="ke-quickmenu-tile qm-lang" id="keQmLang"><span class="qm-ico">🌐</span>${_lang === 'tr' ? 'English' : 'Türkçe'}</button>
         <button type="button" class="ke-quickmenu-tile qm-rank" id="keQmRank"><span class="qm-ico">🏆</span>${L('Sıralama', 'Leaderboard')}</button>
         <button type="button" class="ke-quickmenu-tile qm-guide" id="keQmGuide"><span class="qm-ico">📖</span>${L('Kılavuz', 'Guide')}</button>
+        <button type="button" class="ke-quickmenu-tile qm-parent" id="keQmParent"><span class="qm-ico">👪</span>${L('Ebeveyn', 'Parent')}</button>
       </div>
       <div id="keQmSoundInfo" style="margin-top:2px;font-size:11.5px;color:var(--kb-chalk-dim);font-weight:700;"></div>
       ${window.KE_STATIC ? `<div style="margin-top:10px;font-size:12.5px;font-weight:700;"><a href="privacy.html" style="color:var(--kb-chalk-dim);">${L('Gizlilik', 'Privacy')}</a> · <a href="${reportProblemHref()}" style="color:var(--kb-chalk-dim);">${L('Sorun bildir', 'Report a problem')}</a> · <a href="teacher.html" target="_blank" rel="noopener noreferrer" style="color:var(--kb-chalk-dim);">${L('Öğretmen Paneli', 'Teacher Portal')}</a></div>` : ''}
@@ -3236,6 +3299,7 @@ function showQuickMenu(container, api, toolId, categories) {
   const close = () => { overlay.classList.remove('ke-show'); setTimeout(() => overlay.remove(), 250); };
   overlay.querySelector('#keQmAvatar').addEventListener('click', () => { close(); showProfileScreen(container, api, toolId, categories, {}); });
   overlay.querySelector('#keQmProgress').addEventListener('click', () => { close(); showStatsScreen(container, api, toolId, categories); });
+  overlay.querySelector('#keQmParent').addEventListener('click', () => { close(); showParentGate(container, api, toolId, categories); });
   overlay.querySelector('#keQmGame').addEventListener('click', () => {
     if (PendingQuiz.get() > 0) {
       close();
@@ -3386,7 +3450,9 @@ function showSectionMenu(container, api, toolId, categories) {
     ${dueTotal ? `<button type="button" class="ke-due-chip" id="keDueChip">🔁 ${L(`Bugün ${dueTotal} kelime tekrar`, `${dueTotal} words to review today`)} <span>→</span></button>` : ''}
     <h2 class="ke-lib-head">📚 ${L('Kütüphane', 'Library')} <span>${L('serbest çalışma — istediğin konuyu seç', 'free practice — pick any topic')}</span></h2>
     <div class="ke-category-grid ke-lib-grid" id="keSectionGrid"></div>
+    ${bottomNavHTML('home')}
   `;
+  wireBottomNav(host, container, api, toolId, categories);
   wireJourneyHomeCard(host, container, api, toolId, categories);
   const dueChip = host.querySelector('#keDueChip');
   if (dueChip) dueChip.addEventListener('click', () => { const c = dueByCat[0][0]; startReviewSession(container, api, toolId, categories, c.id, c.title); });
@@ -3690,7 +3756,8 @@ function showJourney(container, api, toolId, categories) {
         <span class="ke-jr-st-emoji">${sx.sec.emoji}</span>
         <div><b>${L(sx.sec.tr, sx.sec.en)}</b><span>${reached ? L(`${sx.sec.level} tamamlandı! 🏅`, `${sx.sec.level} complete! 🏅`) : L(`Seviye durağı · ${sx.sec.level}`, `Level stop · ${sx.sec.level}`)}</span></div>
         <span class="ke-jr-st-medal">${reached ? '🏅' : '🔒'}</span>
-      </div>`);
+      </div>
+      <div class="ke-jr-story-slot" data-story-slot="${sx.si + 1}"></div>`);
   });
   host.innerHTML = `
     <button class="ke-back-btn" id="keJourneyBack">${ICON_BACK} ${L('Ana Ekran', 'Home')}</button>
@@ -3700,10 +3767,13 @@ function showJourney(container, api, toolId, categories) {
       <p class="ke-jr-hint">${L('Geçtiğin gezegenlere dokunup tekrar oynayabilirsin. Kilitli bir gezegene atlamak için atlama sınavını geçebilirsin.', 'Tap any planet you have visited to play it again. To jump to a locked planet, pass the jump test.')}</p>
       <div class="ke-jr-path" id="keJrPath">
         <svg class="ke-jr-trail" id="keJrTrail" aria-hidden="true"></svg>
-        <div class="ke-jr-start">🌍 ${L('Kalkış', 'Launch')}</div>
+        <div class="ke-jr-start">🌊 ${L('Kalkış: Aktapokus’un okyanustaki evi', 'Launch: Aktapokus’s home in the ocean')}</div>
+        <div class="ke-jr-story-slot" data-story-slot="0"></div>
         ${nodes.join('')}
       </div>
-    </div>`;
+    </div>
+    ${bottomNavHTML('map')}`;
+  wireBottomNav(host, container, api, toolId, categories);
   host.querySelector('#keJourneyBack').addEventListener('click', () => { _journeyMode = false; showSectionMenu(container, api, toolId, categories); });
   pushBackState(() => { _journeyMode = false; showSectionMenu(container, api, toolId, categories); });
 
@@ -3712,6 +3782,25 @@ function showJourney(container, api, toolId, categories) {
     showPlanetSheet(container, api, toolId, categories, p, st);
   }));
 
+  // Macera Kitabi: k. hikaye bolumu k. istasyondan sonra acilir (0 = kalkis).
+  // Hikayeler ayri veri kaynagindan geldigi icin sonradan yerlestiriliyor.
+  api.apiFetch(`/api/tools/${toolId}/stories`).then((r) => (r.ok ? r.json() : [])).then((stories) => {
+    (stories || []).forEach((sto, k) => {
+      const slot = host.querySelector(`[data-story-slot="${k}"]`);
+      if (!slot) return;
+      const open = k === 0 || (st.sectors[k - 1] && st.sectors[k - 1].cleared);
+      const read = Progress.getCategory('story_' + sto.id).completed.length > 0;
+      slot.innerHTML = `<button type="button" class="ke-jr-story${open ? '' : ' locked'}" data-story="${sto.id}">
+        <span class="ke-jr-story-ic">${open ? '📖' : '🔒'}</span>
+        <span><b>${L('Macera Kitabı', 'Adventure Book')} · ${escapeProfileText(sto.episode_label || '')}${read ? ' ⭐' : ''}</b><small>${escapeProfileText(_lang === 'tr' ? (sto.title_tr || sto.title) : sto.title)}</small></span></button>`;
+      slot.querySelector('button').addEventListener('click', () => {
+        if (!open) { showJourneyToast(container, L('Bu bölüm bir önceki istasyona ulaşınca açılır 🔒', 'This chapter opens when you reach the previous station 🔒')); return; }
+        _journeyMode = true;
+        showStoryReader(container, api, toolId, categories, sto.id);
+      });
+    });
+    drawTrail();
+  }).catch(() => { /* hikaye yoksa harita aynen calisir */ });
   const pathEl = host.querySelector('#keJrPath');
   const drawTrail = () => {
     const svg = host.querySelector('#keJrTrail');
@@ -3964,6 +4053,185 @@ async function startSkipTest(container, api, toolId, categories, target, st) {
   ask();
 }
 
+
+// ---- UX: alt gezinme cubugu (basparmak bolgesi) ----
+// Ekranin kendi HTML'inin sonuna ekleniyor (position:sticky) - boylece
+// bolum/oyun/hikaye gibi tam ekran akislara gecince kendiliginden kayboluyor.
+function bottomNavHTML(active) {
+  const items = [
+    ['home', '🏠', L('Ana', 'Home')],
+    ['map', '🗺️', L('Harita', 'Map')],
+    ['avatar', '🎨', L('Avatar', 'Avatar')],
+    ['stats', '📊', L('İlerleme', 'Progress')],
+  ];
+  return `<nav class="ke-bnav" aria-label="${L('Gezinme', 'Navigation')}">${items.map(([k, ic, lb]) => `<button type="button" class="ke-bnav-btn${k === active ? ' ke-sel' : ''}" data-nav="${k}" ${k === active ? 'aria-current="page"' : ''}><span>${ic}</span>${lb}</button>`).join('')}</nav>`;
+}
+function wireBottomNav(host, container, api, toolId, categories) {
+  host.querySelectorAll('[data-nav]').forEach((b) => b.addEventListener('click', () => {
+    if (b.classList.contains('ke-sel')) return;
+    const k = b.dataset.nav;
+    if (k === 'home') showSectionMenu(container, api, toolId, categories);
+    else if (k === 'map') showJourney(container, api, toolId, categories);
+    else if (k === 'avatar') showProfileScreen(container, api, toolId, categories, {});
+    else if (k === 'stats') showStatsScreen(container, api, toolId, categories);
+  }));
+}
+
+// Turkce/Ingilizce yonergeyi sesli okur (madde 3: "yonergeler sesli").
+function speakUI(text) {
+  if (!('speechSynthesis' in window) || !text) return;
+  const synth = window.speechSynthesis;
+  synth.cancel();
+  const u = new SpeechSynthesisUtterance(String(text).replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/gu, ''));
+  u.lang = _lang === 'tr' ? 'tr-TR' : 'en-US';
+  const v = synth.getVoices().find((x) => x.lang && x.lang.toLowerCase().startsWith(_lang === 'tr' ? 'tr' : 'en'));
+  if (v) u.voice = v;
+  u.rate = 0.95;
+  synth.speak(u);
+}
+// Bir konusma balonuna kucuk 🔊 dugmesi ekler; metin degisse de guncel
+// metni okur.
+function addSpeakButton(el) {
+  if (!el || el.querySelector('.ke-say-btn')) return;
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'ke-say-btn'; b.textContent = '🔊';
+  b.setAttribute('aria-label', L('Sesli oku', 'Read aloud'));
+  b.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const t = [...el.childNodes].filter((n) => n !== b).map((n) => n.textContent).join(' ');
+    speakUI(t);
+  });
+  el.appendChild(b);
+  // textContent ile metin degistirilince dugme silinir - geri ekle
+  new MutationObserver(() => { if (!el.contains(b)) el.appendChild(b); }).observe(el, { childList: true });
+}
+
+// ---- UX madde 1 + 10: ilk 5 saniye - karsilama ve hikaye ----
+// Aktapokus okyanustaki evinde yasayan bir ahtapot; Kelime Yildizlari
+// uzaya sacilmis, onlari toplamak icin bir kasif ariyor. Macera Kitabi
+// (Story Time) bu yolculugun hikayesini anlatiyor.
+function showWelcome(container, api, toolId, categories) {
+  const host = container.querySelector('#keScreenHost');
+  const demo = Object.assign({ id: 'p0', name: '' }, AVATAR_DEFAULTS, { scene: 'space', item: 'star' });
+  const lines = () => [
+    L('Merhaba! Ben Aktapokus 🐙', "Hi! I'm Aktapokus 🐙"),
+    L('Kelime Yıldızları uzaya dağıldı! Onları toplamak için bir kâşif arıyorum.', 'The Word Stars are scattered across space! I need an explorer to collect them.'),
+    L('Her gezegende yeni İngilizce kelimeler var. Benimle gelir misin?', 'Every planet has new English words. Will you come with me?'),
+  ];
+  host.innerHTML = `
+    <div class="ke-welcome">
+      <div class="ke-welcome-lang">
+        <button type="button" class="ke-pick${_lang === 'tr' ? ' ke-sel' : ''}" data-lang="tr">🇹🇷 Türkçe</button>
+        <button type="button" class="ke-pick${_lang === 'en' ? ' ke-sel' : ''}" data-lang="en">🇬🇧 English</button>
+      </div>
+      ${avatarStageHTML(demo)}
+      <div class="ke-welcome-bubble" id="keWelcomeBubble">${lines().map((t) => `<p>${t}</p>`).join('')}</div>
+      <div class="ke-welcome-steps" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+      <button type="button" class="ke-welcome-go" id="keWelcomeGo">${L('Evet, gidelim! 🚀', "Yes, let's go! 🚀")}</button>
+    </div>`;
+  addSpeakButton(host.querySelector('#keWelcomeBubble'));
+  host.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); showWelcome(container, api, toolId, categories); }));
+  host.querySelector('#keWelcomeGo').addEventListener('click', () => showProfileScreen(container, api, toolId, categories, { first: true }));
+}
+
+// ---- UX madde 9: ebeveyn alani ----
+function showParentGate(container, api, toolId, categories) {
+  const a = 3 + Math.floor(Math.random() * 7), b = 4 + Math.floor(Math.random() * 6);
+  const shell = container.querySelector('.ke-shell');
+  const ov = document.createElement('div');
+  ov.className = 'ke-river-overlay-msg ke-jr-sheet';
+  ov.style.position = 'fixed'; ov.style.zIndex = '95';
+  ov.innerHTML = `
+    <div class="ke-river-msg-card ke-parent-gate">
+      <h2>👪 ${L('Ebeveyn Alanı', 'Parent Area')}</h2>
+      <p>${L('Devam etmek için soruyu cevaplayın:', 'Answer to continue:')}</p>
+      <div class="ke-parent-q">${a} × ${b} = ?</div>
+      <input id="keGateIn" class="ke-profile-name" inputmode="numeric" maxlength="3" autocomplete="off" style="color:#233;border-color:#bbb;background:#fff;" />
+      <div id="keGateMsg" style="min-height:18px;font-size:12.5px;font-weight:700;color:#c33;"></div>
+      <div class="ke-btn-row">
+        <button type="button" class="ke-btn-secondary" id="keGateNo">${L('Vazgeç', 'Cancel')}</button>
+        <button type="button" class="ke-btn-primary" id="keGateOk">${L('Aç', 'Open')}</button>
+      </div>
+    </div>`;
+  shell.appendChild(ov);
+  const inp = ov.querySelector('#keGateIn');
+  inp.focus();
+  const ok = () => {
+    if (Number(inp.value) === a * b) { ov.remove(); showParentArea(container, api, toolId, categories); }
+    else { ov.querySelector('#keGateMsg').textContent = L('Yanlış cevap', 'Wrong answer'); inp.value = ''; }
+  };
+  ov.querySelector('#keGateOk').addEventListener('click', ok);
+  inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') ok(); });
+  ov.querySelector('#keGateNo').addEventListener('click', () => ov.remove());
+}
+
+async function showParentArea(container, api, toolId, categories) {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  const host = container.querySelector('#keScreenHost');
+  const back = () => showSectionMenu(container, api, toolId, categories);
+  host.innerHTML = `
+    <button class="ke-back-btn" id="keParentBack">${ICON_BACK} ${L('Ana Ekran', 'Home')}</button>
+    <div class="ke-profile-screen ke-parent" style="max-width:640px;">
+      <h1 class="ke-title">${bubbleTitleHTML(L('Ebeveyn Alanı', 'Parent Area'))}</h1>
+      <div id="keParentBody">${L('Yükleniyor…', 'Loading…')}</div>
+    </div>`;
+  host.querySelector('#keParentBack').addEventListener('click', back);
+  pushBackState(back);
+  const p = Profiles.active();
+  const kpi = await computeKPIs(p.id);
+  const st = Journey.state(categories);
+  const cur = st.list[st.current];
+  const mins = Math.floor(kpi.timeSeconds / 60);
+  let today = 0;
+  try { today = Math.floor((TodayTime.get ? TodayTime.get() : 0) / 60); } catch (e) { today = 0; }
+  // En cok zorlanilan kelimeler: tum kategorilerde yanlis sayisina gore
+  const hard = [];
+  categories.forEach((c) => {
+    const m = Progress.getCategory(c.id).missed || {};
+    Object.values(m).forEach((e) => { if (e && e.obj) hard.push({ word: e.obj.word, tr: e.obj.tr, n: e.count, cat: catLabel(c) }); });
+  });
+  hard.sort((x, y) => y.n - x.n);
+  const cls = Classroom.get();
+  const dayLetters = L('PSÇPCCP', 'MTWTFSS').split('');
+  const body = host.querySelector('#keParentBody');
+  body.innerHTML = `
+    <div class="ke-week-card ke-parent-card">
+      <div class="ke-kpi-lbl">${L('Bu hafta', 'This week')} · ${escapeProfileText(p.name || '')}</div>
+      <div class="ke-parent-grid">
+        <div><b>${kpi.thisWeek}</b><span>${L('cevap', 'answers')}</span></div>
+        <div><b>${kpi.accuracy === null ? '—' : kpi.accuracy + '%'}</b><span>${L('doğruluk', 'accuracy')}</span></div>
+        <div><b>${kpi.streak}</b><span>${L('gün seri', 'day streak')}</span></div>
+        <div><b>${mins}</b><span>${L('dk toplam', 'min total')}</span></div>
+      </div>
+      <div class="ke-spark-row">${kpi.last7.map((n, i) => `<div class="ke-spark-col"><div class="ke-spark-bar${i === 6 ? ' ke-spark-today' : ''}" style="height:${Math.max(6, Math.round(n / Math.max(1, ...kpi.last7) * 44))}px" title="${n}"></div><div class="ke-spark-day">${dayLetters[i]}</div></div>`).join('')}</div>
+    </div>
+    <div class="ke-week-card ke-parent-card">
+      <div class="ke-kpi-lbl">🚀 ${L('Seviye ve konum', 'Level and position')}</div>
+      <p class="ke-parent-p">${cur ? L(`Şu an <b>${planetName(cur)}</b> gezegeninde (${cur.sector.level} · ${cur.sector.tr} yolunda). ${st.cleared}/${st.list.length} gezegen tamamlandı; ${kpi.puzzlesCompleted} bölüm bitirildi.`, `Currently on <b>${planetName(cur)}</b> (${cur.sector.level}, on the way to ${cur.sector.en}). ${st.cleared}/${st.list.length} planets done; ${kpi.puzzlesCompleted} episodes finished.`) : ''}</p>
+      <p class="ke-parent-note">${L('Seviye etiketleri (A1 · 1 gibi) uygulama içi duraklardır; resmi bir CEFR sınav sonucu değildir.', 'Level tags (e.g. A1 · 1) are in-app stops, not an official CEFR test result.')}</p>
+    </div>
+    <div class="ke-week-card ke-parent-card">
+      <div class="ke-kpi-lbl">🔁 ${L('En çok zorlandığı kelimeler', 'Hardest words')}</div>
+      ${hard.length ? `<ul class="ke-parent-hard">${hard.slice(0, 12).map((h) => `<li><b>${escapeProfileText(h.word)}</b> <span>${escapeProfileText(h.tr || '')}</span> <small>×${h.n} · ${escapeProfileText(h.cat)}</small></li>`).join('')}</ul>` : `<p class="ke-parent-p">${L('Henüz zorlandığı kelime yok 👍', 'No difficult words yet 👍')}</p>`}
+    </div>
+    <div class="ke-week-card ke-parent-card">
+      <div class="ke-kpi-lbl">🏫 ${L('Öğretmen sınıfı', 'Teacher class')}</div>
+      <p class="ke-parent-p">${cls.code ? `${escapeProfileText(cls.className || cls.code)} · ${classSyncLabel(cls)}` : L('Bir sınıfa katılmamış. Öğretmeniniz sınıf kodu verdiyse Avatar ekranının altından katılabilirsiniz.', 'Not in a class. If the teacher gave a class code, join from the bottom of the Avatar screen.')}</p>
+    </div>
+    <div class="ke-week-card ke-parent-card">
+      <div class="ke-kpi-lbl">💾 ${L('Yedekleme', 'Backup')}</div>
+      <div class="ke-pick-row" style="justify-content:flex-start;">
+        <button type="button" class="ke-pick" id="keParentExport">${L('Yedek indir', 'Download backup')}</button>
+        <label class="ke-pick" for="keParentImport" style="cursor:pointer;">${L('Yedek yükle', 'Restore backup')}</label>
+        <input type="file" id="keParentImport" accept="application/json" style="display:none;" />
+      </div>
+      <p class="ke-parent-note">${L('İlerleme bu cihazda saklanır; sınıfa katıldıysanız yalnızca özet ilerleme öğretmene gider.', 'Progress is stored on this device; if in a class, only a progress summary goes to the teacher.')}</p>
+    </div>`;
+  void today;
+  host.querySelector('#keParentExport').addEventListener('click', exportBackup);
+  host.querySelector('#keParentImport').addEventListener('change', (e) => importBackup(e.target.files[0]));
+}
+
 async function showStatsScreen(container, api, toolId, categories) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   const host = container.querySelector('#keScreenHost');
@@ -3973,7 +4241,9 @@ async function showStatsScreen(container, api, toolId, categories) {
       <h1 class="ke-title">${bubbleTitleHTML(L('Başarı Panom', 'My Achievements'))}</h1>
       <div id="keStatsBody">${L('Yükleniyor…', 'Loading…')}</div>
     </div>
+    ${bottomNavHTML('stats')}
   `;
+  wireBottomNav(host, container, api, toolId, categories);
   host.querySelector('#keStatsBack').addEventListener('click', () => showSectionMenu(container, api, toolId, categories));
   pushBackState(() => showSectionMenu(container, api, toolId, categories));
 
@@ -4189,7 +4459,9 @@ function showProfileScreen(container, api, toolId, categories, opts) {
                </div>
                <div id="keClassMsg" style="min-height:16px;font-size:11.5px;font-weight:700;color:var(--kb-chalk-dim);margin-top:4px;"></div>`;
         })()}
-      </div>`;
+      </div>
+      ${first || creating ? '' : bottomNavHTML('avatar')}`;
+    wireBottomNav(host, container, api, toolId, categories);
     const nameEl = host.querySelector('#keProfileName');
     nameEl.addEventListener('input', () => { draft.name = nameEl.value; });
     host.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => { tab = b.dataset.tab; msg = ''; draw(); }));
@@ -4213,6 +4485,10 @@ function showProfileScreen(container, api, toolId, categories, opts) {
     host.querySelector('#keProfileSave').addEventListener('click', () => {
       draft.name = (draft.name || '').trim() || L('Arkadaşım', 'Friend');
       Profiles.save(draft);
+      if (first) {
+        const p0 = Journey.state(categories).list[0];
+        if (p0) { playJourneyEpisode(container, api, toolId, categories, p0, 0); return; }
+      }
       showSectionMenu(container, api, toolId, categories);
     });
     const back = host.querySelector('#keProfileBack');
@@ -4283,7 +4559,9 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
       <p class="ke-subtitle">${L('Bir kategori seç, maceraya başla!', 'Pick a category and start the adventure!')} (${shown.length} ${L('kategori', 'categories')} · ${shown.reduce((s, c) => s + c.word_count, 0)} ${L('kelime', 'words')})</p>
     </div>
     <div class="ke-category-grid" id="keCategoryGrid"></div>
+    ${bottomNavHTML(null)}
   `;
+  wireBottomNav(host, container, api, toolId, categories);
   host.querySelector('#keSectionsBack').addEventListener('click', () => showSectionMenu(container, api, toolId, categories));
   const grid = host.querySelector('#keCategoryGrid');
   shown.forEach((c) => {
@@ -4352,6 +4630,7 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
 // tek bir yıldız işleniyor (rozet/seri sistemiyle tutarlı kalsın diye).
 async function showStoryList(container, api, toolId, categories) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  _journeyMode = false;
   Resume.save({ screen: 'stories' });
   const host = container.querySelector('#keScreenHost');
   host.innerHTML = `
@@ -4471,7 +4750,8 @@ async function showStoryReader(container, api, toolId, categories, storyId, init
     if (recording && mediaRecorder) { try { mediaRecorder.stop(); } catch (e) { /* no-op */ } }
     stopRecordingStream();
     if (recordedBlobUrl) { URL.revokeObjectURL(recordedBlobUrl); recordedBlobUrl = null; }
-    showStoryList(container, api, toolId, categories);
+    if (_journeyMode) showJourney(container, api, toolId, categories);
+    else showStoryList(container, api, toolId, categories);
   };
 
   // "Story kısmında kitap gibi yapabilir misin, tam bir kitap hissi yok" -
@@ -4735,7 +5015,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
       <div class="ke-scene" id="keScene">
         <div class="ke-stars"></div>
         ${motif ? `<div class="ke-scene-motif ke-motif-${motif}"></div>` : ''}
-        <div class="ke-bubble" id="keBubble">${L('Nesnelere dokun, Aktapokus sana ne olduğunu söylesin! 👆', 'Tap the pictures and Aktapokus will tell you what they are! 👆')}</div>
+        <div class="ke-bubble" id="keBubble">${L('👆 Resimlere dokun, dinle!', '👆 Tap a picture and listen!')}</div>
         <button type="button" class="ke-help-btn" id="keHelpBtn" aria-label="${L('Yardım', 'Help')}">ⓘ</button>
         <div class="ke-progress-chip" id="keProgress">0 / 0 ${L("kelime", "words")}</div>
         <div class="ke-word-popup" id="keWordPopup"></div>
@@ -4762,7 +5042,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
           </div>
         </div>
         <div class="ke-sentence" id="keSentence">
-          <div class="ke-bubble ke-sentence-bubble" id="keSentenceBubble">${L('Kelimeleri sırayla dokun, cümleyi tamamla! 🧩', 'Tap the words in order to finish the sentence! 🧩')}</div>
+          <div class="ke-bubble ke-sentence-bubble" id="keSentenceBubble">${L('🧩 Kelimeleri sırayla diz!', '🧩 Put the words in order!')}</div>
           <div class="ke-sentence-progress" id="keSentenceProgress">${L('Cümle', 'Sentence')} 1 / 6</div>
           <div class="ke-sentence-icon" id="keSentenceIcon"></div>
           <div class="ke-sentence-slots" id="keSentenceSlots"></div>
@@ -4788,7 +5068,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
     </div>
 
     <div class="ke-footer-row" style="flex-direction:column; gap:10px;">
-      <p class="ke-hint">${L('Sesi duymak için nesnelere tıkla. Aktapokus kelimeyi tekrar söylesin istersen tekrar dokunabilirsin.', 'Tap a picture to hear the word. Tap again to hear it once more.')}</p>
+      <p class="ke-hint">👆🔊 ${L('Dokun → dinle. Tekrar dokun → tekrar dinle.', 'Tap → listen. Tap again → listen again.')}</p>
       <button class="ke-btn-primary" id="keGoToQuizBtn" style="display:none;">${L('Sorulara Geç', 'Go to questions')} → (<span id="keGoToQuizCount">0</span> ${L('kelimeyle', 'words')})</button>
     </div>
     <details class="ke-jump-row">
@@ -4815,6 +5095,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
 
   const completedSet = new Set(Progress.getCategory(episode.category_id).completed);
   renderMap(host, episode.episode_index, episode.episode_count, jumpToEpisode, completedSet, journeyEpisodeGate(categories, episode));
+  ['#keBubble', '#keQuizBubble', '#keSentenceBubble'].forEach((sel) => addSpeakButton(host.querySelector(sel)));
 
   const leaveEpisode = () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -4861,7 +5142,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
     discoveredWords = [];
     progressEl.textContent = `0 / ${total} ${L('kelime', 'words')}`;
     goToQuizBtn.style.display = 'none';
-    bubbleEl.textContent = message || L('Nesnelere dokun, Aktapokus sana ne olduğunu söylesin! 👆', 'Tap the pictures and Aktapokus will tell you what they are! 👆');
+    bubbleEl.textContent = message || L('👆 Resimlere dokun, dinle!', '👆 Tap a picture and listen!');
   }
 
   function goToNextEpisode() {
@@ -5116,6 +5397,7 @@ function renderConversationEpisodeScene(container, api, toolId, categories, epis
   }
   const completedSet = new Set(Progress.getCategory(episode.category_id).completed);
   renderMap(host, episode.episode_index, episode.episode_count, jumpToEpisode, completedSet, journeyEpisodeGate(categories, episode));
+  ['#keBubble', '#keQuizBubble', '#keSentenceBubble'].forEach((sel) => addSpeakButton(host.querySelector(sel)));
 
   const leaveEpisode = () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -5310,7 +5592,27 @@ function pickMaleVoice() {
 // Doğru cevap / kelime bulma / cümle tamamlama gibi olumlu anlarda
 // maskotu kısaca zıplatıyoruz — Duolingo'nun karakterlerinin her doğru
 // cevapta "yaşasın" hareketi yapması gibi, ekranı canlı hissettiriyor.
+// Telefonda soru turlarinda maskot gizleniyor (yer darligi) - tepki
+// bu yuzden maskotun ustunde degil, sahnenin kosesinde kucuk bir avatar
+// balonu olarak cikiyor; her ekran boyutunda gorunur.
+function mascotReact(mascotEl, good) {
+  const scene = mascotEl && mascotEl.closest ? mascotEl.closest('.ke-scene') : null;
+  if (!scene) return;
+  const old = scene.querySelector('.ke-react');
+  if (old) old.remove();
+  const goods = _lang === 'tr' ? ['Harika! 🎉', 'Süper! ⭐', 'Aferin! 👏', 'Çok iyi! 😄'] : ['Great! 🎉', 'Super! ⭐', 'Well done! 👏', 'Awesome! 😄'];
+  const bads = _lang === 'tr' ? ['Neredeyse! 💛', 'Olsun, devam! 💪', 'Birlikte öğreniyoruz 🙂'] : ['Almost! 💛', 'Keep going! 💪', "We're learning together 🙂"];
+  const list = good ? goods : bads;
+  const el = document.createElement('div');
+  el.className = 'ke-react' + (good ? ' good' : ' bad');
+  el.innerHTML = `${avatarCircleHTML(Profiles.active(), 'ke-react-av')}<span>${list[Math.floor(Math.random() * list.length)]}</span>`;
+  scene.appendChild(el);
+  setTimeout(() => el.classList.add('out'), 1100);
+  setTimeout(() => el.remove(), 1500);
+}
+
 function celebrateBounce(mascotEl) {
+  mascotReact(mascotEl, true);
   mascotEl.classList.remove('ke-celebrate');
   void mascotEl.offsetWidth; // reflow — animasyon üst üste tetiklenirse yeniden başlasın
   mascotEl.classList.add('ke-celebrate');
@@ -5642,6 +5944,7 @@ function startQuiz(host, container, episode, wordList, mascotEl, restartEpisode,
     if (attempts === 1) {
       mistakeWords.add(currentCorrectWord);
       Progress.recordMistake(episode.category_id, currentCorrectObj);
+      mascotReact(mascotEl, false);
       if (mistakeWords.size >= 2) {
         quizBubbleEl.textContent = L('Bunları biraz daha tanıyalım, hep birlikte baştan başlıyoruz! 🔄', 'Let us get to know these better — starting over together! 🔄');
         lockCards();
@@ -6022,6 +6325,7 @@ function startLetterRound(host, container, episode, wordList, mascotEl, score, o
         });
         bubbleEl.textContent = L(`Doğru kelime: ${target} 💡`, `The correct word: ${target} 💡`);
         try { Progress.recordMistake(episode.category_id, obj); } catch (e) { /* yok say */ }
+        mascotReact(mascotEl, false);
         speakWord(target, mascotEl);
         setTimeout(() => { idx++; renderItem(); }, 3200);
       } else {
@@ -6272,6 +6576,7 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
         slotEls.forEach((sl, i) => { sl.textContent = tokens[i]; sl.classList.remove('ke-filled'); sl.classList.add('ke-reveal'); });
         bubbleEl.textContent = L(`Doğru cümle: ${obj.sentence} 💡`, `The correct sentence: ${obj.sentence} 💡`);
         try { Progress.recordMistake(episode.category_id, obj); } catch (e) { /* yok say */ }
+        mascotReact(mascotEl, false);
         speakWord(obj.sentence, mascotEl);
         setTimeout(() => { idx++; renderItem(); }, 3200);
       } else {
@@ -6311,10 +6616,41 @@ function startConversationRound(host, container, episode, mascotEl, onFinished) 
   let idx = 0;
   let correctFirstTry = 0;
 
+  // Rol yapma: karsilikli konusma balonlari (solda Aktapokus, sagda cocuk).
+  // Cevap kelime kartlariyla ya da (tarayici destekliyorsa) sesle verilir.
+  const me = Profiles.active();
+  const chat = document.createElement('div');
+  chat.className = 'ke-chat';
+  bubbleEl.parentNode.insertBefore(chat, bubbleEl.nextSibling);
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const micBtn = document.createElement('button');
+  micBtn.type = 'button';
+  micBtn.className = 'ke-btn-secondary ke-chat-mic';
+  micBtn.textContent = `🎤 ${L('Söyleyerek cevapla', 'Answer by speaking')}`;
+  if (SR) chat.parentNode.insertBefore(micBtn, chat.nextSibling);
+  function addLine(who, text) {
+    const row = document.createElement('div');
+    row.className = 'ke-chat-row ' + who;
+    row.innerHTML = who === 'bot'
+      ? `<span class="ke-chat-who">🐙</span><div class="ke-chat-b">${escapeProfileText(text)}</div>`
+      : `<div class="ke-chat-b">${escapeProfileText(text)}</div>${avatarCircleHTML(me, 'ke-chat-av')}`;
+    if (who === 'bot') {
+      const say = document.createElement('button');
+      say.type = 'button'; say.className = 'ke-say-btn'; say.textContent = '🔊';
+      say.addEventListener('click', () => speakWord(text, mascotEl));
+      row.querySelector('.ke-chat-b').appendChild(say);
+    }
+    chat.appendChild(row);
+    while (chat.children.length > 4) chat.firstChild.remove();
+    chat.scrollTop = chat.scrollHeight;
+  }
+  const norm = (t) => String(t).toLowerCase().replace(/[^a-z0-9' ]+/g, ' ').split(/\s+/).filter(Boolean);
+
   function renderTurn() {
     if (idx >= turns.length) {
       mascotEl.classList.remove('ke-mascot-compact');
       setMascotPose(host, 'idle');
+      chat.remove(); micBtn.remove();
       onFinished({ correct: correctFirstTry, total: turns.length });
       return;
     }
@@ -6322,8 +6658,38 @@ function startConversationRound(host, container, episode, mascotEl, onFinished) 
     const tokens = turn.a.split(' ');
     let firstTry = true;
     progressEl.textContent = `${L('Konuşma', 'Conversation')} ${idx + 1} / ${turns.length}`;
-    bubbleEl.textContent = `🗣️ ${turn.q}`;
+    bubbleEl.textContent = L('Sıra sende! Cevabı diz ya da söyle 👇', 'Your turn! Build or say the answer 👇');
+    addLine('bot', turn.q);
     speakWord(turn.q, mascotEl);
+    micBtn.disabled = false;
+    micBtn.onclick = () => {
+      let rec;
+      try { rec = new SR(); } catch (e) { return; }
+      rec.lang = 'en-US'; rec.interimResults = false; rec.maxAlternatives = 3;
+      micBtn.disabled = true;
+      micBtn.textContent = `🎙️ ${L('Dinliyorum…', 'Listening…')}`;
+      container._keActiveRecognition = rec;
+      const done = () => { micBtn.disabled = false; micBtn.textContent = `🎤 ${L('Söyleyerek cevapla', 'Answer by speaking')}`; };
+      rec.onresult = (e) => {
+        const target = norm(turn.a);
+        let best = 0;
+        for (let k = 0; k < e.results[0].length; k++) {
+          const heard = new Set(norm(e.results[0][k].transcript));
+          best = Math.max(best, target.filter((w) => heard.has(w)).length / target.length);
+        }
+        if (best >= 0.7) {
+          // Kartlari dogru sirayla doldurup ayni "dogru" akisini calistir
+          slotEls0().forEach((sl, i) => { sl.textContent = tokens[i]; sl.dataset.origIndex = String(i); sl.classList.add('ke-filled'); });
+          checkBtn.disabled = false;
+          checkBtn.onclick();
+        } else {
+          bubbleEl.textContent = L(`Tam anlayamadım 🙂 Tekrar söyle ya da kartları diz.`, `I didn't quite catch that 🙂 Say it again or use the cards.`);
+          mascotReact(mascotEl, false);
+        }
+      };
+      rec.onerror = done; rec.onend = done;
+      try { rec.start(); } catch (e) { done(); }
+    };
 
     slotsEl.innerHTML = '';
     tokens.forEach(() => {
@@ -6442,6 +6808,8 @@ function startConversationRound(host, container, episode, mascotEl, onFinished) 
         checkBtn.disabled = true;
         if (firstTry) correctFirstTry++;
         bubbleEl.textContent = L('Harika cevap! 🎉', 'Great answer! 🎉');
+        addLine('me', turn.a);
+        micBtn.disabled = true;
         celebrateBounce(mascotEl);
         speakWord(turn.a, mascotEl);
         setTimeout(() => { idx++; renderTurn(); }, 1300);
@@ -6450,6 +6818,9 @@ function startConversationRound(host, container, episode, mascotEl, onFinished) 
         checkBtn.disabled = true;
         slotEls.forEach((sl, i) => { sl.textContent = tokens[i]; sl.classList.remove('ke-filled'); sl.classList.add('ke-reveal'); });
         bubbleEl.textContent = L(`Doğru cevap: ${turn.a} 💡`, `The correct answer: ${turn.a} 💡`);
+        addLine('me', turn.a);
+        micBtn.disabled = true;
+        mascotReact(mascotEl, false);
         speakWord(turn.a, mascotEl);
         setTimeout(() => { idx++; renderTurn(); }, 3200);
       } else {
@@ -6459,7 +6830,7 @@ function startConversationRound(host, container, episode, mascotEl, onFinished) 
         slotEls.forEach((s) => s.classList.add('ke-shake'));
         setTimeout(() => {
           slotEls.forEach((s) => s.classList.remove('ke-shake'));
-          bubbleEl.textContent = `🗣️ ${turn.q}`;
+          bubbleEl.textContent = L('Sıra sende! Cevabı diz ya da söyle 👇', 'Your turn! Build or say the answer 👇');
           resetSlots();
         }, 800);
       }
