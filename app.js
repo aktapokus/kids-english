@@ -39,7 +39,7 @@ if ('serviceWorker' in navigator) {
   // (kullanicinin kendi geri bildirimi). Iki parca:
   //
   // (1) sw.js'i her build'de degisen bir ?v= sorgu dizgesiyle kaydediyoruz
-  // (asagida a571d3ec2b yer tutucusu, build_pwa.py build hash'iyle
+  // (asagida 1be44b4f3e yer tutucusu, build_pwa.py build hash'iyle
   // degistiriyor) - GitHub Pages TUM dosyalari CDN'de 10 dakika
   // onbelleklediginden (Cache-Control: max-age=600, updateViaCache:'none'
   // SADECE tarayicinin KENDI HTTP onbellegini atlar, GitHub'in CDN edge
@@ -65,7 +65,7 @@ if ('serviceWorker' in navigator) {
   // Boylece kullanici HICBIR SEY yapmadan (site verisi temizlemeden) bir
   // sonraki dogal ac/kapa VEYA arka plandan on plana gelisinde guncel
   // surume geciyor - ama bu tek reload asla tekrarlanmiyor.
-  navigator.serviceWorker.register('sw.js?v=a571d3ec2b', { updateViaCache: 'none' }).then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=1be44b4f3e', { updateViaCache: 'none' }).then((reg) => {
     reg.update().catch(() => {});
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') reg.update().catch(() => {});
@@ -74,7 +74,7 @@ if ('serviceWorker' in navigator) {
   const hadControllerAtLoad = !!navigator.serviceWorker.controller;
   if (hadControllerAtLoad) {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      const target = 'a571d3ec2b';
+      const target = '1be44b4f3e';
       let already = '';
       try { already = window.localStorage.getItem('ke_sw_reloaded_for') || ''; } catch (e) { /* yok say */ }
       if (already === target) return;
