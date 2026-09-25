@@ -5503,9 +5503,33 @@ function startReviewSession(container, api, toolId, categories, categoryId, cate
   if (quizJumpBtn) quizJumpBtn.click();
 }
 
+// "What's your name?" diyaloglarinda sabit ornek isim (Alex/Emma/Sam) yerine
+// cocugun giriste verdigi takma ad: cocuk kendi adini soyler/heceler.
+// Yalnizca soru cocugun kendi adini soruyorsa (your name / who is this) o
+// bolumdeki ornek isim degisir; "his name is Tom" gibi ucuncu kisiler kalir.
+const CONV_SAMPLE_NAMES = ['Alex', 'Emma', 'Sam'];
+function childFirstName() {
+  const raw = ((Profiles.active() || {}).name || '').trim();
+  const m = raw.match(/\p{L}+/u);
+  if (!m) return null;
+  const w = m[0].slice(0, 12);
+  return w.charAt(0).toLocaleUpperCase('tr') + w.slice(1);
+}
+function personalizeConversation(episode) {
+  const name = childFirstName();
+  if (!name) return episode;
+  const turns = episode.conversation;
+  const own = turns.find((t) => /your name|who is this/i.test(t.q) && CONV_SAMPLE_NAMES.some((n) => new RegExp(`\\b${n}\\b`).test(t.a)));
+  if (!own) return episode;
+  const sample = CONV_SAMPLE_NAMES.find((n) => new RegExp(`\\b${n}\\b`).test(own.a));
+  const spelled = (s) => [...s].map((ch) => ch.toLocaleUpperCase('tr')).join('-');
+  const swap = (s) => s.replace(spelled(sample), spelled(name)).replace(new RegExp(`\\b${sample}\\b`, 'g'), name);
+  return { ...episode, conversation: turns.map((t) => ({ ...t, q: swap(t.q), a: swap(t.a) })) };
+}
+
 function renderEpisodeScene(container, api, toolId, categories, episode) {
   if (episode.conversation) {
-    renderConversationEpisodeScene(container, api, toolId, categories, episode);
+    renderConversationEpisodeScene(container, api, toolId, categories, personalizeConversation(episode));
     return;
   }
   const host = container.querySelector('#keScreenHost');
