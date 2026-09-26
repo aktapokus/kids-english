@@ -83,6 +83,8 @@ const CATEGORY_THEME = {
   conv_travel:              { c: '#29B6F6', dark: '#1D9AD4', tint: '#7DD6FB' },
   conv_health:              { c: '#EF5350', dark: '#D53E3B', tint: '#F58C8A' },
   conv_celebrations:        { c: '#FFCA28', dark: '#E0AC00', tint: '#FFE071' },
+  conv_past:                { c: '#8D6E63', dark: '#6D4C41', tint: '#BCAAA4' },
+  conv_plans:               { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
   conv_feelings_preferences:{ c: '#FFCA28', dark: '#E0AC00', tint: '#FFE071' },
   conv_technology:          { c: '#3F51B5', dark: '#32409A', tint: '#8993D6' },
   conv_space:               { c: '#7C4DFF', dark: '#6435E0', tint: '#B39BFF' },
@@ -123,7 +125,7 @@ const CATEGORY_MOTIF = {
   conv_food_drinks: '🍽️', conv_shopping_clothes: '👕', conv_weather_seasons: '⛅',
   conv_city_transport: '🚌', conv_travel: '✈️', conv_health: '❤️',
   conv_celebrations: '🎂', conv_feelings_preferences: '😊', conv_technology: '💻',
-  conv_space: '🚀', conv_jobs_safety: '🚨',
+  conv_space: '🚀', conv_jobs_safety: '🚨', conv_past: '⏪', conv_plans: '🗓️',
 };
 
 // A2 kategorileri ('{kategori}_a2') A1'deki ayni temayi/motifi paylasir -
@@ -3297,7 +3299,7 @@ const CONVERSATION_CATEGORY_IDS = [
   'conv_school', 'conv_hobbies_sports', 'conv_animals_nature', 'conv_food_drinks',
   'conv_shopping_clothes', 'conv_weather_seasons', 'conv_city_transport', 'conv_travel',
   'conv_health', 'conv_celebrations', 'conv_feelings_preferences', 'conv_technology',
-  'conv_space', 'conv_jobs_safety',
+  'conv_space', 'conv_jobs_safety', 'conv_past', 'conv_plans',
 ];
 const OPPOSITE_CATEGORY_IDS = ['opposites'];
 const A2_CATEGORY_SUFFIX = '_a2';
@@ -3804,7 +3806,7 @@ const JOURNEY_SECTORS = [
   { id: 'mars', emoji: '🔴', tr: 'Mars Üssü', en: 'Mars Base', grade: 3, get level() { return L('3. Sınıf', 'Grade 3') + ' · A1.2'; },
     planets: ['daily_life', 'conv_daily_routine', 'months_time', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes'] },
   { id: 'jupiter', emoji: '🟠', tr: 'Jüpiter İstasyonu', en: 'Jupiter Station', grade: 4, get level() { return L('4. Sınıf', 'Grade 4') + ' · A1.3'; },
-    planets: ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'countries', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'get'] },
+    planets: ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'countries', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'conv_past', 'conv_plans', 'get'] },
   { id: 'saturn', emoji: '🪐', tr: 'Satürn Halkaları', en: 'Saturn Rings', grade: 0, get level() { return L('Bonus', 'Bonus') + ' · A1+'; },
     planets: ['technology_computers', 'conv_technology', 'communication_internet', 'science', 'space_astronomy', 'conv_space'] },
   { id: 'neptune', emoji: '🔵', tr: 'Neptün Kapısı', en: 'Neptune Gate', grade: 5, get level() { return L('5. Sınıf', 'Grade 5') + ' · A2.1'; }, planets: A2_JOURNEY_IDS.y5 },
