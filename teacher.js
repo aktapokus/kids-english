@@ -198,7 +198,7 @@ function studentDetail(s, catalog) {
 // ayni sira - MEB Maarif programi: 2. sinif = A1.1 ...). Iki yerde
 // tutuluyor; panel.js'te sira degisirse burasi da guncellenmeli.
 const GRADE_STEPS = [
-  ['2. Sınıf · A1.1', ['expressions', 'classroom_life', 'conv_social_manners', 'school_education', 'conv_school', 'math_numbers', 'family_people', 'conv_family_home', 'body_health', 'animals', 'food_drinks', 'conv_food_drinks', 'home', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons']],
+  ['2. Sınıf · A1.1', ['school_education', 'expressions', 'classroom_life', 'conv_social_manners', 'conv_school', 'math_numbers', 'family_people', 'conv_family_home', 'body_health', 'animals', 'food_drinks', 'conv_food_drinks', 'home', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons']],
   ['3. Sınıf · A1.2', ['daily_life', 'conv_daily_routine', 'months_time', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes']],
   ['4. Sınıf · A1.3', ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'countries', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'get']],
   ['Bonus · A1+', ['technology_computers', 'conv_technology', 'communication_internet', 'science', 'space_astronomy', 'conv_space']],

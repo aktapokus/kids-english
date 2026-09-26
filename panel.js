@@ -1594,7 +1594,10 @@ ${FONT_FACES}
   .ke-speak{ position:absolute; top:10px; left:3%; right:3%; bottom:10px; overflow-y:auto; max-width:480px; margin:0 auto; display:none; flex-direction:column; align-items:center; gap:14px; padding:52px 20px 26px; z-index:40; background:radial-gradient(ellipse 640px 260px at 50% 0%, #263229 0%, #1a231d 55%, #10160f 100%); border-radius:22px; box-shadow:none; }
   .ke-speak.ke-show{ display:flex; }
   .ke-speak-progress{ background:rgba(110,200,255,.1); border:2px dashed var(--kb-action); color:var(--kb-action); border-radius:10px 14px 10px 14px; padding:6px 16px; font-size:12.5px; font-weight:800; box-shadow:none; text-shadow:none; }
-  .ke-speak-card{ background:#ffffff; border:3px solid var(--ke-border); border-radius:24px; padding:18px 34px; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:none; }
+  .ke-speak-card{ background:#ffffff; border:3px solid var(--ke-border); border-radius:24px; padding:18px 34px; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:none; transition:border-color .2s, box-shadow .2s; }
+  .ke-speak-card.ke-speak-ok{ border-color:#2FB34A; box-shadow:0 0 0 5px rgba(47,179,74,.35); }
+  /* Cumle iskelesi: hazir gelen (degistirilemez) kelimeler */
+  .ke-slot.ke-fixed{ opacity:.8; border-style:solid !important; pointer-events:none; }
   .ke-speak-card .ke-icon-hex{ width:170px; height:170px; }
   .ke-speak-card .ke-icon-hex .ke-emoji-icon{ font-size:66px; }
   /* DİKKAT: bu metin .ke-speak-card'ın (BEYAZ kart) İÇİNDE — tahtanın
@@ -3768,7 +3771,7 @@ const JOURNEY_SECTORS = [
     // cocuktan gormedigi kelimelerle cevap kurmasini istiyordu. Sira MEB
     // 2. sinif unitelerine yakin (Words, Friends, In the Classroom, Numbers,
     // Colours, Body, Pets/Animals, Fruit); her conv_* kendi kelimelerinden sonra.
-    planets: ['expressions', 'classroom_life', 'conv_social_manners', 'school_education', 'conv_school', 'math_numbers', 'family_people', 'conv_family_home', 'body_health', 'animals', 'food_drinks', 'conv_food_drinks', 'home', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons'] },
+    planets: ['school_education', 'expressions', 'classroom_life', 'conv_social_manners', 'conv_school', 'math_numbers', 'family_people', 'conv_family_home', 'body_health', 'animals', 'food_drinks', 'conv_food_drinks', 'home', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons'] },
   { id: 'mars', emoji: '🔴', tr: 'Mars Üssü', en: 'Mars Base', grade: 3, get level() { return L('3. Sınıf', 'Grade 3') + ' · A1.2'; },
     planets: ['daily_life', 'conv_daily_routine', 'months_time', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes'] },
   { id: 'jupiter', emoji: '🟠', tr: 'Jüpiter İstasyonu', en: 'Jupiter Station', grade: 4, get level() { return L('4. Sınıf', 'Grade 4') + ' · A1.3'; },
@@ -6702,6 +6705,7 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
   const micBtn = host.querySelector('#keSpeakMic');
   const nextBtn = host.querySelector('#keSpeakNext');
   const replayBtn = host.querySelector('#keSpeakReplay');
+  const speakCard = speakEl.querySelector('.ke-speak-card');
 
   progressChip.style.display = 'none';
   mainBubbleEl.style.display = 'none';
@@ -6749,6 +6753,9 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
     wordEl.textContent = obj.word;
     feedbackEl.textContent = '';
     nextBtn.style.display = 'none';
+    nextBtn.className = 'ke-btn-secondary';
+    speakCard.classList.remove('ke-speak-ok');
+    replayBtn.style.display = '';
     micBtn.disabled = false;
     micBtn.classList.remove('ke-listening');
     micBtn.textContent = L('🎤 Söyle', '🎤 Say it');
@@ -6788,8 +6795,17 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
       micBtn.classList.remove('ke-listening');
       micBtn.textContent = L('🎤 Söyle', '🎤 Say it');
       if (success) {
+        // "Bilince cerceve yesil olsun, sadece Devam acik kalsin": Soyle /
+        // Dinle dugmeleri dogru cevaptan sonra "tekrar mi?" kafa karisikligi
+        // yaratiyordu.
         feedbackEl.textContent = L('Harika telaffuz! 🎉', 'Great pronunciation! 🎉');
+        speakCard.classList.add('ke-speak-ok');
+        micBtn.style.display = 'none';
+        replayBtn.style.display = 'none';
+        nextBtn.className = 'ke-btn-primary';
+        nextBtn.style.display = 'inline-block';
         celebrateBounce(mascotEl);
+        return;
       } else if (errCode === 'not-allowed' || errCode === 'service-not-allowed' || errCode === 'permission-denied') {
         feedbackEl.textContent = L('Mikrofon izni verilmemiş — tarayıcının adres çubuğundaki 🔒 simgesine tıklayıp mikrofona izin ver, sonra tekrar dene. 🔒', 'Microphone is blocked — tap the 🔒 icon in the address bar, allow the microphone, then try again. 🔒');
       } else if (errCode === 'audio-capture') {
@@ -7060,6 +7076,39 @@ function startLetterRound(host, container, episode, wordList, mascotEl, score, o
   renderItem();
 }
 
+// Cumle iskelesi ("kelimeden direkt bu kadar cumleye girmesi zorlayici"):
+// Macera istasyonuna gore kac kutunun bos gelecegi.
+//   Ay (2. sinif)   -> yalnizca ogrenilen kelime bos (bosluk doldurma)
+//   Mars (3. sinif) -> kelime + yanindaki bir kelime
+//   sonrasi / istasyonsuz A2 -> tum cumle (eski davranis)
+function sentenceStage(catId) {
+  const sec = JOURNEY_SECTORS.find((s) => s.planets.includes(catId));
+  return sec ? sec.id : '';
+}
+function sentenceBlanks(tokens, word, stage) {
+  const all = tokens.map((_, i) => i);
+  if (stage !== 'moon' && stage !== 'mars') return new Set(all);
+  const clean = (s) => s.toLowerCase().replace(/[.,!?'’"]/g, '');
+  const wt = String(word || '').split(/\s+/).map(clean).filter(Boolean);
+  const tc = tokens.map(clean);
+  let at = -1;
+  for (let i = 0; i + wt.length <= tc.length && at < 0; i++) {
+    if (wt.every((w, k) => tc[i + k] === w || (k === wt.length - 1 && tc[i + k].startsWith(w)))) at = i;
+  }
+  let hit = at >= 0 ? wt.map((_, k) => at + k) : [];
+  if (!hit.length) { // "drives" <- Drive gibi cekimli bicim: ilk 4 harf
+    const stem = (wt[0] || '').slice(0, 4);
+    const j = tc.findIndex((t) => stem && t.startsWith(stem));
+    hit = j >= 0 ? [j] : [tc.reduce((b, t, i) => (t.length > tc[b].length ? i : b), 0)];
+  }
+  const s = new Set(hit);
+  if (stage === 'mars' && tokens.length > s.size) {
+    const last = Math.max(...s);
+    s.add(last + 1 < tokens.length ? last + 1 : Math.min(...s) - 1);
+  }
+  return s;
+}
+
 function startSentenceRound(host, container, episode, wordList, mascotEl, score, onDone) {
   setEpisodePhase(host, 'sentence');
   const sEl = host.querySelector('#keSentence');
@@ -7159,17 +7208,24 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
     }
     const obj = wordList[order[idx]];
     const tokens = (obj.sentence || `${obj.word}.`).split(' ');
+    const blanks = sentenceBlanks(tokens, obj.word, sentenceStage(episode.category_id));
+    const scaffold = blanks.size < tokens.length;
+    const ask = scaffold
+      ? L('Eksik kelimeyi bul, boş kutuya koy, sonra Kontrol Et! 🧩', 'Find the missing word, put it in the empty box, then press Check! 🧩')
+      : askText;
     progressEl.textContent = `${L('Cümle', 'Sentence')} ${idx + 1} / ${order.length}`;
-    bubbleEl.textContent = askText;
+    bubbleEl.textContent = ask;
     const iconEl = host.querySelector('#keSentenceIcon');
     if (iconEl) iconEl.innerHTML = renderObjectIcon(obj);
 
     slotsEl.innerHTML = '';
-    tokens.forEach(() => {
+    tokens.forEach((_, i) => {
       const slot = document.createElement('div');
-      slot.className = 'ke-slot';
+      slot.className = 'ke-slot' + (blanks.has(i) ? '' : ' ke-fixed ke-filled');
+      if (!blanks.has(i)) { slot.textContent = tokens[i]; slot.dataset.origIndex = String(i); }
       slotsEl.appendChild(slot);
     });
+    if (scaffold) speakWord(obj.sentence, mascotEl);
     actionsEl.style.display = 'none';
     checkBtn.disabled = true;
 
@@ -7178,13 +7234,14 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
     // doldurur. Çocuk tamamen kendi sırasını kurabilir; doğruluk sadece
     // "Kontrol Et"e basılınca değerlendirilir.
     let wrongAttempts = 0;
-    const slotItems = new Array(tokens.length).fill(null);
+    const slotItems = tokens.map((text, i) => (blanks.has(i) ? null : { fixed: true, tok: { text, origIndex: i } }));
     const slotEls0 = () => [...slotsEl.children];
 
     function renderSlots() {
       slotEls0().forEach((slot, i) => {
         const it = slotItems[i];
         slot.textContent = it ? it.tok.text : '';
+        slot.classList.toggle('ke-fixed', !!(it && it.fixed));
         if (it) slot.dataset.origIndex = String(it.tok.origIndex); else slot.removeAttribute('data-orig-index');
         slot.classList.toggle('ke-filled', !!it);
       });
@@ -7196,9 +7253,10 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
     }
     function freeItem(i) {
       const it = slotItems[i];
-      if (it) { it.tile.classList.remove('ke-used'); slotItems[i] = null; }
+      if (it && !it.fixed) { it.tile.classList.remove('ke-used'); slotItems[i] = null; }
     }
     function placeTile(tile, tok, i) {
+      if (slotItems[i] && slotItems[i].fixed) return;
       freeItem(i);
       slotItems[i] = { tile, tok };
       tile.classList.add('ke-used');
@@ -7243,11 +7301,11 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
 
     slotEls0().forEach((slot, i) => {
       slot.addEventListener('pointerdown', (ev) => {
-        if (!slotItems[i]) return;
+        if (!slotItems[i] || slotItems[i].fixed) return;
         ev.preventDefault();
         startDrag(ev, slotItems[i].tok.text,
           (j) => {
-            if (j >= 0 && j !== i) { const t = slotItems[i]; slotItems[i] = slotItems[j]; slotItems[j] = t; }
+            if (j >= 0 && j !== i && !(slotItems[j] && slotItems[j].fixed)) { const t = slotItems[i]; slotItems[i] = slotItems[j]; slotItems[j] = t; }
             else if (j < 0) freeItem(i);
             renderSlots();
           },
@@ -7255,9 +7313,13 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
       });
     });
 
-    const bankItems = tokens.map((text, origIndex) => ({ text, origIndex }));
+    const bankItems = tokens.map((text, origIndex) => ({ text, origIndex })).filter((t) => blanks.has(t.origIndex));
     const distractorWord = pickDistractorWord(tokens, wordList, obj.word);
     if (distractorWord) bankItems.push({ text: distractorWord, origIndex: -1 });
+    if (scaffold) { // bosluk doldurmada tek secenek kalmasin: 2 tuzak kelime
+      const second = pickDistractorWord(tokens.concat(distractorWord || []), wordList, obj.word);
+      if (second) bankItems.push({ text: second, origIndex: -1 });
+    }
     const shuffled = shuffle(bankItems);
     bankEl.innerHTML = '';
     shuffled.forEach((tok) => {
@@ -7302,7 +7364,7 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
         slotEls.forEach((s) => s.classList.add('ke-shake'));
         setTimeout(() => {
           slotEls.forEach((s) => s.classList.remove('ke-shake'));
-          bubbleEl.textContent = askText;
+          bubbleEl.textContent = ask;
           resetSlots();
         }, 800);
       }
