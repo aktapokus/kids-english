@@ -1896,6 +1896,35 @@ ${FONT_FACES}
   .ke-shell .ke-game-card:active:not(:disabled){ top:4px; box-shadow:0 2px 0 rgba(0,0,0,.18); }
   .ke-shell .ke-game-card-river{ background:linear-gradient(160deg,#4DABF7,#1971C2); }
   .ke-shell .ke-game-card-puzzle{ background:linear-gradient(160deg,#B197FC,#7048E8); }
+  .ke-shell .ke-game-card-rocket{ background:linear-gradient(160deg,#FFA94D,#E8590C); }
+  .ke-shell .ke-game-card-blocks{ background:linear-gradient(160deg,#38D9A9,#0C8599); }
+  /* Kelime Roketi */
+  .ke-rk-main{ flex:1; overflow-y:auto; display:flex; flex-direction:column; align-items:center; gap:12px; padding:8px 14px 18px; color:#fff; }
+  .ke-rk-sky{ position:relative; width:min(520px,100%); height:56px; border-radius:999px; background:rgba(255,255,255,.12); }
+  .ke-rk-goal{ position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:34px; }
+  .ke-rk-ship{ position:absolute; left:0; top:50%; transform:translateY(-50%) rotate(45deg); font-size:36px; transition:left .5s cubic-bezier(.3,1.4,.5,1); }
+  .ke-rk-ship.arrived{ left:84% !important; animation:ke-bob .6s ease 2; }
+  .ke-rk-lives{ font-size:24px; letter-spacing:4px; } .ke-rk-lives .off{ filter:grayscale(1); opacity:.25; }
+  .ke-shell .ke-rk-pic{ font-size:96px; line-height:1; background:rgba(255,255,255,.95) !important; border-radius:28px !important; padding:14px 26px !important; position:relative; box-shadow:0 6px 0 rgba(0,0,0,.25) !important; }
+  .ke-rk-pic small{ position:absolute; right:8px; bottom:6px; font-size:20px; }
+  .ke-rk-slots{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  .ke-rk-slot{ width:46px; height:56px; border-radius:12px; background:rgba(255,255,255,.14); border-bottom:4px solid #FFD84D; display:grid; place-items:center; font-size:30px; font-weight:900; }
+  .ke-rk-slot.on{ background:#fff; color:#1C2E6B; } .ke-rk-slot.rev{ background:#FFE3E0; color:#C92A2A; }
+  .ke-rk-msg{ font-weight:800; font-size:16px; text-align:center; min-height:22px; }
+  .ke-rk-keys{ display:grid; grid-template-columns:repeat(7, minmax(38px, 52px)); gap:6px; justify-content:center; }
+  .ke-shell .ke-rk-key{ height:48px; border-radius:12px !important; font-size:20px !important; font-weight:900 !important; background:#fff !important; color:#1C2E6B !important; padding:0 !important; box-shadow:0 3px 0 rgba(0,0,0,.25) !important; }
+  .ke-shell .ke-rk-key.ok{ background:#51CF66 !important; color:#fff !important; } .ke-shell .ke-rk-key.no{ background:#868E96 !important; color:#ddd !important; }
+  /* Blok Yerlestir */
+  .ke-bk-main{ flex:1; overflow-y:auto; display:flex; flex-direction:column; align-items:center; gap:14px; padding:8px 14px 18px; color:#fff; }
+  .ke-bk-board{ display:grid; grid-template-columns:repeat(8,1fr); gap:3px; width:min(440px, 92vw, 52vh); aspect-ratio:1; padding:6px; border-radius:16px; background:rgba(0,0,0,.28); }
+  .ke-bk-cell{ border-radius:6px; background:rgba(255,255,255,.1); box-shadow:inset 0 -3px 0 rgba(0,0,0,.18); }
+  .ke-bk-tray{ display:flex; gap:14px; justify-content:center; align-items:center; min-height:110px; width:min(440px,100%); }
+  .ke-bk-piece{ display:grid; gap:3px; width:max-content; padding:8px; border-radius:14px; background:rgba(255,255,255,.1); touch-action:none; cursor:grab; }
+  .ke-bk-piece.sel{ outline:3px solid #FFD84D; }
+  .ke-bk-piece.empty{ width:60px; height:60px; background:transparent; }
+  .ke-bk-piece span{ width:28px; height:28px; border-radius:5px; box-shadow:inset 0 -3px 0 rgba(0,0,0,.2); }
+  .ke-bk-ghost{ position:fixed; z-index:9999; pointer-events:none; transform:translate(-50%,-50%); opacity:.85; }
+  .ke-bk-ghost span{ width:34px; height:34px; }
   .ke-game-card-art{ font-size:48px; line-height:1.1; filter:drop-shadow(0 4px 4px rgba(0,0,0,.25)); }
   .ke-game-card-name{ font-family:'Fredoka','Baloo 2',sans-serif; font-size:17px; font-weight:700; }
   .ke-game-card-desc{ font-size:12px; font-weight:600; opacity:.92; line-height:1.3; }
@@ -7929,6 +7958,18 @@ function showGamePicker(container, onExit) {
           <span class="ke-game-card-desc">${L('Parçaları kaydır, resmi tamamla!', 'Slide the pieces, finish the picture!')}</span>
           <span class="ke-game-card-best">${puzzleStars ? '★'.repeat(puzzleStars) + '☆'.repeat(3 - puzzleStars) : L('Yeni!', 'New!')}</span>
         </button>
+        <button type="button" class="ke-game-card ke-game-card-rocket" id="kePickRocket">
+          <span class="ke-game-card-art">🚀</span>
+          <span class="ke-game-card-name">${L('Kelime Roketi', 'Word Rocket')}</span>
+          <span class="ke-game-card-desc">${L('Harfleri bul, roketi yıldıza uçur!', 'Find the letters, fly the rocket to the star!')}</span>
+          <span class="ke-game-card-best">🏆 ${GameBest.get('rocket')}</span>
+        </button>
+        <button type="button" class="ke-game-card ke-game-card-blocks" id="kePickBlocks">
+          <span class="ke-game-card-art">🟦</span>
+          <span class="ke-game-card-name">${L('Blok Yerleştir', 'Block Fit')}</span>
+          <span class="ke-game-card-desc">${L('Parçaları yerleştir, satırları temizle!', 'Place the blocks, clear the lines!')}</span>
+          <span class="ke-game-card-best">🏆 ${GameBest.get('blocks')}</span>
+        </button>
       </div>
       <button type="button" class="ke-game-btn ke-game-btn-ghost" id="kePickCancel">${L('Vazgeç', 'Cancel')}</button>
     </div>
@@ -7938,6 +7979,8 @@ function showGamePicker(container, onExit) {
   const close = () => { overlay.classList.remove('ke-show'); setTimeout(() => overlay.remove(), 250); };
   overlay.querySelector('#kePickRiver').addEventListener('click', () => { close(); startRiverGame(container, onExit); });
   overlay.querySelector('#kePickPuzzle').addEventListener('click', () => { close(); startSlidePuzzle(container, onExit); });
+  overlay.querySelector('#kePickRocket').addEventListener('click', () => { close(); startWordRocket(container, onExit); });
+  overlay.querySelector('#kePickBlocks').addEventListener('click', () => { close(); startBlockFit(container, onExit); });
   overlay.querySelector('#kePickCancel').addEventListener('click', close);
 }
 
@@ -7981,12 +8024,15 @@ function showLeaderboard(container, onExit) {
 // Resimli kayan yap-boz: resim ve zorluk (3x3 / 4x4) seçimi, süre + hamle,
 // "bak" (👁 basılı tut) ile tam resmi görme, parça numarası ipucu, çözülünce
 // parçalar birleşip resim parlıyor, hamle sayısına göre 1-3 yıldız.
+// "Figurler daha anlasilir olmali": kara kedi (parcalar duz siyah), basik
+// maskot ve seffaf zeminli (bos parcali) gorseller yerine her figur kendi
+// renkli sahnesinde kare (scripts/compose_puzzle_images.py).
 const SLIDE_PUZZLE_IMAGES = [
-  'mascot/mascot_idle.png',
-  'photos/dog__animals_pixabay7.jpg',
-  'photos/cat__animals_pixabay7.jpg',
-  'photos/lion__animals_manual.jpg',
-  'photos/butterfly__animals_pixabay7.jpg',
+  'puzzle/puzzle_aktapokus.jpg',
+  'puzzle/puzzle_fish.jpg',
+  'puzzle/puzzle_turtle.jpg',
+  'puzzle/puzzle_tiger.jpg',
+  'puzzle/puzzle_butterfly.jpg',
 ];
 const PUZZLE_LEVELS = {
   easy: { n: 3, gap: 4, shuffle: 120, star3: 45, star2: 90 },
@@ -8305,6 +8351,281 @@ function startSlidePuzzle(container, onExit) {
     refreshGameBadge(container);
     showSetup();
   });
+}
+
+// Yeni odul oyunlari icin profil basina rekor (Kelime Roketi, Blok Yerlestir).
+const GameBest = {
+  key(game) { return `ke_game_best_${game}_v1_${Profiles.active().id}`; },
+  get(game) { try { return Number(window.localStorage.getItem(this.key(game))) || 0; } catch (e) { return 0; } },
+  submit(game, score) {
+    const isBest = score > this.get(game);
+    if (isBest) { try { window.localStorage.setItem(this.key(game), String(score)); } catch (e) { /* yok say */ } }
+    return isBest;
+  },
+};
+
+// Kelime Roketi - "adam asmaca ama adam asmaca olmasin, cocuklar icin baska
+// bir hedef". Resimdeki kelimenin harflerini bul: her dogru harf roketi
+// yildiza yaklastirir, her yanlis harf 5 yildizdan birini sondurur. Kimse
+// "asilmaz"; yildizlar bitince kelime gosterilir, sesli okunur, siradakine
+// gecilir. 5 kelimelik tur, ilk harf ipucu olarak hazir.
+const ROCKET_WORDS = [
+  ['apple', '🍎'], ['banana', '🍌'], ['cat', '🐱'], ['dog', '🐶'], ['fish', '🐟'], ['bird', '🐦'],
+  ['sun', '☀️'], ['moon', '🌙'], ['star', '⭐'], ['tree', '🌳'], ['flower', '🌸'], ['car', '🚗'],
+  ['bus', '🚌'], ['ball', '⚽'], ['book', '📖'], ['house', '🏠'], ['cake', '🎂'], ['milk', '🥛'],
+  ['egg', '🥚'], ['frog', '🐸'], ['duck', '🦆'], ['lion', '🦁'], ['bear', '🐻'], ['cow', '🐮'],
+  ['boat', '⛵'], ['key', '🔑'], ['bread', '🍞'], ['pizza', '🍕'], ['rocket', '🚀'], ['train', '🚆'],
+  ['horse', '🐴'], ['snake', '🐍'], ['rabbit', '🐰'], ['pencil', '✏️'], ['clock', '⏰'], ['rainbow', '🌈'],
+  ['monkey', '🐵'], ['orange', '🍊'], ['umbrella', '☂️'], ['tiger', '🐯'], ['snow', '❄️'], ['shoe', '👟'],
+];
+const ROCKET_LIVES = 5;
+const ROCKET_ROUND = 5;
+function startWordRocket(container, onExit) {
+  if (!GameTokens.spend()) { onExit(); return; }
+  refreshGameBadge(container);
+  const shell = container.querySelector('.ke-shell');
+  const overlay = document.createElement('div');
+  overlay.className = 'ke-puzzle-game ke-rocket-game';
+  shell.appendChild(overlay);
+  const dummy = document.createElement('div');
+  let words = [], wi = 0, solvedCount = 0;
+
+  function newRound() {
+    words = shuffle(ROCKET_WORDS.slice()).slice(0, ROCKET_ROUND);
+    wi = 0; solvedCount = 0;
+    playWord();
+  }
+  function playWord() {
+    if (wi >= words.length) { finish(); return; }
+    const [word, emoji] = words[wi];
+    const found = new Set([word[0]]);
+    const tried = new Set([word[0]]);
+    let lives = ROCKET_LIVES, done = false;
+    overlay.innerHTML = `
+      <div class="ke-game-hud">
+        <div class="ke-hud-group">
+          <div class="ke-hud-pill">🚀 ${wi + 1} / ${words.length}</div>
+          <div class="ke-hud-pill ke-hud-score">🏆 ${solvedCount}</div>
+        </div>
+        <div class="ke-hud-group">
+          <button type="button" class="ke-hud-btn" id="keRkMute"></button>
+          <button type="button" class="ke-hud-btn" id="keRkClose" aria-label="${L('Kapat', 'Close')}">✕</button>
+        </div>
+      </div>
+      <div class="ke-rk-main">
+        <div class="ke-rk-sky"><span class="ke-rk-goal">🌟</span><span class="ke-rk-ship" id="keRkShip">🚀</span></div>
+        <div class="ke-rk-lives" id="keRkLives" aria-label="${L('Kalan yıldız', 'Stars left')}"></div>
+        <button type="button" class="ke-rk-pic" id="keRkSay" aria-label="${L('Kelimeyi dinle', 'Listen to the word')}">${emoji}<small>🔊</small></button>
+        <div class="ke-rk-slots" id="keRkSlots"></div>
+        <div class="ke-rk-msg" id="keRkMsg">${L('Resimdeki kelimenin harflerini bul!', 'Find the letters of the word in the picture!')}</div>
+        <div class="ke-rk-keys" id="keRkKeys">${'abcdefghijklmnopqrstuvwxyz'.split('').map((ch) => `<button type="button" class="ke-rk-key" data-ch="${ch}">${ch.toUpperCase()}</button>`).join('')}</div>
+      </div>`;
+    wireMuteButton(overlay.querySelector('#keRkMute'));
+    overlay.querySelector('#keRkClose').addEventListener('click', () => { overlay.remove(); onExit(); });
+    overlay.querySelector('#keRkSay').addEventListener('click', () => speakWord(word, dummy));
+    const slotsEl = overlay.querySelector('#keRkSlots');
+    const livesEl = overlay.querySelector('#keRkLives');
+    const shipEl = overlay.querySelector('#keRkShip');
+    const msgEl = overlay.querySelector('#keRkMsg');
+    const letters = [...new Set(word.split(''))];
+    function paint(reveal) {
+      slotsEl.innerHTML = word.split('').map((ch) => `<span class="ke-rk-slot${found.has(ch) ? ' on' : ''}${reveal && !found.has(ch) ? ' rev' : ''}">${found.has(ch) || reveal ? ch.toUpperCase() : ''}</span>`).join('');
+      livesEl.innerHTML = Array.from({ length: ROCKET_LIVES }, (_, i) => `<span class="${i < lives ? '' : 'off'}">⭐</span>`).join('');
+      const prog = letters.filter((ch) => found.has(ch)).length / letters.length;
+      shipEl.style.left = `calc(${Math.round(prog * 82)}% )`;
+    }
+    paint(false);
+    speakWord(word, dummy);
+    overlay.querySelectorAll('.ke-rk-key').forEach((b) => {
+      if (tried.has(b.dataset.ch)) { b.disabled = true; b.classList.add('ok'); }
+      b.addEventListener('click', () => {
+        const ch = b.dataset.ch;
+        if (done || tried.has(ch)) return;
+        tried.add(ch); b.disabled = true;
+        if (word.includes(ch)) {
+          found.add(ch); b.classList.add('ok');
+          try { GameSfx.good(); } catch (e) { /* yok say */ }
+        } else {
+          lives--; b.classList.add('no');
+          try { GameSfx.bad(); } catch (e) { /* yok say */ }
+        }
+        const win = letters.every((x) => found.has(x));
+        paint(!win && lives <= 0);
+        if (win) {
+          done = true; solvedCount++;
+          msgEl.textContent = L(`Harika! ${word.toUpperCase()} 🎉`, `Great! ${word.toUpperCase()} 🎉`);
+          shipEl.classList.add('arrived');
+          speakWord(word, dummy);
+          setTimeout(() => { wi++; playWord(); }, 1800);
+        } else if (lives <= 0) {
+          done = true;
+          msgEl.textContent = L(`Kelime: ${word.toUpperCase()} — sıradakinde bulursun! 💪`, `The word is ${word.toUpperCase()} — you'll get the next one! 💪`);
+          speakWord(word, dummy);
+          setTimeout(() => { wi++; playWord(); }, 2600);
+        }
+      });
+    });
+  }
+  function finish() {
+    const isBest = GameBest.submit('rocket', solvedCount);
+    try { GameSfx.win(); } catch (e) { /* yok say */ }
+    overlay.innerHTML = `
+      <div class="ke-river-overlay-msg" style="display:flex;">
+        <div id="keConfettiHost"></div>
+        <div class="ke-game-panel">
+          <div class="ke-panel-title">🚀 ${L('Tur bitti!', 'Round over!')}</div>
+          <div class="ke-gstat-row"><div class="ke-gstat"><b>${solvedCount} / ${words.length}</b><span>${L('kelime', 'words')}</span></div></div>
+          <p class="ke-panel-note">${isBest ? `🏆 ${L('Yeni rekor!', 'New best!')}` : ''}</p>
+          <div class="ke-panel-actions">
+            <button type="button" class="ke-game-btn ke-game-btn-ghost" id="keRkExit">${L('Çık', 'Exit')}</button>
+            ${GameTokens.get() > 0 ? `<button type="button" class="ke-game-btn" id="keRkAgain">${L('Yeni Oyun', 'Play Again')} 🚀</button>` : ''}
+          </div>
+        </div>
+      </div>`;
+    if (solvedCount) launchConfetti(overlay);
+    overlay.querySelector('#keRkExit').addEventListener('click', () => { overlay.remove(); onExit(); });
+    const again = overlay.querySelector('#keRkAgain');
+    if (again) again.addEventListener('click', () => { if (!GameTokens.spend()) return; refreshGameBadge(container); newRound(); });
+  }
+  newRound();
+}
+
+// Blok Yerlestir: 8x8 tahta, altta 3 renkli parca. Parcayi surukleyip
+// birak (ya da parcaya dokun, sonra tahtada bir kareye dokun). Dolan
+// satir/sutun silinir. Her yerlestirmede parcanin rengi Ingilizce soylenir.
+// Hicbir parca sigmazsa oyun biter.
+const BLOCK_SHAPES = [
+  [[0, 0]], [[0, 0], [0, 1]], [[0, 0], [1, 0]], [[0, 0], [0, 1], [0, 2]], [[0, 0], [1, 0], [2, 0]],
+  [[0, 0], [0, 1], [1, 0], [1, 1]], [[0, 0], [1, 0], [1, 1]], [[0, 1], [1, 0], [1, 1]], [[0, 0], [0, 1], [1, 1]],
+  [[0, 0], [0, 1], [0, 2], [0, 3]], [[0, 0], [1, 0], [2, 0], [3, 0]], [[0, 0], [1, 0], [2, 0], [2, 1]],
+  [[0, 0], [0, 1], [0, 2], [1, 1]], [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]],
+];
+const BLOCK_COLOURS = [['red', '#E8453C'], ['blue', '#3B8BEB'], ['green', '#3EB84A'], ['yellow', '#F5C518'], ['orange', '#FF8A1F'], ['purple', '#8A3FE0'], ['pink', '#FF5FB0']];
+function startBlockFit(container, onExit) {
+  if (!GameTokens.spend()) { onExit(); return; }
+  refreshGameBadge(container);
+  const N = 8;
+  const shell = container.querySelector('.ke-shell');
+  const overlay = document.createElement('div');
+  overlay.className = 'ke-puzzle-game ke-blocks-game';
+  shell.appendChild(overlay);
+  const dummy = document.createElement('div');
+  let grid, tray, score, selected;
+
+  function newGame() {
+    grid = Array.from({ length: N }, () => new Array(N).fill(null));
+    score = 0; selected = -1;
+    tray = [piece(), piece(), piece()];
+    render();
+  }
+  function piece() {
+    const [name, hex] = BLOCK_COLOURS[Math.floor(Math.random() * BLOCK_COLOURS.length)];
+    return { cells: BLOCK_SHAPES[Math.floor(Math.random() * BLOCK_SHAPES.length)], name, hex };
+  }
+  const fits = (p, r0, c0) => p.cells.every(([r, c]) => r0 + r >= 0 && r0 + r < N && c0 + c >= 0 && c0 + c < N && !grid[r0 + r][c0 + c]);
+  const fitsAnywhere = (p) => { for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (fits(p, r, c)) return true; return false; };
+
+  function render() {
+    overlay.innerHTML = `
+      <div class="ke-game-hud">
+        <div class="ke-hud-group"><div class="ke-hud-pill ke-hud-score">⭐ <span id="keBkScore">${score}</span></div><div class="ke-hud-pill">🏆 ${GameBest.get('blocks')}</div></div>
+        <div class="ke-hud-group"><button type="button" class="ke-hud-btn" id="keBkMute"></button><button type="button" class="ke-hud-btn" id="keBkClose" aria-label="${L('Kapat', 'Close')}">✕</button></div>
+      </div>
+      <div class="ke-bk-main">
+        <div class="ke-bk-board" id="keBkBoard">${grid.map((row, r) => row.map((v, c) => `<div class="ke-bk-cell" data-r="${r}" data-c="${c}" style="${v ? `background:${v}` : ''}"></div>`).join('')).join('')}</div>
+        <div class="ke-bk-tray" id="keBkTray">${tray.map((p, i) => pieceHTML(p, i)).join('')}</div>
+        <p class="ke-jr-hint">${L('Parçayı sürükle ya da önce parçaya, sonra tahtaya dokun.', 'Drag a block, or tap a block and then tap the board.')}</p>
+      </div>`;
+    wireMuteButton(overlay.querySelector('#keBkMute'));
+    overlay.querySelector('#keBkClose').addEventListener('click', () => { overlay.remove(); onExit(); });
+    overlay.querySelectorAll('.ke-bk-piece').forEach((el) => wirePiece(el));
+    overlay.querySelectorAll('.ke-bk-cell').forEach((cell) => cell.addEventListener('click', () => {
+      if (selected < 0) return;
+      tryPlace(selected, Number(cell.dataset.r), Number(cell.dataset.c), 0, 0);
+    }));
+  }
+  function pieceHTML(p, i) {
+    if (!p) return '<div class="ke-bk-piece empty"></div>';
+    const h = Math.max(...p.cells.map(([r]) => r)) + 1;
+    const w = Math.max(...p.cells.map(([, c]) => c)) + 1;
+    const set = new Set(p.cells.map(([r, c]) => `${r},${c}`));
+    let cells = '';
+    for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) {
+      cells += `<span data-r="${r}" data-c="${c}" style="${set.has(`${r},${c}`) ? `background:${p.hex}` : 'visibility:hidden'}"></span>`;
+    }
+    return `<div class="ke-bk-piece${selected === i ? ' sel' : ''}" data-i="${i}" style="grid-template-columns:repeat(${w},1fr)" aria-label="${p.name}">${cells}</div>`;
+  }
+  function wirePiece(el) {
+    if (el.classList.contains('empty')) return;
+    const i = Number(el.dataset.i);
+    el.addEventListener('pointerdown', (ev) => {
+      ev.preventDefault();
+      const part = ev.target.closest('span');
+      const gr = part ? Number(part.dataset.r) : 0, gc = part ? Number(part.dataset.c) : 0;
+      const sx = ev.clientX, sy = ev.clientY;
+      let ghost = null, moved = false;
+      const move = (e) => {
+        if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) > 8) {
+          moved = true; ghost = el.cloneNode(true); ghost.classList.add('ke-bk-ghost');
+          ghost.style.width = el.offsetWidth * 1.4 + 'px'; document.body.appendChild(ghost);
+        }
+        if (ghost) { ghost.style.left = e.clientX + 'px'; ghost.style.top = (e.clientY - 60) + 'px'; }
+      };
+      const up = (e) => {
+        document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', up);
+        if (ghost) ghost.remove();
+        if (!moved) { selected = selected === i ? -1 : i; render(); return; }
+        const t = document.elementFromPoint(e.clientX, e.clientY - 60);
+        const cell = t && t.closest ? t.closest('.ke-bk-cell') : null;
+        if (cell) tryPlace(i, Number(cell.dataset.r), Number(cell.dataset.c), gr, gc);
+      };
+      document.addEventListener('pointermove', move); document.addEventListener('pointerup', up); document.addEventListener('pointercancel', up);
+    });
+  }
+  function tryPlace(i, r, c, gr, gc) {
+    const p = tray[i];
+    if (!p) return;
+    const r0 = r - gr, c0 = c - gc;
+    if (!fits(p, r0, c0)) { try { GameSfx.bad(); } catch (e) { /* yok say */ } return; }
+    p.cells.forEach(([dr, dc]) => { grid[r0 + dr][c0 + dc] = p.hex; });
+    score += p.cells.length;
+    speakWord(p.name, dummy);
+    const rows = [], cols = [];
+    for (let k = 0; k < N; k++) {
+      if (grid[k].every(Boolean)) rows.push(k);
+      if (grid.every((row) => row[k])) cols.push(k);
+    }
+    rows.forEach((k) => { grid[k] = new Array(N).fill(null); });
+    cols.forEach((k) => grid.forEach((row) => { row[k] = null; }));
+    const lines = rows.length + cols.length;
+    score += lines * 10 * lines;
+    try { if (lines) GameSfx.win(); else GameSfx.pickup(); } catch (e) { /* yok say */ }
+    tray[i] = null; selected = -1;
+    if (tray.every((x) => !x)) tray = [piece(), piece(), piece()];
+    render();
+    if (!tray.some((x) => x && fitsAnywhere(x))) setTimeout(gameOver, 500);
+  }
+  function gameOver() {
+    const isBest = GameBest.submit('blocks', score);
+    overlay.insertAdjacentHTML('beforeend', `
+      <div class="ke-river-overlay-msg" style="display:flex;">
+        <div id="keConfettiHost"></div>
+        <div class="ke-game-panel">
+          <div class="ke-panel-title">🟦 ${L('Yer kalmadı!', 'No more space!')}</div>
+          <div class="ke-gstat-row"><div class="ke-gstat"><b>${score}</b><span>${L('puan', 'points')}</span></div></div>
+          <p class="ke-panel-note">${isBest ? `🏆 ${L('Yeni rekor!', 'New best!')}` : ''}</p>
+          <div class="ke-panel-actions">
+            <button type="button" class="ke-game-btn ke-game-btn-ghost" id="keBkExit">${L('Çık', 'Exit')}</button>
+            ${GameTokens.get() > 0 ? `<button type="button" class="ke-game-btn" id="keBkAgain">${L('Yeni Oyun', 'Play Again')} 🟦</button>` : ''}
+          </div>
+        </div>
+      </div>`);
+    if (isBest) launchConfetti(overlay);
+    overlay.querySelector('#keBkExit').addEventListener('click', () => { overlay.remove(); onExit(); });
+    const again = overlay.querySelector('#keBkAgain');
+    if (again) again.addEventListener('click', () => { if (!GameTokens.spend()) return; refreshGameBadge(container); newGame(); });
+  }
+  newGame();
 }
 
 // Nehir Macerası: Aktapokus teknesiyle nehirde ilerliyor. Oyunun kalbi bir
