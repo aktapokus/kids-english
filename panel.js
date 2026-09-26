@@ -691,6 +691,45 @@ const PendingQuiz = {
   get() { return this._load().count; },
 };
 
+// Aralikli geri cagirma (spaced retrieval) - CEFR/Maarif iterasyonu
+// 2026-09-26: A1 kelimelerinin %37'si kendi kartindan sonra hicbir yerde
+// tekrar gecmiyordu; dogru bilinen kelime bir daha sorulmuyordu (yalniz
+// yanlislar tekrar kuyruguna giriyordu). Bitirilen bolumun kelimeleri bu
+// kutuya girer; sonraki bolumlerin soru asamasina vakti gelen en fazla 2
+// kelime "Hatirla!" sorusu olarak eklenir. Dogru -> aralik uzar
+// (1,2,4,7,14,30 gun), yanlis -> basa doner + tekrar kuyruguna girer.
+const RECALL_KEY = 'ke_recall_v1';
+const RECALL_DAYS = [1, 2, 4, 7, 14, 30];
+function recallKey() {
+  const id = Profiles.active().id;
+  return id === 'p1' ? RECALL_KEY : RECALL_KEY + '_' + id;
+}
+const Recall = {
+  _load() { try { return JSON.parse(window.localStorage.getItem(recallKey())) || {}; } catch (e) { return {}; } },
+  _save(d) { try { window.localStorage.setItem(recallKey(), JSON.stringify(d)); } catch (e) { /* yok say */ } idbPut(recallKey(), d); },
+  add(catId, objs) {
+    const d = this._load();
+    const due = Date.now() + RECALL_DAYS[0] * 86400000;
+    (objs || []).forEach((o) => {
+      if (!o || !o.word || o.icon_type === undefined || d[o.word]) return;
+      d[o.word] = { w: o.word, tr: o.tr, it: o.icon_type, ic: o.icon, c: catId, box: 0, due };
+    });
+    this._save(d);
+  },
+  due(n, exclude) {
+    const now = Date.now();
+    return Object.values(this._load()).filter((r) => r.due <= now && !(exclude && exclude.has(r.w)))
+      .sort((a, b) => a.due - b.due).slice(0, n);
+  },
+  result(word, ok) {
+    const d = this._load();
+    const r = d[word]; if (!r) return;
+    r.box = ok ? Math.min(r.box + 1, RECALL_DAYS.length - 1) : 0;
+    r.due = Date.now() + RECALL_DAYS[r.box] * 86400000;
+    this._save(d);
+  },
+};
+
 const Progress = {
   _load() {
     try {
@@ -3562,7 +3601,7 @@ function showGuide(container, api, toolId, categories) {
     },
     {
       icon: '🧩', title: L('Bir bölümde ne yapılır?', 'What happens in an episode?'),
-      body: L('Her bölümde 4–6 kelime vardır ve aşamalar sırayla gelir: 👀 Keşif (resme dokun, dinle) → ❓ Soru (doğru resmi seç) → 🎤 Konuş (kelimeyi söyle) → 🧩 Cümle (kelimelerden cümle kur). Yanlış yaptığın kelimeler "tekrar" listesine girer ve sonraki günlerde ana ekranda hatırlatılır.', 'Each episode has 4–6 words and steps come in order: 👀 Discover (tap and listen) → ❓ Quiz (pick the right picture) → 🎤 Speak (say the word) → 🧩 Sentence (build a sentence). Words you miss go into a review list and come back on the home screen on later days.'),
+      body: L('Her bölümde 4–6 kelime vardır ve aşamalar sırayla gelir: 👀 Keşif (resme dokun, dinle) → ❓ Soru (doğru resmi seç) → 🎤 Konuş (kelimeyi söyle) → 🧩 Cümle (kelimelerden cümle kur). Yanlış yaptığın kelimeler "tekrar" listesine girer ve sonraki günlerde ana ekranda hatırlatılır. Bitirdiğin kelimeler de unutulmasın diye birkaç gün sonra başka bölümlerin sorularında "🧠 Hatırla!" olarak yeniden sorulur (1, 2, 4, 7, 14, 30 gün arayla).', 'Each episode has 4–6 words and steps come in order: 👀 Discover (tap and listen) → ❓ Quiz (pick the right picture) → 🎤 Speak (say the word) → 🧩 Sentence (build a sentence). Words you miss go into a review list and come back on the home screen on later days. Finished words also come back as "🧠 Remember!" questions in later episodes (after 1, 2, 4, 7, 14 and 30 days), so they are not forgotten.'),
     },
     {
       icon: '📚', title: L('Kütüphane ve bölümler', 'Library and sections'),
@@ -3728,6 +3767,7 @@ function profileStorageKeys(pid) {
     pendingQuiz: pid === 'p1' ? PENDING_QUIZ_KEY : PENDING_QUIZ_KEY + '_' + pid,
     mathBest: pid === 'p1' ? 'ke_math_best_v1' : 'ke_math_best_v1_' + pid,
     puzzle: `${PUZZLE_BEST_KEY}_${pid}`,
+    recall: pid === 'p1' ? RECALL_KEY : RECALL_KEY + '_' + pid,
   };
 }
 
@@ -6610,7 +6650,11 @@ function startQuiz(host, container, episode, wordList, mascotEl, restartEpisode,
   mascotEl.classList.add('ke-mascot-compact');
   setMascotPose(host, 'think');
 
-  const order = shuffle(wordList.map((_, i) => i));
+  // Aralikli tekrar: onceki bolumlerden vakti gelen en fazla 2 kelime
+  // sona eklenir (tekrar turu ve konusma disinda).
+  const reviews = episode.isReview ? [] : Recall.due(2, new Set(wordList.map((o) => o.word)))
+    .map((r) => ({ word: r.w, tr: r.tr, icon_type: r.it, icon: r.ic, _review: true, _cat: r.c }));
+  const order = shuffle(wordList.slice()).concat(reviews);
   let qIndex = 0;
   let currentCorrectWord = null;
   let currentCorrectObj = null;
@@ -6638,7 +6682,8 @@ function startQuiz(host, container, episode, wordList, mascotEl, restartEpisode,
     }
     attempts = 0;
     quizProgressEl.textContent = L(`Soru ${qIndex + 1} / ${order.length}`, `Question ${qIndex + 1} / ${order.length}`);
-    const correctObj = wordList[order[qIndex]];
+    const correctObj = order[qIndex];
+    quizBubbleEl.textContent = correctObj._review ? L('🧠 Hatırla! Önceki bir bölümden:', '🧠 Remember! From an earlier episode:') : askText;
     currentCorrectWord = correctObj.word;
     currentCorrectObj = correctObj;
     // Sadece sese güvenmek yerine kelimenin YAZISI da gösteriliyor —
@@ -6649,7 +6694,7 @@ function startQuiz(host, container, episode, wordList, mascotEl, restartEpisode,
     // Yanlış seçenekler tüm bölüm havuzundan gelebilir (çocuk sahnede
     // onları da gördü) — ama "doğru cevap" olarak sadece keşfettiği
     // kelimeler soruluyor.
-    const others = episode.objects.filter((o) => o.word !== correctObj.word);
+    const others = episode.objects.filter((o) => o.word !== correctObj.word && !(o.icon === correctObj.icon && o.icon_type === correctObj.icon_type));
     const distractors = shuffle(others).slice(0, 3);
     const options = shuffle([correctObj, ...distractors]);
 
@@ -6675,6 +6720,7 @@ function startQuiz(host, container, episode, wordList, mascotEl, restartEpisode,
       card.classList.add('ke-correct');
       lockCards();
       celebrateBounce(mascotEl);
+      if (currentCorrectObj._review) Recall.result(currentCorrectObj.word, attempts === 1);
       if (attempts === 1) {
         correctFirstTry++;
         // İlk denemede doğru = artık biliyor demek — daha önce tekrar
@@ -6689,6 +6735,14 @@ function startQuiz(host, container, episode, wordList, mascotEl, restartEpisode,
     card.classList.add('ke-wrong');
     card.disabled = true;
 
+    if (attempts === 1 && currentCorrectObj._review) {
+      // Hatirla sorusu: bolumu yeniden baslatmaz; kelime kendi kategorisinin
+      // tekrar kuyruguna girer, kutusu basa doner.
+      Recall.result(currentCorrectObj.word, false);
+      Progress.recordMistake(currentCorrectObj._cat, currentCorrectObj);
+      quizBubbleEl.textContent = L('Tekrar dene! 💪', 'Try again! 💪');
+      return;
+    }
     if (attempts === 1) {
       mistakeWords.add(currentCorrectWord);
       Progress.recordMistake(episode.category_id, currentCorrectObj);
@@ -7655,6 +7709,7 @@ function showCelebration(host, container, episode, wordList, score, onDone) {
     Progress.clearMistakes(episode.category_id, wordList.map((o) => o.word));
   } else {
     Progress.markComplete(episode.category_id, episode.episode_index);
+    try { Recall.add(episode.category_id, wordList); } catch (e) { /* yok say */ }
   }
   try { DailyGoal.add(wordList.length); } catch (e) { /* yok say */ }
   const overlay = host.querySelector('#keCelebration');
