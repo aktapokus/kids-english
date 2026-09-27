@@ -4677,9 +4677,11 @@ function speakUI(text) {
   const synth = window.speechSynthesis;
   synth.cancel();
   const u = new SpeechSynthesisUtterance(String(text).replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/gu, ''));
-  u.lang = _lang === 'tr' ? 'tr-TR' : 'en-US';
-  const v = synth.getVoices().find((x) => x.lang && x.lang.toLowerCase().startsWith(_lang === 'tr' ? 'tr' : 'en'));
-  if (v) u.voice = v;
+  if (_lang === 'tr') {
+    u.lang = 'tr-TR';
+    const v = synth.getVoices().find((x) => x.lang && x.lang.toLowerCase().startsWith('tr'));
+    if (v) u.voice = v;
+  } else applyEnglishVoice(u);
   u.rate = 0.95;
   synth.speak(u);
 }
@@ -6619,7 +6621,7 @@ function primeMicrophonePermission() {
   if (!SR) return;
   try {
     const primer = new SR();
-    primer.lang = 'en-US';
+    primer.lang = EN_LANG;
     primer.onstart = () => setTimeout(() => { try { primer.abort(); } catch (e) { /* no-op */ } }, 150);
     primer.onerror = () => { /* reddedildi/mikrofon yok — sorun değil */ };
     primer.start();
@@ -6691,15 +6693,27 @@ const MALE_VOICE_HINTS = [
 // düşüyor - ve önbellek asla yenilenmediği için bu durum kalıcı oluyordu.
 // getVoices() ucuz bir cagri (motorun zaten yukledigi listeyi dondurur),
 // bu yuzden her konusmada TAZE seciyoruz - kalici referans tutmuyoruz.
+// Icerik Ingiliz Ingilizcesi (colour, jumper; MEB kitaplari da BrE) -
+// ses de oncelikle en-GB (2026-09-27 ogretmen degerlendirmesi: "icerik BrE,
+// ses AmE"). Android bazen dili "en_GB" yaziyor -> normalize.
+const EN_LANG = 'en-GB';
+const voiceLang = (v) => String((v && v.lang) || '').replace('_', '-').toLowerCase();
 function pickMaleVoice() {
   const voices = window.speechSynthesis.getVoices();
   if (!voices.length) return null; // henüz yüklenmedi, bir sonraki çağrıda tekrar denenir
-  const enVoices = voices.filter((v) => v.lang && v.lang.toLowerCase().startsWith('en'));
+  const enVoices = voices.filter((v) => voiceLang(v).startsWith('en'));
   // İngilizce ses YOKSA voices[0]'a düşmüyoruz: Android'de bu genelde
   // Türkçe/başka dilde bir ses oluyor ve utter.lang ile çelişince cihaz
   // SESSİZ kalıyordu.
-  return enVoices.find((v) => MALE_VOICE_HINTS.some((hint) => v.name.includes(hint)))
-    || enVoices[0] || null;
+  const gb = enVoices.filter((v) => voiceLang(v) === 'en-gb');
+  const male = (list) => list.find((v) => MALE_VOICE_HINTS.some((hint) => v.name.includes(hint)));
+  return male(gb) || gb[0] || male(enVoices) || enVoices[0] || null;
+}
+// Secilen sesin dili konusmaya da yazilir (dil/ses celisirse bazi Android
+// cihazlar sessiz kaliyordu); ses yoksa en-GB.
+function applyEnglishVoice(utter) {
+  const voice = pickMaleVoice();
+  if (voice && voiceLang(voice).startsWith('en')) { utter.voice = voice; utter.lang = voice.lang.replace('_', '-'); } else utter.lang = EN_LANG;
 }
 
 // Doğru cevap / kelime bulma / cümle tamamlama gibi olumlu anlarda
@@ -6869,12 +6883,10 @@ function speakStoryText(lines, host, onDone) {
     const words = paras[i] || [];
     let started = false;
     const utter = new SpeechSynthesisUtterance(lines[i]);
-    utter.lang = 'en-US';
     utter.rate = 0.78;
     utter.pitch = 0.85;
     utter.volume = 1;
-    const voice = pickMaleVoice();
-    if (voice && voice.lang && voice.lang.toLowerCase().startsWith('en')) utter.voice = voice;
+    applyEnglishVoice(utter);
     window._keLastUtter = utter;
     let startedAt = 0;
     utter.onstart = () => { started = true; startedAt = performance.now(); startFallback(words); };
@@ -6939,12 +6951,10 @@ function speakWord(word, mascotEl, onDone) {
   const doSpeak = () => {
     if (synth.paused) synth.resume();
     const utter = new SpeechSynthesisUtterance(word);
-    utter.lang = 'en-US';
     utter.rate = 0.78;
     utter.pitch = 0.85; // erkek karaktere daha yakın, kalın bir ton
     utter.volume = 1;
-    const voice = pickMaleVoice();
-    if (voice && voice.lang && voice.lang.toLowerCase().startsWith('en')) utter.voice = voice;
+    applyEnglishVoice(utter);
     window._keLastUtter = utter;
     utter.onend = finish;
     utter.onerror = (e) => {
@@ -6991,7 +7001,7 @@ function runSoundTest(infoEl) {
   setTimeout(() => {
     if (synth.paused) synth.resume();
     const u = new SpeechSynthesisUtterance('Hello, I am Aktapokus');
-    u.lang = 'en-US';
+    applyEnglishVoice(u);
     u.volume = 1;
     window._keLastUtter = u;
     u.onstart = () => { lines.push(L('▶ konuşma başladı', '▶ speech started')); show(); };
@@ -7189,7 +7199,7 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
   const recognition = SR ? new SR() : null;
   container._keActiveRecognition = recognition;
   if (recognition) {
-    recognition.lang = 'en-US';
+    recognition.lang = EN_LANG; // BrE tanima: "colour" -> "color" donmesin
     // continuous:false — tek-seferlik, kanıtlanmış mod. continuous:true
     // denenmişti ama gerçek tarayıcılarda "hemen kapanıyor" şikayetini
     // çözmedi; aşağıdaki kendi retry mantığımız (onerror/onend + no-speech
@@ -8165,7 +8175,7 @@ function startConversationRound(host, container, episode, mascotEl, onFinished) 
     micBtn.onclick = () => {
       let rec;
       try { rec = new SR(); } catch (e) { return; }
-      rec.lang = 'en-US'; rec.interimResults = false; rec.maxAlternatives = 3;
+      rec.lang = EN_LANG; rec.interimResults = false; rec.maxAlternatives = 3;
       micBtn.disabled = true;
       micBtn.textContent = `🎙️ ${L('Dinliyorum…', 'Listening…')}`;
       container._keActiveRecognition = rec;
