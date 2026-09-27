@@ -132,7 +132,8 @@ const CATEGORY_MOTIF = {
 // CEFR denetiminde A2 olarak isaretlenip A1'den tasinan kelimeler, GORSEL
 // KIMLIK olarak hala ayni kategoriye ait (ör. daily_life_a2, daily_life
 // ile ayni renk/motifi kullanir). Ayri bir renk seti tanimlamiyoruz.
-function baseCatId(id) { return id.endsWith('_a2') ? id.slice(0, -3) : id; }
+// B1 pilotu (2026-09-27): '{kategori}_b1' ayni sekilde A1 temasini paylasir.
+function baseCatId(id) { return /_(a2|b1)$/.test(id) ? id.slice(0, -3) : id; }
 
 // Kalıcı, gizlilik-dostu ilerleme: sadece bu cihazın tarayıcısında
 // (localStorage), sunucuya/buluta hiç gönderilmeden. Ebeveyn tarayıcı
@@ -3503,12 +3504,13 @@ const CONVERSATION_CATEGORY_IDS = [
 ];
 const OPPOSITE_CATEGORY_IDS = ['opposites'];
 const A2_CATEGORY_SUFFIX = '_a2';
+const B1_CATEGORY_SUFFIX = '_b1';
 // İngilizce ilkokul matematiği pilotu (bkz. scripts/build_math_pilot.py)
 const MATH_CATEGORY_PREFIX = 'math_';
 const SECTIONS = [
   { id: 'words', title: 'Words', sub: 'Themed word categories', subTr: 'Temalı kelime kategorileri', titleTr: 'Kelimeler', motif: '📚',
     theme: { c: '#FFA000', dark: '#DB8A00', tint: '#FFCF66' },
-    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !CONVERSATION_CATEGORY_IDS.includes(c.id) && !OPPOSITE_CATEGORY_IDS.includes(c.id) && !c.id.endsWith(A2_CATEGORY_SUFFIX) && !c.id.startsWith(MATH_CATEGORY_PREFIX) },
+    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !CONVERSATION_CATEGORY_IDS.includes(c.id) && !OPPOSITE_CATEGORY_IDS.includes(c.id) && !c.id.endsWith(A2_CATEGORY_SUFFIX) && !c.id.endsWith(B1_CATEGORY_SUFFIX) && !c.id.startsWith(MATH_CATEGORY_PREFIX) },
   { id: 'grammar', title: 'Grammar', sub: 'Prepositions: in, on, at, under…', subTr: 'Edatlar: in, on, at, under…', titleTr: 'Gramer', motif: '🧩',
     theme: { c: '#00ACC1', dark: '#008BA0', tint: '#5DD6E6' },
     pick: (c) => GRAMMAR_CATEGORY_IDS.includes(c.id) },
@@ -3523,6 +3525,12 @@ const SECTIONS = [
     // CEFR denetiminde A2 olarak isaretlenip A1'den tasinan kelimeler -
     // bkz. scripts/migrate_a2_from_audit.py. Su an 228/600 hedef kelime.
     pick: (c) => c.id.endsWith(A2_CATEGORY_SUFFIX) },
+  // B1 pilotu: Cambridge B1 Preliminary; her bolum tek yapi (present perfect,
+  // past continuous, first conditional, passive, modals). MEB kapsaminin
+  // (8. sinif A2.4) ustu - ileri ogrenciler icin.
+  { id: 'b1', title: 'B1 Level', sub: 'Pilot: travel · 5 structures', subTr: 'Pilot: seyahat · 5 yapı', titleTr: 'B1 Seviyesi', motif: '🌀',
+    theme: { c: '#5C6BC0', dark: '#3F4FA8', tint: '#9FA8DA' },
+    pick: (c) => c.id.endsWith(B1_CATEGORY_SUFFIX) },
   { id: 'get', title: 'Get', sub: 'get up, get in, get on…', subTr: 'get up, get in, get on…', titleTr: 'Get', motif: '🔄',
     theme: { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
     pick: (c) => GET_CATEGORY_IDS.includes(c.id) },
@@ -3769,7 +3777,7 @@ function showGuide(container, api, toolId, categories) {
     },
     {
       icon: '📚', title: L('Kütüphane ve bölümler', 'Library and sections'),
-      body: L('Kütüphane serbest çalışma alanıdır; Macera sırasını beklemeden istediğin konuyu açarsın. Bölümler: <b>Words</b> (konu konu kelimeler), <b>Grammar</b> (in, on, under gibi yer bildiren kelimeler), <b>Questions</b> (Who, What, Where…), <b>Opposites</b> (büyük/küçük gibi zıtlar), <b>A2 Level</b> (5.–6. sınıf kelimeleri ve cümleleri), <b>Get</b> (get kalıpları), <b>Maths in English</b> (Matematik Yolu, Sayı Yağmuru, Çarpım Tablosu) ve <b>Story Time</b> (sesli okunan Aktapokus hikâyeleri).', 'The Library is free practice: open any topic without waiting for the Adventure order. Sections: <b>Words</b> (topic by topic), <b>Grammar</b> (place words like in, on, under), <b>Questions</b> (Who, What, Where…), <b>Opposites</b> (big/small and more), <b>A2 Level</b> (grade 5–6 words and sentences), <b>Get</b> (phrases with get), <b>Maths in English</b> (Maths Path, Number Rain, Times Tables) and <b>Story Time</b> (read-along Aktapokus stories).'),
+      body: L('Kütüphane serbest çalışma alanıdır; Macera sırasını beklemeden istediğin konuyu açarsın. Bölümler: <b>Words</b> (konu konu kelimeler), <b>Grammar</b> (in, on, under gibi yer bildiren kelimeler), <b>Questions</b> (Who, What, Where…), <b>Opposites</b> (büyük/küçük gibi zıtlar), <b>A2 Level</b> (5.–6. sınıf kelimeleri ve cümleleri), <b>B1 Level</b> (ileri seviye pilot: seyahat), <b>Get</b> (get kalıpları), <b>Maths in English</b> (Matematik Yolu, Sayı Yağmuru, Çarpım Tablosu) ve <b>Story Time</b> (sesli okunan Aktapokus hikâyeleri).', 'The Library is free practice: open any topic without waiting for the Adventure order. Sections: <b>Words</b> (topic by topic), <b>Grammar</b> (place words like in, on, under), <b>Questions</b> (Who, What, Where…), <b>Opposites</b> (big/small and more), <b>A2 Level</b> (grade 5–6 words and sentences), <b>B1 Level</b> (advanced pilot: travel), <b>Get</b> (phrases with get), <b>Maths in English</b> (Maths Path, Number Rain, Times Tables) and <b>Story Time</b> (read-along Aktapokus stories).'),
     },
     {
       icon: '🎮', title: L('Oyun hakkı nasıl kazanılır?', 'How do I earn a game?'),
@@ -4129,6 +4137,8 @@ const JOURNEY_SECTORS = [
     planets: ['technology_computers', 'conv_technology', 'communication_internet', 'science', 'space_astronomy', 'conv_space'] },
   { id: 'neptune', emoji: '🔵', tr: 'Neptün Kapısı', en: 'Neptune Gate', grade: 5, get level() { return L('5. Sınıf', 'Grade 5') + ' · A2.1'; }, planets: A2_JOURNEY_IDS.y5 },
   { id: 'galaxy', emoji: '🌌', tr: 'Galaksi Merkezi', en: 'Galaxy Core', grade: 6, get level() { return L('6. Sınıf', 'Grade 6') + ' · A2.2'; }, planets: A2_JOURNEY_IDS.y6 },
+  // B1 pilotu (2026-09-27): MEB kapsaminin ustu (7. sinif ve ileri).
+  { id: 'nebula', emoji: '🌀', tr: 'Nebula Kapısı', en: 'Nebula Gate', grade: 7, get level() { return L('7. Sınıf+', 'Grade 7+') + ' · B1'; }, planets: ['travel_transportation_b1'] },
 ];
 const SKIP_PASS_RATIO = 0.8;
 let _journeyMode = false;
@@ -4212,6 +4222,7 @@ function planetName(p) {
   const name = catLabel(p.cat);
   if (p.id.startsWith('conv_')) return `💬 ${name}`;
   if (p.id.endsWith(A2_CATEGORY_SUFFIX)) return `${name} · A2`;
+  if (p.id.endsWith(B1_CATEGORY_SUFFIX)) return `${name} · B1`;
   return name;
 }
 

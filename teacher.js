@@ -204,6 +204,7 @@ const GRADE_STEPS = [
   ['Bonus · A1+', ['technology_computers', 'conv_technology', 'communication_internet', 'science', 'space_astronomy', 'conv_space']],
   ['5. Sınıf · A2.1', ['daily_life', 'family_people', 'school_education', 'classroom_life', 'body_health', 'clothes_shopping', 'food_drinks', 'animals', 'nature_environment', 'city_places', 'hobbies_free_time'].map((x) => x + '_a2')],
   ['6. Sınıf · A2.2', ['home', 'jobs_professions', 'travel_transportation', 'emotions_personality', 'weather_seasons', 'sports_exercise', 'technology_computers', 'science', 'communication_internet', 'space_astronomy'].map((x) => x + '_a2')],
+  ['7. Sınıf+ · B1', ['travel_transportation_b1']],
 ];
 // Ogrencinin bulundugu basamak: tum gezegenleri bitmis/atlanmis ilk
 // OLMAYAN basamak. Ilerleme verisi yoksa '—'.
