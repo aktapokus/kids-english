@@ -536,7 +536,7 @@ function showReportDialog(container, obj, categoryId, episodeId) {
   const shell = container.querySelector('.ke-shell') || document.body;
   const ov = document.createElement('div');
   ov.className = 'ke-river-overlay-msg ke-report-ov';
-  ov.style.position = 'fixed'; ov.style.zIndex = '95';
+  ov.style.position = 'fixed'; ov.style.zIndex = '9500'; // kelime balonunun (9000) ustunde
   ov.innerHTML = `
     <div class="ke-river-msg-card ke-report-card" role="dialog" aria-label="${L('Sorun bildir', 'Report a problem')}">
       <h2 style="margin:0 0 4px;">⚑ ${L('Sorun bildir', 'Report a problem')}</h2>
