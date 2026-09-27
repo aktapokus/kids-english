@@ -130,6 +130,7 @@ async function signUp() {
   } catch (e) { setMsg(msgEl, e.message, 'err'); }
 }
 
+let _classNames = {};
 async function loadClasses() {
   const listEl = document.getElementById('classList');
   listEl.innerHTML = '<p class="empty">Yükleniyor...</p>';
@@ -138,6 +139,7 @@ async function loadClasses() {
   catch (e) { listEl.innerHTML = '<p class="empty">Sınıflar yüklenemedi: ' + e.message + '</p>'; return; }
   if (!classes.length) { listEl.innerHTML = '<p class="empty">Henüz bir sınıfın yok. Yukarıdan bir tane oluştur.</p>'; return; }
   listEl.innerHTML = '';
+  _classNames = Object.fromEntries(classes.map((c) => [c.id, c.name]));
   classes.forEach((c) => {
     const div = document.createElement('div');
     div.className = 'class-item';
@@ -206,6 +208,97 @@ const GRADE_STEPS = [
   ['6. Sınıf · A2.2', ['home', 'jobs_professions', 'travel_transportation', 'emotions_personality', 'weather_seasons', 'sports_exercise', 'technology_computers', 'science', 'communication_internet', 'space_astronomy', 'made_of'].map((x) => x + '_a2')],
   ['7. Sınıf+ · B1', ['travel_transportation_b1']],
 ];
+// MEB Ingilizce Ogretim Programi (Maarif, 2025) tema tablolari (s.30-34)
+// x uygulama kategorileri. Ogretmen "gezegen" degil "unite" diliyle
+// dusunur (2026-09-27 ogretmen degerlendirmesi). Eslesme en yakin
+// kategoriye gore YAKLASIKTIR - panelde de oyle yazar.
+const MEB_UNITS = {
+  2: [
+    ['School Life', 'Okul Hayatı', ['school_education', 'expressions', 'conv_social_manners', 'conv_school']],
+    ['Classroom Life', 'Sınıf Hayatı', ['classroom_life', 'math_numbers']],
+    ['Personal Life', 'Kişisel Hayat', ['body_health', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons']],
+    ['Family Life', 'Aile Hayatı', ['family_people', 'conv_family_home']],
+    ['Homes & Houses & Neighbourhoods', 'Evler ve Mahalle', ['home', 'animals']],
+    ['Life in the City & the World', 'Şehirde ve Dünyada Hayat', ['food_drinks', 'conv_food_drinks']],
+  ],
+  3: [
+    ['School Life', 'Okul Hayatı', ['school_education', 'months_time', 'conv_school']],
+    ['Classroom Life', 'Sınıf Hayatı', ['classroom_life', 'question_words', 'prepositions', 'math_shapes']],
+    ['Personal Life', 'Kişisel Hayat', ['body_health', 'emotions_personality', 'conv_feelings_preferences', 'weather_seasons', 'clothes_shopping']],
+    ['Family Life', 'Aile Hayatı', ['family_people', 'daily_life', 'conv_daily_routine', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports']],
+    ['Homes & Houses & Neighbourhoods', 'Evler ve Mahalle (kır, çiftlik)', ['nature_environment', 'animals', 'conv_animals_nature']],
+    ['Life in the City & the World', 'Şehirde ve Dünyada Hayat', ['food_drinks', 'conv_food_drinks']],
+  ],
+  4: [
+    ['School Life', 'Okul Hayatı', ['daily_life', 'school_education', 'time_machine']],
+    ['Classroom Life', 'Sınıf Hayatı (şimdi ve geçmişte)', ['irregular_verbs', 'time_machine', 'conv_past', 'months_time', 'math_operations']],
+    ['Personal Life', 'Kişisel Hayat (karşılaştırmalar)', ['opposites', 'hobbies_free_time', 'weather_seasons', 'clothes_shopping']],
+    ['Family Life', 'Aile Hayatı (meslekler, hizmet yerleri)', ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'get']],
+    ['Homes & Houses & the Neighbourhood', 'Evler ve Mahalle (deniz kıyısı)', ['animals', 'nature_environment']],
+    ['Life in the City & the World', 'Şehirde ve Dünyada Hayat (ülkeler, tatil)', ['food_drinks', 'countries', 'travel_transportation', 'conv_travel', 'conv_plans', 'conv_health', 'conv_celebrations']],
+  ],
+  5: [
+    ['School Life', 'Okul Hayatı (kurallar, kulüpler)', ['school_education_a2', 'have_to_a2', 'countries']],
+    ['Classroom Life', 'Sınıf Hayatı (kurallar, ders programı)', ['classroom_life_a2', 'have_to_a2', 'daily_life_a2']],
+    ['Personal Life', 'Kişisel Hayat', ['body_health_a2', 'clothes_shopping_a2', 'daily_life_a2']],
+    ['Family Life', 'Aile Hayatı (rutinler, hobiler)', ['family_people_a2', 'hobbies_free_time_a2', 'irregular_verbs_a2']],
+    ['Life in the Neighbourhood & City', 'Mahallede ve Şehirde Hayat', ['city_places_a2']],
+    ['Life in the World', 'Dünyada Hayat (yemek)', ['food_drinks_a2']],
+    ['Life in Nature', 'Doğada Hayat', ['animals_a2', 'nature_environment_a2']],
+    ['Life in the Universe & Future', 'Evren ve Gelecek (tatil planları)', ['nature_environment_a2', 'conv_plans']],
+  ],
+  6: [
+    ['School Life', 'Okul Hayatı', ['school_education_a2', 'daily_life_a2']],
+    ['Classroom Life', 'Sınıf Hayatı', ['classroom_life_a2']],
+    ['Personal Life', 'Kişisel Hayat (görünüş, kişilik)', ['emotions_personality_a2', 'clothes_shopping_a2']],
+    ['Family Life', 'Aile Hayatı (meslekler, evler)', ['jobs_professions_a2', 'home_a2']],
+    ['Life in the Neighbourhood & City', 'Mahallede ve Şehirde Hayat (ulaşım)', ['travel_transportation_a2', 'conv_city_transport']],
+    ['Life in the World & Culture', 'Dünyada Hayat ve Kültür', ['countries', 'conv_travel', 'made_of_a2']],
+    ['Life in Nature & Global Problems', 'Doğa ve Küresel Sorunlar', ['nature_environment_a2', 'weather_seasons_a2', 'science_a2']],
+    ['Life in the Universe & Future', 'Evren ve Gelecek', ['space_astronomy_a2', 'technology_computers_a2', 'communication_internet_a2']],
+  ],
+};
+
+// Sinif adindaki ilk rakam (ör. "3-A") -> varsayilan sinif duzeyi
+function gradeFromClassName(name) {
+  const m = String(name || '').match(/[2-6]/);
+  return m ? Number(m[0]) : 2;
+}
+
+// Bir kategori icin sinif durumu: bitiren / baslayan / toplam ogrenci
+function unitCategoryStats(cid, students, catalog) {
+  const info = catalog[cid];
+  let done = 0, started = 0;
+  students.forEach((s) => {
+    const p = s.progress; if (!p || !p.cats) return;
+    const skipped = new Set(p.skipped || []);
+    const n = (p.cats[cid] || []).length;
+    if (skipped.has(cid) || (info && n >= info.total)) done++;
+    else if (n > 0) started++;
+  });
+  return { done, started, total: students.length };
+}
+
+function unitsHTML(grade, students, catalog) {
+  const themes = MEB_UNITS[grade] || [];
+  return themes.map(([en, tr, ids], i) => {
+    const chips = ids.filter((id) => catalog[id]).map((id) => {
+      const st = unitCategoryStats(id, students, catalog);
+      const label = (id.startsWith('conv_') ? '💬 ' : '') + catalog[id].title + (id.endsWith('_a2') ? ' · A2' : '');
+      return `<span class="chip" title="${escapeHtml(id)}">${escapeHtml(label)} <small>✓${st.done} · ▶${st.started} / ${st.total}</small></span>`;
+    }).join(' ');
+    return `<div class="unit"><div class="unit-head"><b>${i + 1}. ${escapeHtml(en)}</b> <span>${escapeHtml(tr)}</span></div><div class="chips">${chips || '<span class="empty">—</span>'}</div></div>`;
+  }).join('');
+}
+
+function renderUnits(box, grade, students, catalog) {
+  box.innerHTML = `
+    <div class="units-tabs">${[2, 3, 4, 5, 6].map((g) => `<button type="button" class="secondary units-tab${g === grade ? ' on' : ''}" data-g="${g}">${g}. sınıf</button>`).join('')}</div>
+    <p class="note">Programın tema tablosu × uygulamadaki en yakın kategoriler (yaklaşık eşleşme). ✓ bitiren · ▶ başlayan / sınıftaki öğrenci.</p>
+    ${unitsHTML(grade, students, catalog)}`;
+  box.querySelectorAll('.units-tab').forEach((b) => b.addEventListener('click', () => renderUnits(box, Number(b.dataset.g), students, catalog)));
+}
+
 // Ogrencinin bulundugu basamak: tum gezegenleri bitmis/atlanmis ilk
 // OLMAYAN basamak. Ilerleme verisi yoksa '—'.
 function gradeStep(s, catalog) {
@@ -262,6 +355,14 @@ async function renderRoster(classId) {
       <td><button type="button" class="del" data-id="${s.id}" data-name="${escapeHtml(s.name)}" title="Öğrenciyi sil" aria-label="Öğrenciyi sil">🗑</button></td></tr>
       ${hasDetail ? `<tr class="drow hidden" id="d-${s.id}"><td colspan="8">${studentDetail(s, catalog)}</td></tr>` : ''}`; }).join('')}
   </tbody></table>`;
+  if (hasDetail) {
+    const box = document.createElement('div');
+    box.className = 'units';
+    el.appendChild(Object.assign(document.createElement('h4'), { textContent: '📚 MEB ünitelerine göre' }));
+    el.appendChild(box);
+    const cls = (_classNames || {})[classId];
+    renderUnits(box, gradeFromClassName(cls), students, catalog);
+  }
   el.querySelectorAll('.srow').forEach((r) => r.addEventListener('click', (e) => {
     if (e.target.closest('.del')) return;
     const d = document.getElementById('d-' + r.dataset.id);
