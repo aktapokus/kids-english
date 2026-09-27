@@ -7583,6 +7583,7 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
     let di = 0;
     function showDialogue() {
       if (di >= dl.length) {
+        if (episode.reverse && episode.reverse.length) { startReverseRound(); return; }
         endSentenceRound();
         startLetterRound(host, container, episode, wordList, mascotEl, score, onDone);
         return;
@@ -7634,9 +7635,77 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
     showDialogue();
   }
 
+  // "Soruyu Bul" (2026-09-27): cevap cumlesi gosterilir, cocuk bosluklu
+  // sorunun soru kelimesini secer ("It's a pencil." -> ___ is it? -> What).
+  // Dogru secimde once soru sonra cevap okunur (soru-cevap ikilisi pekisir).
+  // Veri: episode.reverse [{answer, q, qword, icon_type, icon, options?}].
+  function reverseOptions(item, pool) {
+    // "What colour" sorusunda "What" celdirici olmasin (ikisi de soru basi).
+    const clash = (w) => item.qword.startsWith(w + ' ') || w.startsWith(item.qword + ' ');
+    const others = shuffle(pool.filter((w) => w !== item.qword && !clash(w))).slice(0, 3);
+    return shuffle([item.qword, ...others]);
+  }
+  function startReverseRound() {
+    const rv = episode.reverse;
+    const pool = [...new Set(rv.map((x) => x.qword).concat(rv.flatMap((x) => x.options || [])))];
+    let ri = 0;
+    function showReverse() {
+      if (ri >= rv.length) {
+        endSentenceRound();
+        startLetterRound(host, container, episode, wordList, mascotEl, score, onDone);
+        return;
+      }
+      const it = rv[ri];
+      let wrong = 0;
+      let done = false;
+      const next = () => { ri++; showReverse(); };
+      progressEl.textContent = `${L('Soruyu bul', 'Find the question')} ${ri + 1} / ${rv.length}`;
+      bubbleEl.textContent = `💬 ${it.answer}`;
+      const iconEl = host.querySelector('#keSentenceIcon');
+      if (iconEl) iconEl.innerHTML = renderObjectIcon({ icon_type: it.icon_type || 'emoji', icon: it.icon, word: it.answer, tr: '' });
+      slotsEl.innerHTML = '';
+      const slot = document.createElement('div');
+      slot.className = 'ke-slot';
+      slot.style.minWidth = '220px';
+      const rest = it.q.slice(it.qword.length);
+      slot.textContent = `___${rest}`;
+      slotsEl.appendChild(slot);
+      actionsEl.style.display = 'none';
+      bankEl.innerHTML = '';
+      speakWord(it.answer, mascotEl);
+      const reveal = (msg, minMs) => {
+        slot.textContent = it.q; slot.classList.add('ke-reveal');
+        bubbleEl.textContent = msg;
+        speakThen(it.q, mascotEl, 600, () => speakThen(it.answer, mascotEl, minMs, next));
+      };
+      (it.options || reverseOptions(it, pool)).forEach((w) => {
+        const tile = document.createElement('button');
+        tile.className = 'ke-tile';
+        tile.textContent = w;
+        tile.addEventListener('click', () => {
+          if (done) return;
+          if (w === it.qword) {
+            done = true;
+            celebrateBounce(mascotEl);
+            reveal(L(`Evet! ${it.q} 🎉`, `Yes! ${it.q} 🎉`), 1300);
+          } else {
+            wrong++;
+            tile.disabled = true; tile.style.opacity = '.35';
+            mascotReact(mascotEl, false);
+            if (wrong >= 2) { done = true; reveal(L(`Doğru soru: ${it.q} 💡`, `The right question: ${it.q} 💡`), 2600); }
+            else bubbleEl.textContent = L(`Bu cevaba uymuyor, tekrar dene! 🔄  💬 ${it.answer}`, `That doesn't fit this answer — try again! 🔄  💬 ${it.answer}`);
+          }
+        });
+        bankEl.appendChild(tile);
+      });
+    }
+    showReverse();
+  }
+
   function renderItem() {
     if (idx >= order.length) {
       if (episode.dialogues && episode.dialogues.length) { startDialogueRound(); return; }
+      if (episode.reverse && episode.reverse.length) { startReverseRound(); return; }
       endSentenceRound();
       startLetterRound(host, container, episode, wordList, mascotEl, score, onDone);
       return;
