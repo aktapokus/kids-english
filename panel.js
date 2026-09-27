@@ -1685,6 +1685,11 @@ ${FONT_FACES}
   .ke-drag-ghost{ position:fixed !important; z-index:99999; transform:translate(-50%,-60%); pointer-events:none; opacity:.92; box-shadow:none; }
   .ke-slot.ke-shake{ border-bottom-color:var(--kb-wrong); animation:ke-shake-x .35s ease; }
   .ke-sentence-bank{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; max-width:560px; }
+  .ke-shell .ke-tile.ke-rv-pic{ width:96px; height:96px; padding:6px !important; display:inline-flex; align-items:center; justify-content:center; background:#fff !important; }
+  .ke-rv-pic img{ width:100%; height:100%; object-fit:contain; border-radius:12px; pointer-events:none; }
+  .ke-rv-emo{ font-size:52px; line-height:1; }
+  .ke-shell .ke-tile.ke-rv-ok{ outline:4px solid #43A047; }
+  .ke-slot.ke-rv-line{ min-width:220px; white-space:normal; line-height:1.35; }
   .ke-tile{
     background:#ffffff; border:3px solid var(--ke-border); border-radius:14px; padding:10px 18px;
     font-weight:800; font-size:15px; color:var(--ke-ink); cursor:pointer;
@@ -7589,14 +7594,78 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
     mainBubbleEl.style.display = '';
   }
 
+  // "Hatirla" (2026-09-27, tekrar ilkesi): onceki bolumlerde tek kez
+  // gecen kelimeler yeni bir cumlede geri gelir; cocuk bosluga uyan resmi
+  // secer. Veri: episode.review [{sentence, word, blank, icon, choices}]
+  // (scripts/apply_review.py). Sonra harf turu.
+  function toLetters() {
+    if (episode.review && episode.review.length && !toLetters.done) { toLetters.done = true; startReviewRound(); return; }
+    endSentenceRound();
+    startLetterRound(host, container, episode, wordList, mascotEl, score, onDone);
+  }
+  function reviewPicHTML(c) {
+    return c.icon_type === 'emoji'
+      ? `<span class="ke-rv-emo">${c.icon}</span>`
+      : `<img src="${new URL(c.icon, ASSET_BASE_URL).href}" alt="" draggable="false" />`;
+  }
+  function startReviewRound() {
+    const items = episode.review;
+    let ri = 0;
+    function showItem() {
+      if (ri >= items.length) { toLetters(); return; }
+      const it = items[ri];
+      let wrong = 0, done = false;
+      const next = () => { ri++; showItem(); };
+      progressEl.textContent = `🧠 ${L('Hatırla', 'Remember')} ${ri + 1} / ${items.length}`;
+      bubbleEl.textContent = L('Cümleyi dinle, boşluğa uyan resmi seç!', 'Listen and pick the picture for the gap!');
+      const iconEl = host.querySelector('#keSentenceIcon');
+      if (iconEl) iconEl.innerHTML = '';
+      slotsEl.innerHTML = '';
+      const line = document.createElement('div');
+      line.className = 'ke-slot ke-rv-line';
+      line.textContent = it.sentence.replace(it.blank, '____');
+      slotsEl.appendChild(line);
+      actionsEl.style.display = 'none';
+      bankEl.innerHTML = '';
+      speakWord(it.sentence, mascotEl);
+      const reveal = (msg, minMs) => {
+        line.textContent = it.sentence; line.classList.add('ke-reveal');
+        bubbleEl.textContent = msg;
+        speakThen(it.sentence, mascotEl, minMs, next);
+      };
+      shuffle(it.choices).forEach((c) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'ke-tile ke-rv-pic';
+        b.setAttribute('aria-label', c.word);
+        b.innerHTML = reviewPicHTML(c);
+        b.addEventListener('click', () => {
+          if (done) return;
+          if (c.word === it.word) {
+            done = true; b.classList.add('ke-rv-ok');
+            celebrateBounce(mascotEl);
+            reveal(L(`Evet! ${it.word} 🎉`, `Yes! ${it.word} 🎉`), 1200);
+          } else {
+            wrong++;
+            b.disabled = true; b.style.opacity = '.35';
+            mascotReact(mascotEl, false);
+            if (wrong >= 2) { done = true; reveal(L(`Doğrusu: ${it.word} 💡`, `It's: ${it.word} 💡`), 2400); }
+            else bubbleEl.textContent = L('Bu değil, tekrar dinle ve dene! 🔄', 'Not this one — listen and try again! 🔄');
+          }
+        });
+        bankEl.appendChild(b);
+      });
+    }
+    showItem();
+  }
+
   function startDialogueRound() {
     const dl = episode.dialogues;
     let di = 0;
     function showDialogue() {
       if (di >= dl.length) {
         if (episode.reverse && episode.reverse.length) { startReverseRound(); return; }
-        endSentenceRound();
-        startLetterRound(host, container, episode, wordList, mascotEl, score, onDone);
+        toLetters();
         return;
       }
       const dlg = dl[di];
@@ -7662,8 +7731,7 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
     let ri = 0;
     function showReverse() {
       if (ri >= rv.length) {
-        endSentenceRound();
-        startLetterRound(host, container, episode, wordList, mascotEl, score, onDone);
+        toLetters();
         return;
       }
       const it = rv[ri];
@@ -7717,8 +7785,7 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
     if (idx >= order.length) {
       if (episode.dialogues && episode.dialogues.length) { startDialogueRound(); return; }
       if (episode.reverse && episode.reverse.length) { startReverseRound(); return; }
-      endSentenceRound();
-      startLetterRound(host, container, episode, wordList, mascotEl, score, onDone);
+      toLetters();
       return;
     }
     const obj = wordList[order[idx]];
