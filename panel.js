@@ -6603,6 +6603,16 @@ function speakStoryText(lines, host, onDone) {
 // (1) cancel()'dan HEMEN sonra speak() çağrısı düşüyor, (2) motor "paused"
 // takılı kalabiliyor, (3) utterance referansı tutulmazsa GC yiyor,
 // (4) utter.voice dili utter.lang ile çelişirse sessiz kalıyor. Hepsi burada.
+// Okuma bitince ilerle ("cumleyi okurken yarim kalip sonraki soruya geciyor"):
+// sabit sure yerine konusma bitisini bekler; en az minMs, ses takilirsa maxMs.
+function speakThen(text, mascotEl, minMs, fn, maxMs) {
+  const t0 = Date.now();
+  let fired = false;
+  const go = () => { if (fired) return; fired = true; fn(); };
+  speakWord(text, mascotEl, () => setTimeout(go, Math.max(350, minMs - (Date.now() - t0))));
+  setTimeout(go, maxMs || Math.max(minMs, 1500) + 7000);
+}
+
 function speakWord(word, mascotEl, onDone) {
   if (!('speechSynthesis' in window)) { notifySoundProblem(L('bu tarayıcı sesli okumayı desteklemiyor', 'this browser cannot read aloud')); if (onDone) onDone(); return; }
   const synth = window.speechSynthesis;
@@ -7077,7 +7087,12 @@ function startLetterRound(host, container, episode, wordList, mascotEl, score, o
   mascotEl.classList.add('ke-mascot-compact');
   setMascotPose(host, 'think');
 
-  const order = wordList.map((_, i) => i);
+  // Harf turu yalniz kelime/kisa ifade icin: "Application / App" gibi iki
+  // secenekli kartlarda ILK secenek; 2 kelimeden uzun kaliplar (get /
+  // seyahat cumleleri) atlanir - onlar cumle turunda calisiliyor. Eskiden
+  // tum cumle harf harf isteniyordu, harf havuzu "kelimeyle alakasiz" gorunuyordu.
+  const letterTarget = (o) => String(o.word).split(' / ')[0].replace(/[?!.]+$/, '').trim();
+  const order = wordList.map((_, i) => i).filter((i) => letterTarget(wordList[i]).split(/\s+/).length <= 2);
   let idx = 0;
 
   function endLetterRound() {
@@ -7095,7 +7110,7 @@ function startLetterRound(host, container, episode, wordList, mascotEl, score, o
       return;
     }
     const obj = wordList[order[idx]];
-    const target = obj.word;
+    const target = letterTarget(obj);
     const isLetter = (c) => /[a-zA-Z]/.test(c);
     let firstOfWord = true;
     const plan = [...target].map((c) => {
@@ -7186,8 +7201,7 @@ function startLetterRound(host, container, episode, wordList, mascotEl, score, o
         checkBtn.disabled = true;
         bubbleEl.textContent = L('Harika, doğru kelime! 🎉', 'Great, correct word! 🎉');
         celebrateBounce(mascotEl);
-        speakWord(target, mascotEl);
-        setTimeout(() => { idx++; renderItem(); }, 1300);
+        speakThen(target, mascotEl, 1300, () => { idx++; renderItem(); });
       } else if (++wrongAttempts >= 2) {
         checkBtn.disabled = true;
         blanks.forEach((b) => {
@@ -7197,8 +7211,7 @@ function startLetterRound(host, container, episode, wordList, mascotEl, score, o
         bubbleEl.textContent = L(`Doğru kelime: ${target} 💡`, `The correct word: ${target} 💡`);
         try { Progress.recordMistake(episode.category_id, obj); } catch (e) { /* yok say */ }
         mascotReact(mascotEl, false);
-        speakWord(target, mascotEl);
-        setTimeout(() => { idx++; renderItem(); }, 3200);
+        speakThen(target, mascotEl, 3200, () => { idx++; renderItem(); });
       } else {
         bubbleEl.textContent = L('Bu değil, tekrar dene! 🔄', 'Not quite — try again! 🔄');
         checkBtn.disabled = true;
@@ -7316,8 +7329,7 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
             slot.textContent = text; slot.classList.add('ke-reveal');
             bubbleEl.textContent = L('Harika cevap! 🎉', 'Great answer! 🎉');
             celebrateBounce(mascotEl);
-            speakWord(text, mascotEl);
-            next(1300);
+            speakThen(text, mascotEl, 1300, () => { di++; showDialogue(); });
           } else {
             wrong++;
             tile.disabled = true; tile.style.opacity = '.35';
@@ -7325,8 +7337,7 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
               done = true;
               slot.textContent = dlg.answer; slot.classList.add('ke-reveal');
               bubbleEl.textContent = L(`Doğru cevap: ${dlg.answer} 💡`, `The correct answer: ${dlg.answer} 💡`);
-              speakWord(dlg.answer, mascotEl);
-              next(3200);
+              speakThen(dlg.answer, mascotEl, 3200, () => { di++; showDialogue(); });
             } else {
               bubbleEl.textContent = L('Bu değil, tekrar dene! 🔄', 'Not quite — try again! 🔄');
             }
@@ -7487,16 +7498,14 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
         checkBtn.disabled = true;
         bubbleEl.textContent = L('Harika cümle! 🎉', 'Great sentence! 🎉');
         celebrateBounce(mascotEl);
-        speakWord(obj.sentence, mascotEl);
-        setTimeout(() => { idx++; renderItem(); }, 1300);
+        speakThen(obj.sentence, mascotEl, 1300, () => { idx++; renderItem(); });
       } else if (++wrongAttempts >= 2) {
         checkBtn.disabled = true;
         slotEls.forEach((sl, i) => { sl.textContent = tokens[i]; sl.classList.remove('ke-filled'); sl.classList.add('ke-reveal'); });
         bubbleEl.textContent = L(`Doğru cümle: ${obj.sentence} 💡`, `The correct sentence: ${obj.sentence} 💡`);
         try { Progress.recordMistake(episode.category_id, obj); } catch (e) { /* yok say */ }
         mascotReact(mascotEl, false);
-        speakWord(obj.sentence, mascotEl);
-        setTimeout(() => { idx++; renderItem(); }, 3200);
+        speakThen(obj.sentence, mascotEl, 3200, () => { idx++; renderItem(); });
       } else {
         bubbleEl.textContent = L('Bu değil, tekrar dene! 🔄', 'Not quite — try again! 🔄');
         checkBtn.disabled = true;
