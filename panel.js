@@ -57,6 +57,11 @@ const CATEGORY_THEME = {
   prepositions:          { c: '#00ACC1', dark: '#008BA0', tint: '#5DD6E6' },
   question_words:        { c: '#FF7043', dark: '#E5562B', tint: '#FFA383' },
   get:                    { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
+  // Yapilar (2026-09-27)
+  irregular_verbs:        { c: '#EC407A', dark: '#C62E63', tint: '#F48FB1' },
+  time_machine:           { c: '#5C6BC0', dark: '#3F4FA8', tint: '#9FA8DA' },
+  have_to:                { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
+  made_of:                { c: '#8D6E63', dark: '#6D4C41', tint: '#BCAAA4' },
   tourist:                { c: '#8E44AD', dark: '#712E8C', tint: '#C990E0' },
   conversations:          { c: '#EF6C9C', dark: '#D14F80', tint: '#F7A9C6' },
   opposites:              { c: '#7E57C2', dark: '#6641A8', tint: '#B597E0' },
@@ -118,6 +123,7 @@ const CATEGORY_MOTIF = {
   emotions_personality: '😊', clothes_shopping: '👕', jobs_professions: '💼',
   science: '🔬', communication_internet: '💬',
   prepositions: '📦', question_words: '❓', get: '🔄', conversations: '💬', opposites: '↔️',
+  irregular_verbs: '👯', time_machine: '⏳', have_to: '📋', made_of: '🏷️',
   math_numbers: '🔢', math_shapes: '🔷', math_operations: '➕',
   expressions: '🙋', months_time: '📅', countries: '🌍',
   conv_social_manners: '👋', conv_family_home: '🏠', conv_daily_routine: '⏰',
@@ -1689,6 +1695,16 @@ ${FONT_FACES}
   .ke-rv-pic img{ width:100%; height:100%; object-fit:contain; border-radius:12px; pointer-events:none; }
   .ke-rv-emo{ font-size:52px; line-height:1; }
   .ke-shell .ke-tile.ke-rv-ok{ outline:4px solid #43A047; }
+  .ke-pairs{ display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:420px; margin:0 auto; }
+  .ke-pairs-col{ display:flex; flex-direction:column; gap:8px; }
+  .ke-shell .ke-tile.ke-pair-btn{ width:100%; min-height:48px; }
+  .ke-shell .ke-tile.ke-pair-on{ outline:4px solid #FFD84D; }
+  .ke-shell .ke-tile.ke-pair-done{ background:#C8F0CC !important; color:#1f5f2a !important; opacity:.85; }
+  .ke-cloze-opts{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+  /* Zaman Makinesi: secenekler soldan saga zaman cizgisi uzerinde */
+  .ke-timeline{ position:relative; display:grid; grid-template-columns:repeat(auto-fit,minmax(0,1fr)); gap:6px; width:100%; max-width:460px; margin:0 auto; padding-top:14px; }
+  .ke-timeline::before{ content:""; position:absolute; left:4%; right:4%; top:4px; height:4px; border-radius:2px; background:linear-gradient(90deg,#9FA8DA,#FFD84D,#81C784); }
+  .ke-shell .ke-tile.ke-tl-btn{ font-size:15px !important; padding:10px 4px !important; min-height:48px; }
   .ke-slot.ke-rv-line{ min-width:220px; white-space:normal; line-height:1.35; }
   .ke-tile{
     background:#ffffff; border:3px solid var(--ke-border); border-radius:14px; padding:10px 18px;
@@ -3500,6 +3516,9 @@ export async function mount(container, api, toolId) {
 const GRAMMAR_CATEGORY_IDS = ['prepositions'];
 const QA_CATEGORY_IDS = ['question_words'];
 const GET_CATEGORY_IDS = ['get'];
+// Yapilar: zaman, duzensiz fiiller, kurallar, kalip ifadeler (2026-09-27).
+// Maarif: kural anlatimi yok - oyun ve fark ettirme; bol tekrar.
+const STRUCT_CATEGORY_IDS = ['irregular_verbs', 'time_machine', 'irregular_verbs_a2', 'have_to_a2', 'made_of_a2'];
 const CONVERSATION_CATEGORY_IDS = [
   'conversations', 'conv_social_manners', 'conv_family_home', 'conv_daily_routine',
   'conv_school', 'conv_hobbies_sports', 'conv_animals_nature', 'conv_food_drinks',
@@ -3515,7 +3534,7 @@ const MATH_CATEGORY_PREFIX = 'math_';
 const SECTIONS = [
   { id: 'words', title: 'Words', sub: 'Themed word categories', subTr: 'Temalı kelime kategorileri', titleTr: 'Kelimeler', motif: '📚',
     theme: { c: '#FFA000', dark: '#DB8A00', tint: '#FFCF66' },
-    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !CONVERSATION_CATEGORY_IDS.includes(c.id) && !OPPOSITE_CATEGORY_IDS.includes(c.id) && !c.id.endsWith(A2_CATEGORY_SUFFIX) && !c.id.endsWith(B1_CATEGORY_SUFFIX) && !c.id.startsWith(MATH_CATEGORY_PREFIX) },
+    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !CONVERSATION_CATEGORY_IDS.includes(c.id) && !OPPOSITE_CATEGORY_IDS.includes(c.id) && !STRUCT_CATEGORY_IDS.includes(c.id) && !c.id.endsWith(A2_CATEGORY_SUFFIX) && !c.id.endsWith(B1_CATEGORY_SUFFIX) && !c.id.startsWith(MATH_CATEGORY_PREFIX) },
   { id: 'grammar', title: 'Grammar', sub: 'Prepositions: in, on, at, under…', subTr: 'Edatlar: in, on, at, under…', titleTr: 'Gramer', motif: '🧩',
     theme: { c: '#00ACC1', dark: '#008BA0', tint: '#5DD6E6' },
     pick: (c) => GRAMMAR_CATEGORY_IDS.includes(c.id) },
@@ -3529,7 +3548,10 @@ const SECTIONS = [
     theme: { c: '#78909C', dark: '#5F7480', tint: '#A8BBC5' },
     // CEFR denetiminde A2 olarak isaretlenip A1'den tasinan kelimeler -
     // bkz. scripts/migrate_a2_from_audit.py. Su an 228/600 hedef kelime.
-    pick: (c) => c.id.endsWith(A2_CATEGORY_SUFFIX) },
+    pick: (c) => c.id.endsWith(A2_CATEGORY_SUFFIX) && !STRUCT_CATEGORY_IDS.includes(c.id) },
+  { id: 'structures', title: 'Structures', sub: 'Verb twins, time machine, rules…', subTr: 'Fiil ikizleri, zaman makinesi, kurallar…', titleTr: 'Yapılar', motif: '🧱',
+    theme: { c: '#EC407A', dark: '#C62E63', tint: '#F48FB1' },
+    pick: (c) => STRUCT_CATEGORY_IDS.includes(c.id) },
   // B1 pilotu: Cambridge B1 Preliminary; her bolum tek yapi (present perfect,
   // past continuous, first conditional, passive, modals). MEB kapsaminin
   // (8. sinif A2.4) ustu - ileri ogrenciler icin.
@@ -3782,7 +3804,7 @@ function showGuide(container, api, toolId, categories) {
     },
     {
       icon: '📚', title: L('Kütüphane ve bölümler', 'Library and sections'),
-      body: L('Kütüphane serbest çalışma alanıdır; Macera sırasını beklemeden istediğin konuyu açarsın. Bölümler: <b>Words</b> (konu konu kelimeler), <b>Grammar</b> (in, on, under gibi yer bildiren kelimeler), <b>Questions</b> (Who, What, Where…), <b>Opposites</b> (büyük/küçük gibi zıtlar), <b>A2 Level</b> (5.–6. sınıf kelimeleri ve cümleleri), <b>B1 Level</b> (ileri seviye pilot: seyahat), <b>Get</b> (get kalıpları), <b>Maths in English</b> (Matematik Yolu, Sayı Yağmuru, Çarpım Tablosu) ve <b>Story Time</b> (sesli okunan Aktapokus hikâyeleri).', 'The Library is free practice: open any topic without waiting for the Adventure order. Sections: <b>Words</b> (topic by topic), <b>Grammar</b> (place words like in, on, under), <b>Questions</b> (Who, What, Where…), <b>Opposites</b> (big/small and more), <b>A2 Level</b> (grade 5–6 words and sentences), <b>B1 Level</b> (advanced pilot: travel), <b>Get</b> (phrases with get), <b>Maths in English</b> (Maths Path, Number Rain, Times Tables) and <b>Story Time</b> (read-along Aktapokus stories).'),
+      body: L('Kütüphane serbest çalışma alanıdır; Macera sırasını beklemeden istediğin konuyu açarsın. Bölümler: <b>Words</b> (konu konu kelimeler), <b>Grammar</b> (in, on, under gibi yer bildiren kelimeler), <b>Questions</b> (Who, What, Where…), <b>Opposites</b> (büyük/küçük gibi zıtlar), <b>A2 Level</b> (5.–6. sınıf kelimeleri ve cümleleri), <b>B1 Level</b> (ileri seviye pilot: seyahat), <b>Yapılar</b> (fiil ikizleri, zaman makinesi, kurallar), <b>Get</b> (get kalıpları), <b>Maths in English</b> (Matematik Yolu, Sayı Yağmuru, Çarpım Tablosu) ve <b>Story Time</b> (sesli okunan Aktapokus hikâyeleri).', 'The Library is free practice: open any topic without waiting for the Adventure order. Sections: <b>Words</b> (topic by topic), <b>Grammar</b> (place words like in, on, under), <b>Questions</b> (Who, What, Where…), <b>Opposites</b> (big/small and more), <b>A2 Level</b> (grade 5–6 words and sentences), <b>B1 Level</b> (advanced pilot: travel), <b>Structures</b> (verb twins, time machine, rules), <b>Get</b> (phrases with get), <b>Maths in English</b> (Maths Path, Number Rain, Times Tables) and <b>Story Time</b> (read-along Aktapokus stories).'),
     },
     {
       icon: '🎮', title: L('Oyun hakkı nasıl kazanılır?', 'How do I earn a game?'),
@@ -4124,8 +4146,8 @@ function importBackup(file) {
 // "en yakin sinif"a gore - kesin degil. Seviye etiketleri uygulama ici
 // duraklardir, resmi CEFR sonucu degildir.
 const A2_JOURNEY_IDS = {
-  y5: ['daily_life', 'family_people', 'school_education', 'classroom_life', 'body_health', 'clothes_shopping', 'food_drinks', 'animals', 'nature_environment', 'city_places', 'hobbies_free_time'].map((id) => id + '_a2'),
-  y6: ['home', 'jobs_professions', 'travel_transportation', 'emotions_personality', 'weather_seasons', 'sports_exercise', 'technology_computers', 'science', 'communication_internet', 'space_astronomy'].map((id) => id + '_a2'),
+  y5: ['daily_life', 'family_people', 'school_education', 'classroom_life', 'body_health', 'clothes_shopping', 'food_drinks', 'animals', 'nature_environment', 'city_places', 'hobbies_free_time', 'irregular_verbs', 'have_to'].map((id) => id + '_a2'),
+  y6: ['home', 'jobs_professions', 'travel_transportation', 'emotions_personality', 'weather_seasons', 'sports_exercise', 'technology_computers', 'science', 'communication_internet', 'space_astronomy', 'made_of'].map((id) => id + '_a2'),
 };
 const JOURNEY_SECTORS = [
   { id: 'moon', emoji: '🌙', tr: 'Ay İstasyonu', en: 'Moon Station', grade: 2, get level() { return L('2. Sınıf', 'Grade 2') + ' · A1.1'; },
@@ -4137,7 +4159,7 @@ const JOURNEY_SECTORS = [
   { id: 'mars', emoji: '🔴', tr: 'Mars Üssü', en: 'Mars Base', grade: 3, get level() { return L('3. Sınıf', 'Grade 3') + ' · A1.2'; },
     planets: ['daily_life', 'conv_daily_routine', 'months_time', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes'] },
   { id: 'jupiter', emoji: '🟠', tr: 'Jüpiter İstasyonu', en: 'Jupiter Station', grade: 4, get level() { return L('4. Sınıf', 'Grade 4') + ' · A1.3'; },
-    planets: ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'countries', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'conv_past', 'conv_plans', 'get'] },
+    planets: ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'countries', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'irregular_verbs', 'time_machine', 'conv_past', 'conv_plans', 'get'] },
   { id: 'saturn', emoji: '🪐', tr: 'Satürn Halkaları', en: 'Saturn Rings', grade: 0, get level() { return L('Bonus', 'Bonus') + ' · A1+'; },
     planets: ['technology_computers', 'conv_technology', 'communication_internet', 'science', 'space_astronomy', 'conv_space'] },
   { id: 'neptune', emoji: '🔵', tr: 'Neptün Kapısı', en: 'Neptune Gate', grade: 5, get level() { return L('5. Sınıf', 'Grade 5') + ' · A2.1'; }, planets: A2_JOURNEY_IDS.y5 },
@@ -7598,10 +7620,129 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
   // gecen kelimeler yeni bir cumlede geri gelir; cocuk bosluga uyan resmi
   // secer. Veri: episode.review [{sentence, word, blank, icon, choices}]
   // (scripts/apply_review.py). Sonra harf turu.
+  // Cumle turundan sonraki ek turlar sirayla (veride varsa): Ikizler ->
+  // Bosluk doldur -> Hatirla -> harf turu. Yapilar bolumu (2026-09-27).
+  let extraAt = 0;
   function toLetters() {
-    if (episode.review && episode.review.length && !toLetters.done) { toLetters.done = true; startReviewRound(); return; }
+    const steps = [['pairs', startPairsRound], ['cloze', startClozeRound], ['review', startReviewRound]];
+    while (extraAt < steps.length) {
+      const [key, run] = steps[extraAt++];
+      if (episode[key] && episode[key].length) { run(); return; }
+    }
     endSentenceRound();
     startLetterRound(host, container, episode, wordList, mascotEl, score, onDone);
+  }
+
+  // "Ikizler" (Fiil Ikizleri): sol sutun yalin fiil, sag sutun gecmis hali;
+  // once birine sonra esine dokunulur. Dogru eslesme okunur ("go, went").
+  // Veri: episode.pairs [[yalin, gecmis], ...]
+  function startPairsRound() {
+    const pairs = episode.pairs;
+    let picked = null, left = pairs.length;
+    progressEl.textContent = `👯 ${L('Fiil İkizleri', 'Verb Twins')}`;
+    bubbleEl.textContent = L('Fiili geçmiş hâliyle eşleştir! Önce birine, sonra ikizine dokun.', 'Match each verb with its past form! Tap one, then its twin.');
+    const iconEl = host.querySelector('#keSentenceIcon');
+    if (iconEl) iconEl.innerHTML = '';
+    slotsEl.innerHTML = '';
+    actionsEl.style.display = 'none';
+    bankEl.innerHTML = '';
+    const grid = document.createElement('div');
+    grid.className = 'ke-pairs';
+    const col = (items, side) => {
+      const c = document.createElement('div');
+      c.className = 'ke-pairs-col';
+      items.forEach((text) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'ke-tile ke-pair-btn'; b.textContent = text; b.dataset.side = side;
+        b.addEventListener('click', () => pick(b));
+        c.appendChild(b);
+      });
+      return c;
+    };
+    const twinOf = (text) => pairs.find((p) => p[0] === text || p[1] === text);
+    function pick(b) {
+      if (b.disabled) return;
+      if (!picked || picked.dataset.side === b.dataset.side) {
+        if (picked) picked.classList.remove('ke-pair-on');
+        picked = b; b.classList.add('ke-pair-on');
+        speakWord(b.textContent, mascotEl);
+        return;
+      }
+      const p = twinOf(picked.textContent);
+      if (p && (p[0] === b.textContent || p[1] === b.textContent)) {
+        [picked, b].forEach((x) => { x.classList.remove('ke-pair-on'); x.classList.add('ke-pair-done'); x.disabled = true; });
+        picked = null; left--;
+        celebrateBounce(mascotEl);
+        if (left === 0) speakThen(`${p[0]}, ${p[1]}`, mascotEl, 900, toLetters);
+        else speakWord(`${p[0]}, ${p[1]}`, mascotEl);
+      } else {
+        b.classList.add('ke-shake'); setTimeout(() => b.classList.remove('ke-shake'), 400);
+        picked.classList.remove('ke-pair-on'); picked = null;
+        mascotReact(mascotEl, false);
+      }
+    }
+    grid.appendChild(col(shuffle(pairs.map((p) => p[0])), 'a'));
+    grid.appendChild(col(shuffle(pairs.map((p) => p[1])), 'b'));
+    bankEl.appendChild(grid);
+  }
+
+  // "Bosluk doldur": cumlede bir bosluk, yazili secenekler. Fiil Ikizleri,
+  // Zaman Makinesi (timeline: secenekler zaman cizgisi sirasinda), have to,
+  // kalip ifadeler. Veri: episode.cloze [{sentence, blank, options,
+  // icon?, timeline?, story?}]; episode.cloze_label {tr, en} istege bagli.
+  function startClozeRound() {
+    const items = episode.cloze;
+    const lab = episode.cloze_label || {};
+    let ci = 0;
+    function showItem() {
+      if (ci >= items.length) { toLetters(); return; }
+      const it = items[ci];
+      let wrong = 0, done = false;
+      const next = () => { ci++; showItem(); };
+      const label = it.story ? `📖 ${L('Hikâye', 'Story')}` : it.timeline ? `⏳ ${L('Zaman Makinesi', 'Time Machine')}` : `✍️ ${L(lab.tr || 'Boşluğu doldur', lab.en || 'Fill the gap')}`;
+      progressEl.textContent = `${label} ${ci + 1} / ${items.length}`;
+      bubbleEl.textContent = it.timeline
+        ? L('Bu cümle ne zaman? Zaman çizgisinde seç!', 'When is this? Pick it on the timeline!')
+        : L('Boşluğa hangisi uyar?', 'Which one fits the gap?');
+      const iconEl = host.querySelector('#keSentenceIcon');
+      if (iconEl) iconEl.innerHTML = it.icon ? renderObjectIcon({ icon_type: 'emoji', icon: it.icon, word: it.blank, tr: '' }) : '';
+      slotsEl.innerHTML = '';
+      const line = document.createElement('div');
+      line.className = 'ke-slot ke-rv-line';
+      line.textContent = it.sentence.replace(it.blank, '____');
+      slotsEl.appendChild(line);
+      actionsEl.style.display = 'none';
+      bankEl.innerHTML = '';
+      speakWord(it.sentence.replace(it.blank, '…'), mascotEl); // cevabi ele vermesin
+      const reveal = (msg, minMs) => {
+        line.textContent = it.sentence; line.classList.add('ke-reveal');
+        bubbleEl.textContent = msg;
+        speakThen(it.sentence, mascotEl, minMs, next);
+      };
+      const wrap = document.createElement('div');
+      wrap.className = it.timeline ? 'ke-timeline' : 'ke-cloze-opts';
+      (it.timeline ? it.options : shuffle(it.options)).forEach((opt) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'ke-tile' + (it.timeline ? ' ke-tl-btn' : ''); b.textContent = opt;
+        b.addEventListener('click', () => {
+          if (done) return;
+          if (opt === it.blank) {
+            done = true; b.classList.add('ke-rv-ok');
+            celebrateBounce(mascotEl);
+            reveal(L('Evet! 🎉', 'Yes! 🎉'), 1200);
+          } else {
+            wrong++;
+            b.disabled = true; b.style.opacity = '.35';
+            mascotReact(mascotEl, false);
+            if (wrong >= 2) { done = true; reveal(L(`Doğrusu: ${it.blank} 💡`, `It's: ${it.blank} 💡`), 2400); }
+            else bubbleEl.textContent = L('Bu değil, cümleyi tekrar dinle! 🔄', 'Not this one — listen again! 🔄');
+          }
+        });
+        wrap.appendChild(b);
+      });
+      bankEl.appendChild(wrap);
+    }
+    showItem();
   }
   function reviewPicHTML(c) {
     return c.icon_type === 'emoji'
