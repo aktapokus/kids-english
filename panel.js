@@ -1807,6 +1807,17 @@ ${FONT_FACES}
   .ke-river-shoot{ background:rgba(255,107,107,.5) !important; border-color:rgba(255,107,107,.9) !important; }
   .ke-river-overlay-msg{ position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center; background:rgba(10,20,30,.72); padding:20px; }
   .ke-river-msg-card{ background:#F5F0DF; color:var(--ke-ink); border-radius:20px; padding:26px 24px; text-align:center; max-width:340px; }
+  /* Karatahta dugmeleri (acik renk tebesir yazi) krem kartta "asiri silik"
+     kaliyordu (2026-09-27) - kart icinde koyu murekkep + belirgin kenar. */
+  .ke-shell .ke-river-msg-card .ke-btn-secondary{
+    background:#fff !important; color:#3a2a00 !important; border:2px solid #B8A46A !important;
+    min-height:44px; padding:10px 22px !important; font-weight:800 !important; transform:none;
+  }
+  .ke-shell .ke-river-msg-card .ke-btn-secondary:hover:not(:disabled){ background:#FFF6D6 !important; }
+  .ke-shell .ke-river-msg-card .ke-btn-primary{
+    background:#FFD84D !important; color:#3a2a00 !important; border:none !important; box-shadow:0 4px 0 #C99A12 !important;
+    min-height:44px; font-weight:800 !important;
+  }
   .ke-river-msg-card h2{ margin:0 0 8px; font-family:'Fredoka','Baloo 2',sans-serif; font-size:24px; }
   .ke-river-msg-card p{ margin:0 0 16px; font-size:14.5px; font-weight:600; }
   .ke-quiz-toast{ cursor:pointer; }
@@ -2288,6 +2299,27 @@ ${FONT_FACES}
   .ke-jhome-actions{ display:flex; gap:8px; margin-top:10px; }
   .ke-shell .ke-jhome-go{ flex:1; font-size:18px !important; padding:13px 16px !important; background:#FFD84D !important; color:#3a2a00 !important; border:none !important; border-radius:16px !important; box-shadow:0 5px 0 #C99A12 !important; font-weight:800 !important; }
   .ke-shell .ke-jhome-map{ font-size:14px !important; padding:12px 14px !important; background:rgba(255,255,255,.16) !important; color:#fff !important; border:2px solid rgba(255,255,255,.45) !important; border-radius:16px !important; box-shadow:none !important; font-weight:800 !important; }
+  /* Gunun Kelimesi: kelime kartini andiran krem kart (karsilama balonu paleti) */
+  .ke-wotd{
+    max-width:560px; margin:0 auto 14px; padding:10px 14px 12px; border-radius:22px; text-align:left; position:relative; z-index:1;
+    background:#FFFDF4; color:#233; box-shadow:0 5px 0 rgba(0,0,0,.25); border:3px solid #FFD84D;
+  }
+  .ke-wotd-head{ font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:#8a6400; margin-bottom:6px; }
+  .ke-shell .ke-wotd-body{
+    display:flex; align-items:center; gap:12px; width:100%; padding:0 !important; margin:0; text-align:left;
+    background:none !important; border:none !important; box-shadow:none !important; color:inherit !important; cursor:pointer; top:0 !important;
+  }
+  .ke-wotd-pic{ width:72px; height:72px; flex:none; border-radius:18px; overflow:hidden; background:#FFF3C4; display:flex; align-items:center; justify-content:center; }
+  .ke-wotd-pic img{ width:100%; height:100%; object-fit:cover; }
+  .ke-wotd-pic.ke-talking{ animation:ke-av-pop .45s ease; }
+  .ke-wotd-emoji{ font-size:42px; line-height:1; }
+  .ke-wotd-text{ display:flex; flex-direction:column; min-width:0; gap:1px; }
+  .ke-wotd-word{ font-family:'Fredoka','Baloo 2',sans-serif; font-size:24px; font-weight:700; line-height:1.1; color:#1A2233; overflow-wrap:anywhere; }
+  .ke-wotd-word span{ font-size:16px; }
+  .ke-wotd-tr{ font-size:14px; font-weight:800; color:#6a5a2a; }
+  .ke-wotd-sent{ font-size:13.5px; font-weight:700; color:#445; font-style:italic; }
+  .ke-shell .ke-wotd-ok{ width:100%; margin-top:10px; min-height:44px; font-size:16px !important; padding:10px 14px !important; background:#FFD84D !important; color:#3a2a00 !important; border:none !important; border-radius:14px !important; box-shadow:0 4px 0 #C99A12 !important; font-weight:800 !important; }
+  .ke-wotd-done{ margin-top:10px; font-size:14px; font-weight:800; color:#1f7a34; }
   .ke-shell .ke-due-chip{
     display:flex; align-items:center; justify-content:space-between; gap:8px; width:min(560px,100%); margin:0 auto 14px; min-height:48px;
     padding:10px 16px !important; border-radius:16px !important; background:#FFF3C4 !important; color:#5a3f00 !important;
@@ -3578,9 +3610,12 @@ function showQuizUnlockToast(container, onClick) {
 // gerçek yerel veriden (TodayTime/DailyGoal/Streak) kısa bir teşvik
 // mesajı gösteriyor. Veri yoksa (yeni kullanıcı/ilk açılış) hiç
 // göstermiyor - boş övgü yerine gerçek bir başarıya dayanıyor.
-let _motivationShownThisSession = false;
+// Profil basina bir kez: eskiden oturum basina tek bayrakti, cocuk
+// degisince ikinci cocuk mesaji hic gormuyordu (2026-09-27 geri bildirimi).
+const _motivationShownFor = new Set();
 function maybeShowMotivationToast(container) {
-  if (_motivationShownThisSession) return;
+  const pid = Profiles.active().id;
+  if (_motivationShownFor.has(pid)) return;
   const minutes = Math.floor(TodayTime.today() / 60);
   const wordsToday = DailyGoal.today();
   const streakDays = Streak.get();
@@ -3593,7 +3628,7 @@ function maybeShowMotivationToast(container) {
     msg = L(`🔥 ${streakDays} günlük serin devam ediyor! Bugün de devam edelim mi?`, `🔥 Your ${streakDays}-day streak is going! Keep it up today?`);
   }
   if (!msg) return;
-  _motivationShownThisSession = true;
+  _motivationShownFor.add(pid);
   const el = document.createElement('div');
   el.className = 'ke-game-toast ke-motivation-toast';
   el.textContent = msg;
@@ -3779,6 +3814,116 @@ function showGuide(container, api, toolId, categories) {
   pushBackState(back);
 }
 
+// ---- Gunun Kelimesi (ana ekran, 2026-09-27) ----
+// Her profile her gun bir kelime: cocugun o anki istasyonundaki kelime
+// gezegenlerinden (konusma/matematik haric), gun + profil kimligiyle
+// deterministik secilir ve o gunun kaydina yazilir (yolculuk ilerlese de
+// kelime gun icinde degismez). Kayit profil anahtarinda: her cocuk kendi
+// kelimesini ve kendi "ogrendim" durumunu gorur.
+const WOTD_KEY = 'ke_wotd_v1';
+function wotdKey(pid) {
+  pid = pid || Profiles.active().id;
+  return pid === 'p1' ? WOTD_KEY : WOTD_KEY + '_' + pid;
+}
+function _strHash(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+const WordOfDay = {
+  _today() {
+    try {
+      const d = JSON.parse(window.localStorage.getItem(wotdKey()));
+      if (d && d.day === dayStr(Date.now()) && d.obj) return d;
+    } catch (e) { /* yok say */ }
+    return null;
+  },
+  _save(d) { try { window.localStorage.setItem(wotdKey(), JSON.stringify(d)); } catch (e) { /* yok say */ } idbPut(wotdKey(), d); },
+  _pool(categories) {
+    const st = Journey.state(categories);
+    const cur = st.list[st.current];
+    const words = (p) => !p.id.startsWith('conv_') && !p.id.startsWith('math_') && p.cat.episode_count > 0;
+    const inSector = st.list.filter((p) => words(p) && p.si === (cur ? cur.si : 0));
+    return inSector.length ? inSector : st.list.filter(words);
+  },
+  async _pick(api, toolId, categories) {
+    const pool = this._pool(categories);
+    if (!pool.length) return null;
+    const seed = _strHash(dayStr(Date.now()) + '|' + Profiles.active().id);
+    const p = pool[seed % pool.length];
+    const r = await api.apiFetch(`/api/tools/${toolId}/categories/${p.id}/episodes/${(seed >>> 8) % p.cat.episode_count}`);
+    if (!r.ok) return null;
+    const objs = ((await r.json()).objects || []).filter((o) => o.word && o.icon);
+    if (!objs.length) return null;
+    const o = objs[(seed >>> 16) % objs.length];
+    return { day: dayStr(Date.now()), cat: p.id, done: false,
+      obj: { word: o.word, tr: o.tr, icon_type: o.icon_type, icon: o.icon, sentence: o.sentence || '' } };
+  },
+  async get(api, toolId, categories) {
+    const cached = this._today();
+    if (cached) return cached;
+    const d = await this._pick(api, toolId, categories);
+    if (d) this._save(d);
+    return d;
+  },
+  markDone() {
+    const d = this._today();
+    if (!d || d.done) return false;
+    d.done = true;
+    this._save(d);
+    Recall.add(d.cat, [d.obj]); // aralikli tekrar kuyruguna girer
+    DailyGoal.add(1);
+    return true;
+  },
+};
+function wotdPicHTML(obj) {
+  if (obj.icon_type === 'photo' || obj.icon_type === 'svg') {
+    return `<img src="${new URL(obj.icon, ASSET_BASE_URL).href}" alt="" draggable="false" />`;
+  }
+  return `<span class="ke-wotd-emoji">${escapeProfileText(obj.icon)}</span>`;
+}
+function wotdCardHTML(d) {
+  const o = d.obj;
+  const foot = d.done
+    ? `<div class="ke-wotd-done">✓ ${L('Bugün öğrendin! Yarın yeni kelime.', 'Learned today! New word tomorrow.')}</div>`
+    : `<button type="button" class="ke-btn-primary ke-wotd-ok" id="keWotdOk">${L('Öğrendim', 'I learned it')} ✓</button>`;
+  return `
+    <div class="ke-wotd-head">⭐ ${L('Günün Kelimesi', 'Word of the Day')}</div>
+    <button type="button" class="ke-wotd-body" id="keWotdSay" aria-label="${L('Dinle', 'Listen')}: ${escapeProfileText(o.word)}">
+      <span class="ke-wotd-pic">${wotdPicHTML(o)}</span>
+      <span class="ke-wotd-text">
+        <span class="ke-wotd-word">${escapeProfileText(o.word)} <span aria-hidden="true">🔊</span></span>
+        <span class="ke-wotd-tr">${escapeProfileText(o.tr || '')}</span>
+        ${o.sentence ? `<span class="ke-wotd-sent">${escapeProfileText(o.sentence)}</span>` : ''}
+      </span>
+    </button>
+    ${foot}`;
+}
+function renderWordOfDay(el, d) {
+  el.innerHTML = wotdCardHTML(d);
+  el.hidden = false;
+  const pic = el.querySelector('.ke-wotd-pic');
+  el.querySelector('#keWotdSay').addEventListener('click', () => {
+    speakWord(d.obj.word, pic, () => { if (d.obj.sentence) setTimeout(() => speakWord(d.obj.sentence, pic), 350); });
+  });
+  const ok = el.querySelector('#keWotdOk');
+  if (ok) ok.addEventListener('click', () => {
+    WordOfDay.markDone();
+    renderWordOfDay(el, Object.assign({}, d, { done: true }));
+    el.classList.add('ke-av-pop');
+  });
+}
+async function mountWordOfDay(host, api, toolId, categories) {
+  const el = host.querySelector('#keWotd');
+  if (!el) return;
+  const pid = Profiles.active().id;
+  let d = null;
+  try { d = await WordOfDay.get(api, toolId, categories); } catch (e) { /* kart gizli kalir */ }
+  // Beklerken profil ya da ekran degistiyse eski cocugun kelimesini basma
+  if (!d || !el.isConnected || Profiles.active().id !== pid) return;
+  renderWordOfDay(el, d);
+}
+
 function showSectionMenu(container, api, toolId, categories) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   EyeLens.setDomain(null);
@@ -3810,6 +3955,7 @@ function showSectionMenu(container, api, toolId, categories) {
       <button type="button" class="ke-who-chip" id="keWhoChip" aria-label="${L('Çocuk değiştir', 'Switch child')}">👤 ${escapeProfileText(Profiles.active().name || L('Ben', 'Me'))} <span aria-hidden="true">⇄</span></button>
     </div>
     ${journeyHomeCardHTML(categories)}
+    <div class="ke-wotd" id="keWotd" hidden></div>
     ${dueTotal ? `<button type="button" class="ke-due-chip" id="keDueChip">🔁 ${L(`Bugün ${dueTotal} kelime tekrar`, `${dueTotal} words to review today`)} <span>→</span></button>` : ''}
     </div><div class="ke-home-right">
     <h2 class="ke-lib-head">📚 ${L('Kütüphane', 'Library')} <span>${L('serbest çalışma — istediğin konuyu seç', 'free practice — pick any topic')}</span></h2>
@@ -3819,6 +3965,7 @@ function showSectionMenu(container, api, toolId, categories) {
   `;
   wireBottomNav(host, container, api, toolId, categories);
   wireJourneyHomeCard(host, container, api, toolId, categories);
+  mountWordOfDay(host, api, toolId, categories);
   host.querySelector('#keWhoChip').addEventListener('click', () => showWhoIsPlaying(container, api, toolId, categories));
   const dueChip = host.querySelector('#keDueChip');
   if (dueChip) dueChip.addEventListener('click', () => { const c = dueByCat[0][0]; startReviewSession(container, api, toolId, categories, c.id, c.title); });
@@ -3898,6 +4045,7 @@ function profileStorageKeys(pid) {
     mathBest: pid === 'p1' ? 'ke_math_best_v1' : 'ke_math_best_v1_' + pid,
     puzzle: `${PUZZLE_BEST_KEY}_${pid}`,
     recall: pid === 'p1' ? RECALL_KEY : RECALL_KEY + '_' + pid,
+    wotd: wotdKey(pid),
   };
 }
 
@@ -6185,8 +6333,8 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
           // son kelime okunduktan SONRA gec (ses takilirsa 4 sn yedek).
           let started = false;
           const go = () => { if (started) return; started = true; startQuizWithDiscovered(); };
-          speakWord(obj.word, mascotEl, () => setTimeout(go, 500));
-          setTimeout(go, 4000);
+          speakWord(obj.word, mascotEl, () => setTimeout(go, 700));
+          setTimeout(go, 13000); // speakWord'un kendi 12 sn ust sinirindan sonra
         } else {
           goToQuizCount.textContent = String(foundCount);
           goToQuizBtn.style.display = 'inline-block';
@@ -6735,12 +6883,13 @@ function speakThen(text, mascotEl, minMs, fn, maxMs) {
   let fired = false;
   const go = () => { if (fired) return; fired = true; fn(); };
   speakWord(text, mascotEl, () => setTimeout(go, Math.max(350, minMs - (Date.now() - t0))));
-  setTimeout(go, maxMs || Math.max(minMs, 1500) + 7000);
+  setTimeout(go, maxMs || Math.max(minMs, 13000)); // speakWord 12 sn'de kendisi biter
 }
 
 function speakWord(word, mascotEl, onDone) {
   if (!('speechSynthesis' in window)) { notifySoundProblem(L('bu tarayıcı sesli okumayı desteklemiyor', 'this browser cannot read aloud')); if (onDone) onDone(); return; }
   const synth = window.speechSynthesis;
+  const t0 = Date.now();
   let done = false;
   const finish = () => {
     if (done) return;
@@ -6775,7 +6924,16 @@ function speakWord(word, mascotEl, onDone) {
   } else {
     doSpeak();
   }
-  setTimeout(finish, 3200);
+  // Yedek: onend hic gelmezse (bazi Android). Eskiden 3.2 sn'de kosulsuz
+  // bitiriyordu - telefonda ses gec baslayinca son kelime/cumle yarida
+  // kesilip sonraki ekrana geciliyordu (2026-09-27 geri bildirimi). Ses hala
+  // caliyorsa bekle; takili kalan motor icin 12 sn ust sinir.
+  const fallback = () => {
+    if (done) return;
+    if ((synth.speaking || synth.pending) && Date.now() - t0 < 12000) { setTimeout(fallback, 250); return; }
+    finish();
+  };
+  setTimeout(fallback, 3200);
 }
 
 // Telefonda "ses çalışmıyor" durumunda tanı koymak için ana sayfadaki
@@ -8251,7 +8409,8 @@ function showLeaderboard(container, onExit) {
   const shell = container.querySelector('.ke-shell');
   const overlay = document.createElement('div');
   overlay.className = 'ke-river-overlay-msg ke-leaderboard';
-  overlay.style.position = 'absolute'; overlay.style.zIndex = '90';
+  // fixed: sayfa kaydirilmisken kart ekranin ustunde kesiliyordu
+  overlay.style.position = 'fixed'; overlay.style.zIndex = '90';
   overlay.innerHTML = `
     <div class="ke-river-msg-card ke-lb-card">
       <h2>🏆 ${L('Sıralama', 'Leaderboard')}</h2>

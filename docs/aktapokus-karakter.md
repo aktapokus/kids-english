@@ -143,6 +143,14 @@ Uygulama tarafı: `--aktapokus-eye`, `ui/mascot/eye_domains.json`.
 | 11 | `content_model/characters.json` | "A digital eye became his right eye … the eye never speaks and is never wrong" | "Göz oldu" anlatımı; "never wrong" AÇIK 3'e göre netleşmeli |
 | 12 | Bölüm 2 görselleri 9 ve 10 | Görselde Baba yok (kart "Dad looks at the red eye"); gece ve yıldız yerine ışığa yükselme | Metin–görsel uyumsuzluğu (lore değil ama aynı karar turunda) |
 
+**Güncelleme 2026-09-27 (kullanıcı onayıyla uygulandı):**
+- 3, 4, 5, 8 ve 10 düzeltildi. Bölüm 2 artık "The Red Lens / Kırmızı Cam" adını taşıyor; metinde ve görsel komutlarında "eye" yerine "lens" kullanılıyor.
+- 6, 7 ve 9 yalnızca "eye → lens" olarak güncellendi. "Knows every name" mutlaklığı AÇIK 3 kararını bekliyor.
+- Hâlâ açık:
+  - 1 ve 2 (yayındaki Bölüm 1: göz konuşuyor);
+  - 11 (`characters.json`);
+  - 12 (Bölüm 2'nin 9. ve 10. görselleri; metin olduğu gibi yayında).
+
 Uygulamanın kendi arayüz metinleri çelişki içermiyor. Kontrol edilen yerler:
 - karşılama: "Kelime Yıldızları uzaya dağıldı…";
 - tepki balonları;
