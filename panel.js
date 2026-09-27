@@ -486,6 +486,90 @@ function isNameAllowed(name) {
   const low = name.toLowerCase();
   return !NAME_BLOCKLIST.some((w) => low.includes(w));
 }
+// "Bu kartta sorun var" (2026-09-27, ogretmen degerlendirmesi): ogretmen
+// bir kartta hata gorunce bildirir; Katman 4 (ogretmen incelemesi)
+// dagitik hale gelir. Ebeveyn Alani > Icerik denetimi acikken gorunur.
+// KISISEL VERI YOK: kart kimligi + hazir neden + istege bagli not.
+// Tablo: meb_research/content_reports_schema.sql (yalniz ekleme). Baglanti
+// yoksa bildirim cihazda siraya alinir, sonraki acilista gonderilir.
+const REPORT_MODE_KEY = 'ke_report_mode_v1';
+const REPORT_QUEUE_KEY = 'ke_report_queue_v1';
+const REPORT_REASONS = () => [
+  ['image', L('Görsel kelimeye uymuyor', "The picture doesn't match")],
+  ['sentence', L('Cümle hatalı / doğal değil', 'The sentence is wrong or unnatural')],
+  ['translation', L('Türkçe anlam hatalı', 'The Turkish meaning is wrong')],
+  ['audio', L('Telaffuz / ses sorunu', 'Pronunciation / audio problem')],
+  ['level', L('Seviyeye uygun değil', 'Not right for this level')],
+  ['other', L('Diğer', 'Other')],
+];
+const ContentReport = {
+  enabled() { try { return window.localStorage.getItem(REPORT_MODE_KEY) === '1'; } catch (e) { return false; } },
+  setEnabled(on) { try { window.localStorage.setItem(REPORT_MODE_KEY, on ? '1' : '0'); } catch (e) { /* yok say */ } },
+  _queue() { try { return JSON.parse(window.localStorage.getItem(REPORT_QUEUE_KEY)) || []; } catch (e) { return []; } },
+  _saveQueue(q) { try { window.localStorage.setItem(REPORT_QUEUE_KEY, JSON.stringify(q.slice(-50))); } catch (e) { /* yok say */ } },
+  async _post(r) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/content_reports`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Prefer: 'return=minimal' },
+      body: JSON.stringify([r]),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  },
+  // true: gonderildi, false: siraya alindi
+  async send(r) {
+    try { await this._post(r); return true; } catch (e) { this._saveQueue(this._queue().concat([r])); return false; }
+  },
+  async flush() {
+    const q = this._queue();
+    if (!q.length) return;
+    const left = [];
+    for (const r of q) { try { await this._post(r); } catch (e) { left.push(r); } }
+    this._saveQueue(left);
+  },
+};
+function reportPayload(obj, categoryId, episodeId, reason, note) {
+  const cut = (v, n) => (v == null ? null : String(v).slice(0, n));
+  return { category_id: cut(categoryId, 60), episode_id: cut(episodeId, 60), word: cut(obj.word, 80), concept: cut(obj.concept, 80),
+    reason, note: note && note.trim() ? cut(note.trim(), 300) : null, lang: _lang };
+}
+function showReportDialog(container, obj, categoryId, episodeId) {
+  const shell = container.querySelector('.ke-shell') || document.body;
+  const ov = document.createElement('div');
+  ov.className = 'ke-river-overlay-msg ke-report-ov';
+  ov.style.position = 'fixed'; ov.style.zIndex = '95';
+  ov.innerHTML = `
+    <div class="ke-river-msg-card ke-report-card" role="dialog" aria-label="${L('Sorun bildir', 'Report a problem')}">
+      <h2 style="margin:0 0 4px;">⚑ ${L('Sorun bildir', 'Report a problem')}</h2>
+      <p class="ke-report-word"><b>${escapeProfileText(obj.word)}</b> · ${escapeProfileText(obj.tr || '')}</p>
+      <div class="ke-report-reasons">${REPORT_REASONS().map(([id, t]) => `<button type="button" class="ke-btn-secondary ke-report-reason" data-r="${id}">${t}</button>`).join('')}</div>
+      <textarea id="keReportNote" maxlength="300" rows="3" placeholder="${L('İsteğe bağlı not (ör. doğrusu: …)', 'Optional note (e.g. it should be: …)')}"></textarea>
+      <p class="ke-report-privacy">${L('Gönderilen: kart, seçtiğiniz neden ve not. Ad ya da kişisel bilgi gönderilmez.', 'Sent: the card, your reason and note. No name or personal data.')}</p>
+      <div class="ke-report-actions">
+        <button type="button" class="ke-btn-secondary" id="keReportCancel">${L('Vazgeç', 'Cancel')}</button>
+        <button type="button" class="ke-btn-primary" id="keReportSend" disabled>${L('Gönder', 'Send')}</button>
+      </div>
+      <div id="keReportMsg" class="ke-report-msg"></div>
+    </div>`;
+  shell.appendChild(ov);
+  requestAnimationFrame(() => ov.classList.add('ke-show'));
+  let reason = null;
+  const close = () => { ov.classList.remove('ke-show'); setTimeout(() => ov.remove(), 200); };
+  ov.querySelectorAll('.ke-report-reason').forEach((b) => b.addEventListener('click', () => {
+    reason = b.dataset.r;
+    ov.querySelectorAll('.ke-report-reason').forEach((x) => x.classList.toggle('ke-sel', x === b));
+    ov.querySelector('#keReportSend').disabled = false;
+  }));
+  ov.querySelector('#keReportCancel').addEventListener('click', close);
+  ov.querySelector('#keReportSend').addEventListener('click', async () => {
+    const btn = ov.querySelector('#keReportSend'); btn.disabled = true;
+    const ok = await ContentReport.send(reportPayload(obj, categoryId, episodeId, reason, ov.querySelector('#keReportNote').value));
+    ov.querySelector('#keReportMsg').textContent = ok
+      ? L('Teşekkürler! Bildiriminiz alındı. 🙏', 'Thank you! Your report was received. 🙏')
+      : L('İnternet yok gibi görünüyor; bildirim kaydedildi, sonra gönderilecek.', 'Looks offline; the report is saved and will be sent later.');
+    setTimeout(close, 1600);
+  });
+}
+
 const Leaderboard = {
   async submit(name, score, game) {
     game = game || 'river';
@@ -1695,6 +1779,17 @@ ${FONT_FACES}
   .ke-rv-pic img{ width:100%; height:100%; object-fit:contain; border-radius:12px; pointer-events:none; }
   .ke-rv-emo{ font-size:52px; line-height:1; }
   .ke-shell .ke-tile.ke-rv-ok{ outline:4px solid #43A047; }
+  .ke-report-btn{ position:absolute; left:10px; bottom:10px; z-index:6; max-width:70%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    font:800 13px/1 system-ui,sans-serif; padding:9px 12px; border-radius:12px; border:2px solid #B8A46A; background:#FFF8E1; color:#5a3f00; cursor:pointer; }
+  .ke-report-card{ max-width:380px; text-align:left; }
+  .ke-report-word{ margin:0 0 10px; font-size:16px; }
+  .ke-report-reasons{ display:flex; flex-direction:column; gap:6px; }
+  .ke-shell .ke-report-card .ke-btn-secondary.ke-report-reason{ text-align:left; min-height:40px; font-size:14px !important; padding:8px 12px !important; }
+  .ke-shell .ke-report-card .ke-report-reason.ke-sel{ background:#FFD84D !important; border-color:#C99A12 !important; }
+  .ke-report-card textarea{ width:100%; margin-top:10px; font:15px/1.4 system-ui,sans-serif; padding:8px; border-radius:10px; border:2px solid #B8A46A; box-sizing:border-box; }
+  .ke-report-privacy{ font-size:12px; color:#6b5a2e; margin:6px 0 10px; }
+  .ke-report-actions{ display:flex; gap:8px; justify-content:flex-end; }
+  .ke-report-msg{ min-height:1.2em; margin-top:8px; font-weight:800; color:#1f7a34; }
   .ke-pairs{ display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:420px; margin:0 auto; }
   .ke-pairs-col{ display:flex; flex-direction:column; gap:8px; }
   .ke-shell .ke-tile.ke-pair-btn{ width:100%; min-height:48px; }
@@ -3824,7 +3919,7 @@ function showGuide(container, api, toolId, categories) {
     },
     {
       icon: '🔒', title: L('Veriler ve gizlilik', 'Data and privacy'),
-      body: L('Hesap gerekmez; reklam ve izleyici yoktur. Profil, avatar ve ilerleme yalnızca bu cihazda saklanır. İki isteğe bağlı özellik dışında hiçbir şey gönderilmez: 1) Nehir oyununda "Skoru Gönder"e basarsan yazdığın takma ad ve puan herkese açık sıralamada görünür. 2) Sınıf koduyla katılırsan ad ve ilerleme sayıların yalnızca o öğretmene gider. Konuşma alıştırmasında ses tanımayı tarayıcı/cihaz yapar (Android/Chrome’da Google hizmeti); uygulama sesi almaz ve kaydetmez. Hikâye okuma kayıtların cihazında kalır. Ayrıntılar: Gizlilik sayfası.', 'No account, no ads, no trackers. Profile, avatar and progress are stored only on this device. Nothing is sent except two optional features: 1) tapping "Submit Score" in the river game shows the nickname you type and your score on a public leaderboard; 2) joining a class with a code sends your name and progress numbers to that teacher only. Speech recognition is done by your browser or device (Google’s service on Android/Chrome); the app never receives or stores the audio. Story reading recordings stay on your device. Details: Privacy page.'),
+      body: L('Hesap gerekmez; reklam ve izleyici yoktur. Profil, avatar ve ilerleme yalnızca bu cihazda saklanır. Üç isteğe bağlı özellik dışında hiçbir şey gönderilmez: 1) Nehir oyununda "Skoru Gönder"e basarsan yazdığın takma ad ve puan herkese açık sıralamada görünür. 2) Sınıf koduyla katılırsan ad ve ilerleme sayıların yalnızca o öğretmene gider. 3) Ebeveyn Alanı’nda içerik denetimini açan bir yetişkin "Sorun bildir" ile bir kart hakkında bildirim gönderirse yalnızca kart, neden ve not gider; kişisel bilgi gitmez. Konuşma alıştırmasında ses tanımayı tarayıcı/cihaz yapar (Android/Chrome’da Google hizmeti); uygulama sesi almaz ve kaydetmez. Hikâye okuma kayıtların cihazında kalır. Ayrıntılar: Gizlilik sayfası.', 'No account, no ads, no trackers. Profile, avatar and progress are stored only on this device. Nothing is sent except three optional features: 1) tapping "Submit Score" in the river game shows the nickname you type and your score on a public leaderboard; 2) joining a class with a code sends your name and progress numbers to that teacher only; 3) if an adult turns on content review in the Parent Area and taps "Report" on a card, only the card, the reason and the note are sent - no personal data. Speech recognition is done by your browser or device (Google’s service on Android/Chrome); the app never receives or stores the audio. Story reading recordings stay on your device. Details: Privacy page.'),
     },
   ];
   host.innerHTML = `
@@ -3970,6 +4065,7 @@ function showSectionMenu(container, api, toolId, categories) {
   const dueByCat = categories.map((c) => [c, Progress.dueMissed(c.id).length]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]);
   const dueTotal = dueByCat.reduce((n, x) => n + x[1], 0);
   Resume.save({ screen: 'menu' });
+  if (!ContentReport._flushed) { ContentReport._flushed = true; ContentReport.flush(); } // cevrimdisi kalan bildirimler
   const host = container.querySelector('#keScreenHost');
   const waveSrc = new URL('mascot/mascot_wave.png', ASSET_BASE_URL).href;
   const hasBadge = GameTokens.get() > 0 || PendingQuiz.get() > 0;
@@ -4815,6 +4911,11 @@ async function showParentArea(container, api, toolId, categories) {
       <p class="ke-parent-p">${cls.code ? `${escapeProfileText(cls.className || cls.code)} · ${classSyncLabel(cls)}` : L('Bir sınıfa katılmamış. Öğretmeniniz sınıf kodu verdiyse Avatar ekranının altından katılabilirsiniz.', 'Not in a class. If the teacher gave a class code, join from the bottom of the Avatar screen.')}</p>
     </div>
     <div class="ke-week-card ke-parent-card">
+      <div class="ke-kpi-lbl">🧑‍🏫 ${L('İçerik denetimi (öğretmen)', 'Content review (teacher)')}</div>
+      <p class="ke-parent-p">${L('Açıkken kelime keşfinde dokunduğunuz kart için "⚑ Sorun bildir" düğmesi görünür. Hatalı görsel, cümle veya anlamı bize bildirirsiniz; ad ya da kişisel bilgi gönderilmez.', 'When on, a "⚑ Report" button appears for the card you tap in word discovery. Report a wrong picture, sentence or meaning; no name or personal data is sent.')}</p>
+      <div class="ke-pick-row" style="justify-content:flex-start;"><button type="button" class="ke-pick${ContentReport.enabled() ? ' ke-sel' : ''}" id="keReportToggle" aria-pressed="${ContentReport.enabled()}">${ContentReport.enabled() ? L('Açık ✓', 'On ✓') : L('Kapalı', 'Off')}</button></div>
+    </div>
+    <div class="ke-week-card ke-parent-card">
       <div class="ke-kpi-lbl">💾 ${L('Yedekleme', 'Backup')}</div>
       <div class="ke-pick-row" style="justify-content:flex-start;">
         <button type="button" class="ke-pick" id="keParentExport">${L('Yedek indir', 'Download backup')}</button>
@@ -4825,6 +4926,11 @@ async function showParentArea(container, api, toolId, categories) {
     </div>`;
   void today;
   host.querySelector('#keParentExport').addEventListener('click', exportBackup);
+  host.querySelector('#keReportToggle').addEventListener('click', (e) => {
+    const on = !ContentReport.enabled(); ContentReport.setEnabled(on);
+    e.currentTarget.classList.toggle('ke-sel', on); e.currentTarget.setAttribute('aria-pressed', String(on));
+    e.currentTarget.textContent = on ? L('Açık ✓', 'On ✓') : L('Kapalı', 'Off');
+  });
   host.querySelector('#keParentImport').addEventListener('change', (e) => importBackup(e.target.files[0]));
 }
 
@@ -6234,6 +6340,14 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
   // konumunu tek yerden güncelleyen fonksiyon — hem ilk render'da hem de
   // ekran genişliği değişince (matchMedia listener, aşağıda) çağrılıyor.
   const sceneEl = host.querySelector('#keScene');
+  // Icerik denetimi (ogretmen): son dokunulan kart icin "Sorun bildir"
+  let reportTarget = null;
+  const reportBtn = ContentReport.enabled() ? document.createElement('button') : null;
+  if (reportBtn) {
+    reportBtn.type = 'button'; reportBtn.className = 'ke-report-btn'; reportBtn.hidden = true;
+    reportBtn.addEventListener('click', (ev) => { ev.stopPropagation(); if (reportTarget) showReportDialog(container, reportTarget, episode.category_id, episode.episode_id); });
+    sceneEl.appendChild(reportBtn);
+  }
   function layoutObjects(narrow) {
     sceneEl.classList.toggle('ke-scene-narrow', narrow);
     mascotEl.classList.toggle('ke-mascot-narrow', narrow);
@@ -6342,6 +6456,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
       wordPopup.textContent = obj.word;
       wordPopup.classList.add('ke-show');
       EyeLens.setDomain(obj.domain || eyeSceneDomain); // kelime seviyesi domain varsa o
+      if (reportBtn) { reportTarget = obj; reportBtn.hidden = false; reportBtn.textContent = `⚑ ${L('Sorun bildir', 'Report')}: ${obj.word}`; }
       // Konum artık SABİT değil, TIKLANAN NESNEYE göre hesaplanıyor —
       // eskiden sabit bir köşedeydi ve dar ekranda başka bir resmin
       // üzerine biniyordu ("resim üzerinde çıkıyor yazı" geri bildirimi).
