@@ -10,13 +10,13 @@ const json = (obj, status = 200) => new Response(JSON.stringify(obj), { status, 
 const api = {
   async apiFetch(url) {
     if (/\/categories$/.test(url)) {
-      return json(data.categories.map((c) => ({ id: c.id, title: c.title, episode_count: c.episode_count, word_count: c.word_count })));
+      return json(data.categories.map((c) => ({ id: c.id, title: c.title, episode_count: c.episode_count, word_count: c.word_count, domain: c.domain })));
     }
     const m = url.match(/\/categories\/([^/]+)\/episodes\/(\d+)$/);
     if (m) {
       const cat = byId.get(m[1]); const i = Number(m[2]);
       if (!cat || !cat.episodes[i]) return json({ detail: 'not found' }, 404);
-      return json({ ...cat.episodes[i], category_id: cat.id, category_title: cat.title, episode_index: i, episode_count: cat.episode_count });
+      return json({ ...cat.episodes[i], category_id: cat.id, category_title: cat.title, category_domain: cat.domain, episode_index: i, episode_count: cat.episode_count });
     }
     if (/\/stories$/.test(url)) {
       return json(storiesData.stories.map((s) => ({ id: s.id, title: s.title, title_tr: s.title_tr, episode_label: s.episode_label, intro: s.intro, cover: s.cover, card_count: s.cards.length })));
@@ -39,7 +39,7 @@ if ('serviceWorker' in navigator) {
   // (kullanicinin kendi geri bildirimi). Iki parca:
   //
   // (1) sw.js'i her build'de degisen bir ?v= sorgu dizgesiyle kaydediyoruz
-  // (asagida 19361bded0 yer tutucusu, build_pwa.py build hash'iyle
+  // (asagida 8176c36ad6 yer tutucusu, build_pwa.py build hash'iyle
   // degistiriyor) - GitHub Pages TUM dosyalari CDN'de 10 dakika
   // onbelleklediginden (Cache-Control: max-age=600, updateViaCache:'none'
   // SADECE tarayicinin KENDI HTTP onbellegini atlar, GitHub'in CDN edge
@@ -65,7 +65,7 @@ if ('serviceWorker' in navigator) {
   // Boylece kullanici HICBIR SEY yapmadan (site verisi temizlemeden) bir
   // sonraki dogal ac/kapa VEYA arka plandan on plana gelisinde guncel
   // surume geciyor - ama bu tek reload asla tekrarlanmiyor.
-  navigator.serviceWorker.register('sw.js?v=19361bded0', { updateViaCache: 'none' }).then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=8176c36ad6', { updateViaCache: 'none' }).then((reg) => {
     reg.update().catch(() => {});
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') reg.update().catch(() => {});
@@ -74,7 +74,7 @@ if ('serviceWorker' in navigator) {
   const hadControllerAtLoad = !!navigator.serviceWorker.controller;
   if (hadControllerAtLoad) {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      const target = '19361bded0';
+      const target = '8176c36ad6';
       let already = '';
       try { already = window.localStorage.getItem('ke_sw_reloaded_for') || ''; } catch (e) { /* yok say */ }
       if (already === target) return;

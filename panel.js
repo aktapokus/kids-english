@@ -2339,6 +2339,46 @@ ${FONT_FACES}
     filter:drop-shadow(0 0 .02em #fff) drop-shadow(0 .03em .03em rgba(0,0,0,.3));
   }
   .ke-av-pet{ z-index:3; }
+  /* ---- Gozluk cami (Faz 2) ----
+     Renk yalnizca --aktapokus-eye'dan; durumlar sekil/hareketle de ayrisir
+     (renkten bagimsiz okunabilsin): analyzing = sabit hale + parlak cam,
+     uncertain = yavas nabizli dis hale + kucuk goz bebegi, idle = hale yok,
+     arada goz kirpma. */
+  .ke-av-lens{ position:absolute; z-index:1; pointer-events:none; transition:opacity .15s; }
+  .ke-av > img.ke-av-pending ~ .ke-av-lens{ opacity:0; } /* govde boyanirken cam tek basina gorunmesin */
+  .ke-av-lens > i{ position:absolute; display:block; }
+  .ke-av-lens-glass{
+    inset:0; background:var(--lens-shade) 0 0/100% 100% no-repeat, var(--aktapokus-eye, #FA4F32);
+    background-blend-mode:multiply;
+    -webkit-mask:var(--lens-shade) 0 0/100% 100% no-repeat; mask:var(--lens-shade) 0 0/100% 100% no-repeat;
+    transition:background-color .3s ease, filter .3s ease;
+  }
+  .ke-av-lens-glass::after{ content:""; position:absolute; inset:0; background:var(--lens-glint) 0 0/100% 100% no-repeat; mix-blend-mode:screen; }
+  .ke-av-lens-pupil{
+    aspect-ratio:1; border-radius:50%; transform:translate(-50%,-50%);
+    background:radial-gradient(circle at 34% 30%, #fff 0 13%, rgba(255,255,255,0) 15%),
+               radial-gradient(circle, #0b0b10 0 66%, color-mix(in srgb, var(--aktapokus-eye, #FA4F32) 30%, #000) 72%, rgba(0,0,0,0) 76%);
+    transition:transform .3s ease;
+  }
+  .ke-av-lens-halo{
+    inset:-6%; border-radius:50%; opacity:0;
+    box-shadow:0 0 0 1.2cqw color-mix(in srgb, var(--aktapokus-eye, #FA4F32) 55%, transparent), 0 0 5cqw 1.5cqw var(--aktapokus-eye, #FA4F32);
+    transition:opacity .3s ease, box-shadow .3s ease;
+  }
+  .ke-av[data-eye-state="analyzing"] .ke-av-lens-halo{ opacity:.75; }
+  .ke-av[data-eye-state="analyzing"] .ke-av-lens-glass{ filter:brightness(1.15) saturate(1.1); }
+  .ke-av[data-eye-state="uncertain"] .ke-av-lens-halo{ animation:ke-eye-pulse 1.8s ease-in-out infinite; }
+  .ke-av[data-eye-state="uncertain"] .ke-av-lens-pupil{ transform:translate(-50%,-50%) scale(.68); }
+  .ke-av[data-eye-state="idle"] .ke-av-lens-pupil{ animation:ke-eye-blink 5.5s ease-in-out infinite; }
+  @keyframes ke-eye-pulse{ 0%,100%{ opacity:.15; } 50%{ opacity:.9; } }
+  @keyframes ke-eye-blink{ 0%,93%,100%{ transform:translate(-50%,-50%); } 96%{ transform:translate(-50%,-50%) scaleY(.12); } }
+  @media (prefers-reduced-motion: reduce){
+    .ke-av-lens-glass, .ke-av-lens-pupil, .ke-av-lens-halo{ transition:none; }
+    .ke-av[data-eye-state] .ke-av-lens-pupil{ animation:none; }
+    /* nabiz yerine sabit, kesikli dis halka - analyzing'den ayrisir */
+    .ke-av[data-eye-state="uncertain"] .ke-av-lens-halo{ animation:none; opacity:.9; box-shadow:none; outline:.9cqw dashed var(--aktapokus-eye, #FA4F32); outline-offset:.4cqw; }
+  }
+  .ke-pick .ke-sw.ke-sw-eye{ border:2px solid #fff; box-shadow:0 0 0 1.5px rgba(0,0,0,.45); }
   .ke-av.ke-av-pop{ animation:ke-av-pop .45s cubic-bezier(.3,1.6,.5,1); }
   @keyframes ke-av-pop{ 0%{ transform:scale(.92); } 60%{ transform:scale(1.05); } 100%{ transform:none; } }
   /* Yuvarlak rozet: bas-omuz kadraji. Sapka varsa kadraj biraz asagi
@@ -2362,7 +2402,7 @@ ${FONT_FACES}
   }
   .ke-av-studio{ display:flex; flex-direction:column; align-items:center; gap:6px; }
   .ke-av-controls{ width:100%; display:flex; flex-direction:column; align-items:center; gap:8px; }
-  .ke-av-tabs{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:5px; width:100%; max-width:440px; padding:4px 0 6px; }
+  .ke-av-tabs{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px; width:100%; max-width:440px; padding:4px 0 6px; }
   .ke-shell .ke-av-tab{
     display:flex; flex-direction:column; align-items:center; gap:1px; min-width:0; min-height:48px;
     padding:6px 2px !important; border-radius:14px !important; font-size:11.5px !important; font-weight:800 !important;
@@ -2912,7 +2952,70 @@ const avatarScenes = () => [
   { id: 'sunset', label: L('Gün Batımı', 'Sunset'), need: 15, emoji: '🌅', bg: 'linear-gradient(180deg, #FFC27A 0%, #FF6F91 55%, #7A4BC2 100%)', deco: ['☁️', '🐦', '☁️'] },
   { id: 'snow', label: L('Kar', 'Snow'), need: 20, emoji: '❄️', bg: 'radial-gradient(circle at 50% 35%, #FFFFFF 0%, #CFE8FF 60%, #8DB8E8 100%)', deco: ['❄️', '⛄', '❄️'] },
 ];
+// Faz 2 - gozluk cami (goz degil: camin rengi degisiyor). Uc katman:
+//   renk   = icerigin domain'i (Adaptif, varsayilan) -> mascot/eye_domains.json
+//   durum  = parlama/animasyon, data-eye-state (analyzing|uncertain|idle)
+//   secim  = profilde sabit renk (Customize > Cam) -> adaptasyon kapanir,
+//            durum kanali calismaya devam eder.
+// Tum cam rengi/parlamasi tek degiskenden: --aktapokus-eye.
+const EYE_ORIGINAL = '#FA4F32'; // taban gorseldeki camin kendi kirmizisi
+const EyeLens = {
+  cfg: { default: 'general', domains: { general: EYE_ORIGINAL }, fixed: [{ id: 'original', tr: 'Orijinal', en: 'Original', color: EYE_ORIGINAL }] },
+  domain: null,
+  state: 'idle',
+  _timer: 0,
+  load() {
+    fetch(new URL('mascot/eye_domains.json', ASSET_BASE_URL))
+      .then((r) => (r.ok ? r.json() : null))
+      .then((c) => { if (c && c.domains && Array.isArray(c.fixed)) { this.cfg = c; this.apply(); } })
+      .catch(() => { /* yedek cfg ile devam */ });
+  },
+  domainColor(domain) {
+    const d = this.cfg.domains;
+    return d[domain] || d[this.cfg.default] || EYE_ORIGINAL;
+  },
+  // Profilin sabit secimi; Adaptif ise null
+  fixedColor(p) {
+    const id = p && p.eye;
+    const f = id && id !== 'adaptive' ? this.cfg.fixed.find((x) => x.id === id) : null;
+    return f ? f.color : null;
+  },
+  apply() { document.documentElement.style.setProperty('--aktapokus-eye', this.domainColor(this.domain)); },
+  setDomain(domain) {
+    domain = domain || null;
+    if (domain === this.domain) return;
+    this.domain = domain;
+    this.apply();
+  },
+  setState(s) {
+    this.state = s;
+    document.querySelectorAll('.ke-av').forEach((el) => { el.dataset.eyeState = s; });
+  },
+  // Gecici durum (ornegin yanlis cevapta 'uncertain'), sonra idle
+  flash(s, ms) {
+    clearTimeout(this._timer);
+    this.setState(s);
+    this._timer = setTimeout(() => this.setState('idle'), ms);
+  },
+};
+EyeLens.load();
+// En ozel seviye kazanir: kelime/bolum > kategori. Veride domain yoksa null
+// (-> config'teki default). Oneri: domain-mapping-proposal.json
+function eyeDomainOf(category, unit) {
+  return (unit && (unit.domain || unit.category_domain)) || (category && category.domain) || null;
+}
+const avatarEyes = () => {
+  const cols = [...new Set(Object.values(EyeLens.cfg.domains))];
+  const step = 100 / cols.length;
+  const mix = `conic-gradient(${cols.map((c, i) => `${c} ${(i * step).toFixed(1)}% ${((i + 1) * step).toFixed(1)}%`).join(',')})`;
+  return [{ id: 'adaptive', label: L('Adaptif', 'Adaptive'), need: 0, swatch: mix, emoji: '✨' }]
+    .concat(EyeLens.cfg.fixed.map((f) => ({ id: f.id, label: L(f.tr, f.en), need: 0, swatch: f.color, emoji: '👓' })));
+};
+
 // Özelleştirme sekmeleri: profil alanı + katalog + sekme başlığı
+// loose: katalog uzaktan (eye_domains.json) yuklendigi icin sanitize
+// sirasinda listeye degil kimlik bicimine bakilir - yukleme bitmeden
+// yapilan bir kayit secimi silmesin.
 const AVATAR_SLOTS = () => [
   { key: 'color', list: avatarColors(), label: L('Renk', 'Colour'), icon: '🎨' },
   { key: 'shirt', list: avatarShirts(), label: L('Tişört', 'Shirt'), icon: '👕' },
@@ -2920,8 +3023,9 @@ const AVATAR_SLOTS = () => [
   { key: 'item', list: avatarItems(), label: L('Eşya', 'Item'), icon: '🎈' },
   { key: 'pet', list: avatarPets(), label: L('Dost', 'Pet'), icon: '🐶' },
   { key: 'scene', list: avatarScenes(), label: L('Sahne', 'Scene'), icon: '🌈' },
+  { key: 'eye', list: avatarEyes(), label: L('Cam', 'Lens'), icon: '👓', loose: true },
 ];
-const AVATAR_DEFAULTS = { color: 'yellow', shirt: 'red', hat: 'none', item: 'none', pet: 'none', scene: 'sky' };
+const AVATAR_DEFAULTS = { color: 'yellow', shirt: 'red', hat: 'none', item: 'none', pet: 'none', scene: 'sky', eye: 'adaptive' };
 function avatarPart(list, id) { return list.find((x) => x.id === id) || list[0]; }
 
 // localStorage tarayicidan/devtools'tan elle degistirilebilir ya da
@@ -2938,7 +3042,9 @@ function _sanitizeProfile(p) {
     name: String(p.name || '').slice(0, 12),
   };
   AVATAR_SLOTS().forEach((slot) => {
-    out[slot.key] = slot.list.some((x) => x.id === p[slot.key]) ? p[slot.key] : AVATAR_DEFAULTS[slot.key];
+    const v = p[slot.key];
+    const ok = slot.loose ? typeof v === 'string' && /^[a-z]{1,16}$/.test(v) : slot.list.some((x) => x.id === v);
+    out[slot.key] = ok ? v : AVATAR_DEFAULTS[slot.key];
   });
   return out;
 }
@@ -3005,9 +3111,10 @@ const Profiles = {
 // Avatar v2 boyama: avatar/idle_base.png (sari, 600x900) + idle_mask.png
 // (R = deri, G = tisort kirmizisi; scripts/generate_avatar_masks.py).
 // Istenen renk/tisort kombinasyonu bir kez canvas'ta boyanip blob URL
-// olarak onbellege aliniyor. Eski 5 renk + kirmizi tisort icin hazir
-// PNG'ler var; onlar aninda gorunur, boyama beklemez.
-const LEGACY_AVATAR_COLORS = ['yellow', 'blue', 'green', 'pink', 'purple'];
+// olarak onbellege aliniyor. Sari + kirmizi tisort tabanin kendisi (boyama
+// beklemez). Eski hazir PNG'ler (mascot_idle, idle_<renk>) farkli olcu ve
+// kadrajda oldugu icin gozluk cami katmani (Faz 2) onlara oturmuyordu -
+// artik her kombinasyon ayni tabandan.
 function _rgb2hsv(r, g, b) {
   const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
   let h = 0;
@@ -3038,12 +3145,9 @@ const AvatarPaint = {
   pending: new Map(),
   _src: null,
   key(p) { return (p.color || 'yellow') + '-' + (p.shirt || 'red'); },
-  isLegacy(p) { return (p.shirt || 'red') === 'red' && LEGACY_AVATAR_COLORS.includes(p.color || 'yellow'); },
-  legacySrc(p) {
-    const c = p.color || 'yellow';
-    return new URL(c === 'yellow' ? 'mascot/mascot_idle.png' : `mascot/avatar/idle_${c}.png`, ASSET_BASE_URL).href;
-  },
-  src(p) { return this.isLegacy(p) ? this.legacySrc(p) : (this.cache.get(this.key(p)) || null); },
+  isBase(p) { return (p.color || 'yellow') === 'yellow' && (p.shirt || 'red') === 'red'; },
+  baseSrc() { return new URL('mascot/avatar/idle_base.png', ASSET_BASE_URL).href; },
+  src(p) { return this.isBase(p) ? this.baseSrc() : (this.cache.get(this.key(p)) || null); },
   _load() {
     if (this._src) return this._src;
     const get = (rel) => new Promise((res, rej) => {
@@ -3066,7 +3170,7 @@ const AvatarPaint = {
   },
   ensure(p) {
     const k = this.key(p);
-    if (this.isLegacy(p)) return Promise.resolve(this.legacySrc(p));
+    if (this.isBase(p)) return Promise.resolve(this.baseSrc());
     if (this.cache.has(k)) return Promise.resolve(this.cache.get(k));
     if (this.pending.has(k)) return this.pending.get(k);
     const color = avatarPart(avatarColors(), p.color);
@@ -3093,7 +3197,7 @@ const AvatarPaint = {
       // CSP'si blob: resme izin vermiyordu, avatar "kayboluyordu".
       return c.toDataURL('image/png');
     }).then((url) => { this.cache.set(k, url); this.pending.delete(k); return url; },
-      () => { this.pending.delete(k); return this.legacySrc({ color: LEGACY_AVATAR_COLORS.includes(p.color) ? p.color : 'yellow' }); });
+      () => { this.pending.delete(k); return this.baseSrc(); });
     this.pending.set(k, job);
     return job;
   },
@@ -3137,6 +3241,18 @@ function avatarHatHTML(pose, profile) {
   const a = AVATAR_ANCHORS.idle;
   return avatarLayerHTML(hat, a.x + (hat.dx || 0), 0.27 - hat.s * 0.42 + (hat.dy || 0), hat.s, 'ke-av-hatemoji');
 }
+// Gozluk cami katmani: scripts/compose_lens_mask.py ciktisi (lens_box.json).
+// Taban gorseldeki kirmizi cami ortuyor: gri isik/golge x --aktapokus-eye
+// (multiply) + parlama (screen) + CSS goz bebegi (kuculebilsin/kirpabilsin).
+const LENS_BOX = { x: 0.55, y: 0.2156, w: 0.14, h: 0.0944, pupil: { x: 0.2613, y: 0.5568, d: 0.3493 } };
+function avatarLensHTML() {
+  const b = LENS_BOX, pu = b.pupil;
+  const pct = (v) => (v * 100).toFixed(2) + '%';
+  const img = (f) => `url(${new URL('mascot/avatar/' + f, ASSET_BASE_URL).href})`;
+  return `<span class="ke-av-lens" aria-hidden="true" style="left:${pct(b.x)};top:${pct(b.y)};width:${pct(b.w)};height:${pct(b.h)};--lens-shade:${img('lens_shade.png')};--lens-glint:${img('lens_glint.png')}">`
+    + '<i class="ke-av-lens-halo"></i><i class="ke-av-lens-glass"></i>'
+    + `<i class="ke-av-lens-pupil" style="left:${pct(pu.x)};top:${pct(pu.y)};width:${pct(pu.d)}"></i></span>`;
+}
 // opts.head: yuvarlak cercevede bas-omuz kadraji (esya/dost gizli)
 function avatarFigureHTML(p, opts) {
   p = p || Profiles.active();
@@ -3154,7 +3270,9 @@ function avatarFigureHTML(p, opts) {
     const pet = avatarPart(avatarPets(), p.pet);
     if (pet.id !== 'none') layers += opts.stage ? avatarLayerHTML(pet, 1.12, 1.3, 0.4, 'ke-av-pet') : avatarLayerHTML(pet, 0.84, 1.3, 0.32, 'ke-av-pet');
   }
-  return `<div class="ke-av${opts.cls ? ' ' + opts.cls : ''}${p.hat && p.hat !== 'none' ? ' ke-av-hashat' : ''}" data-avk="${k}"><img class="ke-av-body${ready ? '' : ' ke-av-pending'}" src="${src}" alt="Aktapokus" draggable="false" />${layers}</div>`;
+  const eye = EyeLens.fixedColor(p);
+  const eyeStyle = eye ? ` style="--aktapokus-eye:${eye}"` : '';
+  return `<div class="ke-av${opts.cls ? ' ' + opts.cls : ''}${p.hat && p.hat !== 'none' ? ' ke-av-hashat' : ''}" data-avk="${k}" data-eye-state="${EyeLens.state}"${eyeStyle}><img class="ke-av-body${ready ? '' : ' ke-av-pending'}" src="${src}" alt="Aktapokus" draggable="false" />${avatarLensHTML()}${layers}</div>`;
 }
 // Yuvarlak rozet: sahne arka plani + bas-omuz kadraji
 function avatarCircleHTML(p, cls) {
@@ -3663,6 +3781,7 @@ function showGuide(container, api, toolId, categories) {
 
 function showSectionMenu(container, api, toolId, categories) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  EyeLens.setDomain(null);
   _currentSection = null;
   _journeyMode = false;
   // Tekrar kuyrugu eskiden sadece kategori kartindaki kucuk 🔁 cipindeydi
@@ -5109,8 +5228,8 @@ function showProfileScreen(container, api, toolId, categories, opts) {
   function pickHTML(slot, it) {
     const lock = isLocked(it);
     const sel = draft[slot.key] === it.id;
-    const face = slot.key === 'color' || slot.key === 'shirt'
-      ? `<span class="ke-sw${slot.key === 'shirt' ? ' ke-sw-shirt' : ''}" style="background:${it.swatch}"></span>`
+    const face = slot.key === 'color' || slot.key === 'shirt' || slot.key === 'eye'
+      ? `<span class="ke-sw${slot.key === 'shirt' ? ' ke-sw-shirt' : ''}${slot.key === 'eye' ? ' ke-sw-eye' : ''}" style="background:${it.swatch}"></span>`
       : slot.key === 'scene'
         ? `<span class="ke-sw ke-sw-scene" style="background:${it.bg}">${it.emoji}</span>`
         : `<span class="ke-pick-emo">${it.emoji}</span>`;
@@ -5750,6 +5869,9 @@ function personalizeConversation(episode) {
 }
 
 function renderEpisodeScene(container, api, toolId, categories, episode) {
+  // Adaptif cam rengi: unite (bolum/kategori) seviyesinde domain
+  const eyeSceneDomain = eyeDomainOf((categories || []).find((c) => c.id === episode.category_id), episode);
+  EyeLens.setDomain(eyeSceneDomain);
   if (episode.conversation) {
     renderConversationEpisodeScene(container, api, toolId, categories, personalizeConversation(episode));
     return;
@@ -6031,6 +6153,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
       // kalır, kelimeyi istediği kadar süre inceleyebilir.
       wordPopup.textContent = obj.word;
       wordPopup.classList.add('ke-show');
+      EyeLens.setDomain(obj.domain || eyeSceneDomain); // kelime seviyesi domain varsa o
       // Konum artık SABİT değil, TIKLANAN NESNEYE göre hesaplanıyor —
       // eskiden sabit bir köşedeydi ve dar ekranda başka bir resmin
       // üzerine biniyordu ("resim üzerinde çıkıyor yazı" geri bildirimi).
@@ -6400,6 +6523,8 @@ function pickMaleVoice() {
 // bu yuzden maskotun ustunde degil, sahnenin kosesinde kucuk bir avatar
 // balonu olarak cikiyor; her ekran boyutunda gorunur.
 function mascotReact(mascotEl, good) {
+  // Yanlis cevap: cam "burada bilmiyorum, veri lazim" nabzi (Faz 2d)
+  if (!good) EyeLens.flash('uncertain', 2600);
   const scene = mascotEl && mascotEl.closest ? mascotEl.closest('.ke-scene') : null;
   if (!scene) return;
   const old = scene.querySelector('.ke-react');
@@ -6621,6 +6746,7 @@ function speakWord(word, mascotEl, onDone) {
     if (done) return;
     done = true;
     mascotEl.classList.remove('ke-talking');
+    if (EyeLens.state === 'analyzing') EyeLens.setState('idle');
     if (onDone) onDone();
   };
   const doSpeak = () => {
@@ -6642,6 +6768,7 @@ function speakWord(word, mascotEl, onDone) {
     synth.speak(utter);
   };
   mascotEl.classList.add('ke-talking');
+  if (EyeLens.state !== 'uncertain') EyeLens.setState('analyzing');
   if (synth.speaking || synth.pending) {
     synth.cancel();
     setTimeout(doSpeak, 90);

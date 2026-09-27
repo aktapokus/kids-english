@@ -1,0 +1,352 @@
+{
+ "_status": "ONERI - veriye islenmedi. Onay sonrasi kategori.domain ve kart.domain alanlari eklenecek.",
+ "_domains": {
+  "nature": "#2FB34A",
+  "space": "#2F7BEB",
+  "logic": "#FA4F32",
+  "general": "#FA4F32"
+ },
+ "categories": {
+  "daily_life": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "family_people": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "school_education": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "classroom_life": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "home": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "food_drinks": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "nature_environment": {
+   "domain": "nature",
+   "why": "doga, hayvanlar, hava"
+  },
+  "space_astronomy": {
+   "domain": "space",
+   "why": "uzay ve astronomi"
+  },
+  "animals": {
+   "domain": "nature",
+   "why": "doga, hayvanlar, hava"
+  },
+  "sports_exercise": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "hobbies_free_time": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "technology_computers": {
+   "domain": "logic",
+   "why": "sayi/sekil/islem, bilim, teknoloji, soru kaliplari, zitliklar (akil yurutme)"
+  },
+  "travel_transportation": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "city_places": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "body_health": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "weather_seasons": {
+   "domain": "nature",
+   "why": "doga, hayvanlar, hava"
+  },
+  "emotions_personality": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "clothes_shopping": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "jobs_professions": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "science": {
+   "domain": "logic",
+   "why": "sayi/sekil/islem, bilim, teknoloji, soru kaliplari, zitliklar (akil yurutme)"
+  },
+  "communication_internet": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "prepositions": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "question_words": {
+   "domain": "logic",
+   "why": "sayi/sekil/islem, bilim, teknoloji, soru kaliplari, zitliklar (akil yurutme)"
+  },
+  "get": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_social_manners": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_family_home": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_daily_routine": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_school": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_hobbies_sports": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_animals_nature": {
+   "domain": "nature",
+   "why": "doga, hayvanlar, hava"
+  },
+  "conv_food_drinks": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_shopping_clothes": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_weather_seasons": {
+   "domain": "nature",
+   "why": "doga, hayvanlar, hava"
+  },
+  "conv_city_transport": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_travel": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_health": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_celebrations": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_past": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_plans": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_feelings_preferences": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_technology": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "conv_space": {
+   "domain": "space",
+   "why": "uzay ve astronomi"
+  },
+  "conv_jobs_safety": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "daily_life_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "family_people_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "school_education_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "classroom_life_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "home_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "food_drinks_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "nature_environment_a2": {
+   "domain": "nature",
+   "why": "doga, hayvanlar, hava"
+  },
+  "space_astronomy_a2": {
+   "domain": "space",
+   "why": "uzay ve astronomi"
+  },
+  "animals_a2": {
+   "domain": "nature",
+   "why": "doga, hayvanlar, hava"
+  },
+  "sports_exercise_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "hobbies_free_time_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "technology_computers_a2": {
+   "domain": "logic",
+   "why": "sayi/sekil/islem, bilim, teknoloji, soru kaliplari, zitliklar (akil yurutme)"
+  },
+  "travel_transportation_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "city_places_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "body_health_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "weather_seasons_a2": {
+   "domain": "nature",
+   "why": "doga, hayvanlar, hava"
+  },
+  "emotions_personality_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "clothes_shopping_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "jobs_professions_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "science_a2": {
+   "domain": "logic",
+   "why": "sayi/sekil/islem, bilim, teknoloji, soru kaliplari, zitliklar (akil yurutme)"
+  },
+  "communication_internet_a2": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "opposites": {
+   "domain": "logic",
+   "why": "sayi/sekil/islem, bilim, teknoloji, soru kaliplari, zitliklar (akil yurutme)"
+  },
+  "math_numbers": {
+   "domain": "logic",
+   "why": "sayi/sekil/islem, bilim, teknoloji, soru kaliplari, zitliklar (akil yurutme)"
+  },
+  "math_shapes": {
+   "domain": "logic",
+   "why": "sayi/sekil/islem, bilim, teknoloji, soru kaliplari, zitliklar (akil yurutme)"
+  },
+  "math_operations": {
+   "domain": "logic",
+   "why": "sayi/sekil/islem, bilim, teknoloji, soru kaliplari, zitliklar (akil yurutme)"
+  },
+  "expressions": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "months_time": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  },
+  "countries": {
+   "domain": "general",
+   "why": "genel (varsayilan)"
+  }
+ },
+ "word_overrides": [
+  {
+   "category": "daily_life",
+   "episode": "daily_life_2",
+   "word": "Night",
+   "domain": "space",
+   "why": "kavram modeli: uzay kavrami"
+  },
+  {
+   "category": "nature_environment",
+   "episode": "nature_environment_2",
+   "word": "Earth",
+   "domain": "space",
+   "why": "kavram modeli: uzay kavrami"
+  },
+  {
+   "category": "nature_environment",
+   "episode": "nature_environment_5",
+   "word": "Sky",
+   "domain": "space",
+   "why": "kavram modeli: uzay kavrami"
+  },
+  {
+   "category": "nature_environment",
+   "episode": "nature_environment_6",
+   "word": "Moon",
+   "domain": "space",
+   "why": "kavram modeli: uzay kavrami"
+  },
+  {
+   "category": "weather_seasons",
+   "episode": "weather_seasons_2",
+   "word": "Sun",
+   "domain": "space",
+   "why": "kavram modeli: uzay kavrami"
+  },
+  {
+   "category": "weather_seasons",
+   "episode": "weather_seasons_3",
+   "word": "Sky",
+   "domain": "space",
+   "why": "kavram modeli: uzay kavrami"
+  },
+  {
+   "category": "jobs_professions",
+   "episode": "jobs_professions_7",
+   "word": "Astronaut",
+   "domain": "space",
+   "why": "kavram modeli: uzay kavrami"
+  }
+ ],
+ "summary": {
+  "nature": 8,
+  "space": 3,
+  "logic": 9,
+  "general": 51
+ }
+}

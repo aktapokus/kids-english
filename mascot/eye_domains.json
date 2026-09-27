@@ -1,0 +1,18 @@
+{
+  "_doc": "Aktapokus gozluk cami rengi. Adaptif modda icerigin domain alani bu tablodan renge cevrilir. Yeni domain = yeni satir. Bilinmeyen/eksik domain -> default. fixed = Customize ekranindaki 6 sabit renk (serbest secici yok).",
+  "default": "general",
+  "domains": {
+    "nature": "#2FB34A",
+    "space": "#2F7BEB",
+    "logic": "#FA4F32",
+    "general": "#FA4F32"
+  },
+  "fixed": [
+    { "id": "original", "tr": "Orijinal", "en": "Original", "color": "#FA4F32" },
+    { "id": "blue", "tr": "Mavi", "en": "Blue", "color": "#2F7BEB" },
+    { "id": "green", "tr": "Yeşil", "en": "Green", "color": "#2FB34A" },
+    { "id": "purple", "tr": "Mor", "en": "Purple", "color": "#8E3FE0" },
+    { "id": "orange", "tr": "Turuncu", "en": "Orange", "color": "#FF8A1F" },
+    { "id": "teal", "tr": "Turkuaz", "en": "Teal", "color": "#12B5C4" }
+  ]
+}
