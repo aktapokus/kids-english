@@ -635,8 +635,30 @@ const Classroom = {
   },
   leave() {
     const d = this._load();
-    d.className = null; d.code = null;
+    d.className = null; d.code = null; d.assignment = null;
     this._save(d);
+  },
+  // Haftanin gorevi (ogretmen -> sinif, assignment_schema.sql). Ogrenciden
+  // yeni veri gitmez: yalniz kendi cihaz kimligiyle katildigi sinifin
+  // gorevi okunur. 10 dk onbellek; hata/cevrimdisi -> son bilinen gorev.
+  async fetchAssignment() {
+    const d = this._load();
+    if (!d.code) return null;
+    if (d.assignFetchedAt && Date.now() - d.assignFetchedAt < 10 * 60 * 1000) return d.assignment || null;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_assignment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+        body: JSON.stringify({ p_device_id: d.deviceId }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const a = await res.json();
+      const d2 = this._load();
+      d2.assignment = a && typeof a === 'object' ? a : null;
+      d2.assignFetchedAt = Date.now();
+      this._save(d2);
+      return d2.assignment;
+    } catch (e) { return d.assignment || null; }
   },
   // Senkron: her 20 sn'de bir (flushTimeTrack) + uygulama açılışında +
   // internet geri gelince + "Şimdi eşitle" butonu. Aynı yük 5 dk içinde
@@ -2416,6 +2438,17 @@ ${FONT_FACES}
   .ke-jhome-actions{ display:flex; gap:8px; margin-top:10px; }
   .ke-shell .ke-jhome-go{ flex:1; font-size:18px !important; padding:13px 16px !important; background:#FFD84D !important; color:#3a2a00 !important; border:none !important; border-radius:16px !important; box-shadow:0 5px 0 #C99A12 !important; font-weight:800 !important; }
   .ke-shell .ke-jhome-map{ font-size:14px !important; padding:12px 14px !important; background:rgba(255,255,255,.16) !important; color:#fff !important; border:2px solid rgba(255,255,255,.45) !important; border-radius:16px !important; box-shadow:none !important; font-weight:800 !important; }
+  /* Ogretmenin gorevi: sinif (yesil tahta) karti */
+  .ke-task{ max-width:560px; margin:0 auto 14px; padding:12px 14px; border-radius:22px; text-align:left; position:relative; z-index:1;
+    background:#E8F5E9; color:#1B3B24; box-shadow:0 5px 0 rgba(0,0,0,.25); border:3px solid #66BB6A; }
+  .ke-task-head{ font-size:13px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; color:#2E7D32; }
+  .ke-task-head span{ text-transform:none; color:#4b6b53; font-weight:700; }
+  .ke-task-note{ margin:6px 0 0; font-size:14px; font-weight:700; }
+  .ke-task-items{ display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .ke-shell .ke-task-item{ display:flex; align-items:center; gap:10px; width:100%; min-height:44px; padding:8px 12px !important; margin:0; text-align:left;
+    background:#fff !important; color:#1B3B24 !important; border:2px solid #A5D6A7 !important; border-radius:14px !important; box-shadow:none !important; top:0 !important; font-size:15px !important; }
+  .ke-task-item span{ font-size:20px; } .ke-task-item b{ flex:1; } .ke-task-item small{ font-weight:800; color:#2E7D32; }
+  .ke-shell .ke-task-item.ke-task-done{ background:#F1F8F2 !important; opacity:.8; }
   /* Gunun Kelimesi: kelime kartini andiran krem kart (karsilama balonu paleti) */
   .ke-wotd{
     max-width:560px; margin:0 auto 14px; padding:10px 14px 12px; border-radius:22px; text-align:left; position:relative; z-index:1;
@@ -3944,6 +3977,55 @@ function showGuide(container, api, toolId, categories) {
   pushBackState(back);
 }
 
+// ---- Ogretmenin gorevi (ana ekran, 2026-09-27) ----
+// Sinifa katilan cocuk, ogretmenin verdigi gorevi (kategoriler + istege
+// bagli tekrar + not + son gun) ana ekranda gorur; her madde dogrudan acilir.
+function taskItemsHTML(a, categories) {
+  const byId = new Map(categories.map((c) => [c.id, c]));
+  const rows = (a.items || []).map((id) => byId.get(id)).filter(Boolean).map((c) => {
+    const done = Progress.getCategory(c.id).completed.filter((i) => i < c.episode_count).length;
+    const full = done >= c.episode_count;
+    return `<button type="button" class="ke-task-item${full ? ' ke-task-done' : ''}" data-task="${c.id}">
+      <span>${full ? '✅' : planetMotif(c.id)}</span><b>${escapeProfileText(catLabel(c))}</b><small>${done}/${c.episode_count}</small></button>`;
+  });
+  if (a.review) {
+    const due = categories.map((c) => [c, Progress.dueMissed(c.id).length]).filter((x) => x[1] > 0).sort((x, y) => y[1] - x[1]);
+    const n = due.reduce((k, x) => k + x[1], 0);
+    rows.push(`<button type="button" class="ke-task-item${n ? '' : ' ke-task-done'}" data-task="__review"${n ? '' : ' disabled'}>
+      <span>${n ? '🔁' : '✅'}</span><b>${L('Zorlandığın kelimeler', 'Your tricky words')}</b><small>${n}</small></button>`);
+  }
+  return rows.join('');
+}
+function taskCardHTML(a, categories) {
+  const due = a.due ? new Date(a.due + 'T12:00:00') : null;
+  const dueTxt = due && !isNaN(due) ? due.toLocaleDateString(_lang === 'tr' ? 'tr-TR' : 'en-GB', { day: 'numeric', month: 'long' }) : '';
+  return `
+    <div class="ke-task-head">🏫 ${L('Öğretmenin görevi', "Your teacher's task")}${dueTxt ? ` <span>· ${L('son gün', 'due')} ${escapeProfileText(dueTxt)}</span>` : ''}</div>
+    ${a.note ? `<p class="ke-task-note">📝 ${escapeProfileText(a.note)}</p>` : ''}
+    <div class="ke-task-items">${taskItemsHTML(a, categories)}</div>`;
+}
+async function mountTask(host, container, api, toolId, categories) {
+  const el = host.querySelector('#keTask');
+  if (!el || !Classroom.get().code) return;
+  const pid = Profiles.active().id;
+  const a = await Classroom.fetchAssignment();
+  if (!el.isConnected || Profiles.active().id !== pid) return;
+  if (!a || (!(a.items || []).length && !a.review)) return;
+  el.innerHTML = taskCardHTML(a, categories);
+  el.hidden = false;
+  el.querySelectorAll('[data-task]').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.task === '__review') {
+      const due = categories.map((c) => [c, Progress.dueMissed(c.id).length]).filter((x) => x[1] > 0).sort((x, y) => y[1] - x[1]);
+      if (due[0]) startReviewSession(container, api, toolId, categories, due[0][0].id, due[0][0].title);
+      return;
+    }
+    const c = categories.find((x) => x.id === b.dataset.task);
+    if (!c) return;
+    _journeyMode = false; _currentSection = null;
+    enterCategory(container, api, toolId, categories, c.id, Progress.nextIncompleteEpisode(c.id, c.episode_count));
+  }));
+}
+
 // ---- Gunun Kelimesi (ana ekran, 2026-09-27) ----
 // Her profile her gun bir kelime: cocugun o anki istasyonundaki kelime
 // gezegenlerinden (konusma/matematik haric), gun + profil kimligiyle
@@ -4086,6 +4168,7 @@ function showSectionMenu(container, api, toolId, categories) {
       <button type="button" class="ke-who-chip" id="keWhoChip" aria-label="${L('Çocuk değiştir', 'Switch child')}">👤 ${escapeProfileText(Profiles.active().name || L('Ben', 'Me'))} <span aria-hidden="true">⇄</span></button>
     </div>
     ${journeyHomeCardHTML(categories)}
+    <div class="ke-task" id="keTask" hidden></div>
     <div class="ke-wotd" id="keWotd" hidden></div>
     ${dueTotal ? `<button type="button" class="ke-due-chip" id="keDueChip">🔁 ${L(`Bugün ${dueTotal} kelime tekrar`, `${dueTotal} words to review today`)} <span>→</span></button>` : ''}
     </div><div class="ke-home-right">
@@ -4096,6 +4179,7 @@ function showSectionMenu(container, api, toolId, categories) {
   `;
   wireBottomNav(host, container, api, toolId, categories);
   wireJourneyHomeCard(host, container, api, toolId, categories);
+  mountTask(host, container, api, toolId, categories);
   mountWordOfDay(host, api, toolId, categories);
   host.querySelector('#keWhoChip').addEventListener('click', () => showWhoIsPlaying(container, api, toolId, categories));
   const dueChip = host.querySelector('#keDueChip');

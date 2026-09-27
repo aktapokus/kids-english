@@ -131,12 +131,18 @@ async function signUp() {
 }
 
 let _classNames = {};
+let _classAssign = {};
+let _hasAssign = false;
 async function loadClasses() {
   const listEl = document.getElementById('classList');
   listEl.innerHTML = '<p class="empty">Yükleniyor...</p>';
   let classes;
-  try { classes = await authFetch('/rest/v1/classes?select=id,name,code&order=created_at.desc'); }
-  catch (e) { listEl.innerHTML = '<p class="empty">Sınıflar yüklenemedi: ' + e.message + '</p>'; return; }
+  try { classes = await authFetch('/rest/v1/classes?select=id,name,code,assignment&order=created_at.desc'); _hasAssign = true; }
+  catch (e0) {
+    try { classes = await authFetch('/rest/v1/classes?select=id,name,code&order=created_at.desc'); _hasAssign = false; }
+    catch (e) { listEl.innerHTML = '<p class="empty">Sınıflar yüklenemedi: ' + e.message + '</p>'; return; }
+  }
+  _classAssign = Object.fromEntries(classes.map((c) => [c.id, c.assignment || null]));
   if (!classes.length) { listEl.innerHTML = '<p class="empty">Henüz bir sınıfın yok. Yukarıdan bir tane oluştur.</p>'; return; }
   listEl.innerHTML = '';
   _classNames = Object.fromEntries(classes.map((c) => [c.id, c.name]));
@@ -299,6 +305,81 @@ function renderUnits(box, grade, students, catalog) {
   box.querySelectorAll('.units-tab').forEach((b) => b.addEventListener('click', () => renderUnits(box, Number(b.dataset.g), students, catalog)));
 }
 
+// ---- Haftanin gorevi (2026-09-27) ----
+// Ogretmen sinifina kategori(ler) + istege bagli "zorlandigin kelimeleri
+// tekrar et" + kisa not + son gun verir; ogrenci ana ekranda gorur.
+// Veri: classes.assignment (meb_research/assignment_schema.sql).
+const TASK_MAX_ITEMS = 6;
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T12:00:00');
+  return isNaN(d) ? '' : d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
+}
+function taskSummaryHTML(a, students, catalog) {
+  const items = (a.items || []).filter((id) => catalog[id]).map((id) => {
+    const st = unitCategoryStats(id, students, catalog);
+    return `<li><b>${escapeHtml(catalog[id].title)}${id.endsWith('_a2') ? ' · A2' : ''}</b> <small>✓${st.done} · ▶${st.started} / ${st.total}</small></li>`;
+  }).join('');
+  return `<ul class="task-list">${items}${a.review ? '<li>🔁 Zorlandığı kelimeleri tekrar</li>' : ''}</ul>
+    ${a.note ? `<p class="note">📝 ${escapeHtml(a.note)}</p>` : ''}${a.due ? `<p class="note">📅 Son gün: ${escapeHtml(fmtDate(a.due))}</p>` : ''}`;
+}
+async function saveTask(classId, assignment) {
+  const rows = await authFetch(`/rest/v1/classes?id=eq.${classId}`, {
+    method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify({ assignment }),
+  });
+  if (Array.isArray(rows) && !rows.length) throw new Error('Kaydetme izni yok.');
+  _classAssign[classId] = assignment;
+}
+function renderTask(box, classId, grade, students, catalog) {
+  if (!_hasAssign) {
+    box.innerHTML = '<p class="note">Bu özellik için veritabanı güncellemesi gerekiyor (assignment_schema.sql bir kez çalıştırılmalı).</p>';
+    return;
+  }
+  const a = _classAssign[classId];
+  if (a && ((a.items || []).length || a.review)) {
+    box.innerHTML = `${taskSummaryHTML(a, students, catalog)}
+      <div class="row"><button type="button" class="secondary" data-act="edit">Değiştir</button><button type="button" class="secondary" data-act="clear">Kaldır</button></div>`;
+    box.querySelector('[data-act="edit"]').addEventListener('click', () => renderTaskEditor(box, classId, grade, students, catalog));
+    box.querySelector('[data-act="clear"]').addEventListener('click', async () => {
+      if (!window.confirm('Görev kaldırılsın mı?')) return;
+      try { await saveTask(classId, null); renderTask(box, classId, grade, students, catalog); } catch (e) { window.alert('Kaldırılamadı: ' + e.message); }
+    });
+    return;
+  }
+  box.innerHTML = '<p class="note">Henüz görev yok. Öğrenciler görevi uygulamanın ana ekranında görür.</p><button type="button" class="secondary" data-act="edit">Görev ver</button>';
+  box.querySelector('[data-act="edit"]').addEventListener('click', () => renderTaskEditor(box, classId, grade, students, catalog));
+}
+function renderTaskEditor(box, classId, grade, students, catalog, draft) {
+  const cur = _classAssign[classId] || {};
+  const chosen = draft || new Set(cur.items || []);
+  const syncPicks = () => box.querySelectorAll('input[type=checkbox][value]').forEach((c) => { if (c.checked) chosen.add(c.value); else chosen.delete(c.value); });
+  const themes = MEB_UNITS[grade] || [];
+  box.innerHTML = `
+    <div class="units-tabs">${[2, 3, 4, 5, 6].map((g) => `<button type="button" class="secondary units-tab${g === grade ? ' on' : ''}" data-g="${g}">${g}. sınıf</button>`).join('')}</div>
+    <p class="note">En fazla ${TASK_MAX_ITEMS} kategori seç.</p>
+    ${themes.map(([en, tr, ids]) => `<div class="unit"><div class="unit-head"><b>${escapeHtml(en)}</b> <span>${escapeHtml(tr)}</span></div>
+      <div class="chips">${ids.filter((id) => catalog[id]).map((id) => `<label class="pick"><input type="checkbox" value="${id}"${chosen.has(id) ? ' checked' : ''}> ${(id.startsWith('conv_') ? '💬 ' : '') + escapeHtml(catalog[id].title)}${id.endsWith('_a2') ? ' · A2' : ''}</label>`).join('')}</div></div>`).join('')}
+    <label class="pick"><input type="checkbox" id="tReview"${cur.review ? ' checked' : ''}> 🔁 Zorlandığı kelimeleri tekrar etsin</label>
+    <label for="tNote">Not (isteğe bağlı)</label><input id="tNote" maxlength="200" value="${escapeHtml(cur.note || '')}" placeholder="ör. Cuma günü sınıfta bu kelimelerle oyun oynayacağız!">
+    <label for="tDue">Son gün (isteğe bağlı)</label><input id="tDue" type="date" value="${escapeHtml(cur.due || '')}">
+    <div class="row"><button type="button" data-act="save">Kaydet</button><button type="button" class="secondary" data-act="cancel">Vazgeç</button></div>
+    <div class="msg" id="tMsg-${classId}"></div>`;
+  box.querySelectorAll('.units-tab').forEach((b) => b.addEventListener('click', () => { syncPicks(); renderTaskEditor(box, classId, Number(b.dataset.g), students, catalog, chosen); }));
+  box.querySelector('[data-act="cancel"]').addEventListener('click', () => renderTask(box, classId, grade, students, catalog));
+  box.querySelector('[data-act="save"]').addEventListener('click', async () => {
+    const msg = box.querySelector(`#tMsg-${classId}`);
+    // diger sinif sekmelerinde secilmis olanlar da korunur
+    syncPicks();
+    const items = [...chosen].slice(0, TASK_MAX_ITEMS);
+    const review = box.querySelector('#tReview').checked;
+    if (!items.length && !review) { setMsg(msg, 'En az bir kategori ya da tekrar seç.', 'err'); return; }
+    const assignment = { v: 1, items, review, note: box.querySelector('#tNote').value.trim().slice(0, 200), due: box.querySelector('#tDue').value || null, set_at: new Date().toISOString() };
+    setMsg(msg, 'Kaydediliyor...');
+    try { await saveTask(classId, assignment); renderTask(box, classId, grade, students, catalog); }
+    catch (e) { setMsg(msg, 'Kaydedilemedi: ' + e.message, 'err'); }
+  });
+}
+
 // Ogrencinin bulundugu basamak: tum gezegenleri bitmis/atlanmis ilk
 // OLMAYAN basamak. Ilerleme verisi yoksa '—'.
 function gradeStep(s, catalog) {
@@ -362,6 +443,11 @@ async function renderRoster(classId) {
     el.appendChild(box);
     const cls = (_classNames || {})[classId];
     renderUnits(box, gradeFromClassName(cls), students, catalog);
+    const tbox = document.createElement('div');
+    tbox.className = 'task';
+    el.appendChild(Object.assign(document.createElement('h4'), { textContent: '🎯 Haftanın görevi' }));
+    el.appendChild(tbox);
+    renderTask(tbox, classId, gradeFromClassName(cls), students, catalog);
   }
   el.querySelectorAll('.srow').forEach((r) => r.addEventListener('click', (e) => {
     if (e.target.closest('.del')) return;
