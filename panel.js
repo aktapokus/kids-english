@@ -1453,7 +1453,10 @@ ${FONT_FACES}
      konumuna göre px cinsinden set ediliyor - burada sadece güvenli bir
      ilk değer + yatay ortalama (translateX(-50%), JS her zaman left'i
      nesnenin YATAY MERKEZİNE göre veriyor) tanımlı. */
-  .ke-word-popup{ position:absolute; right:auto; left:50%; bottom:auto; top:16%; transform:translateX(-50%) translateY(-8px) scale(.85); background:var(--ke-yellow); color:var(--ke-ink); padding:11px 28px; border-radius:20px; font-family:'Chewy','Fredoka',sans-serif; font-size:26px; font-weight:400; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease; z-index:6; box-shadow:none; max-width:80%; text-align:center; }
+  /* position:fixed + body/fullscreen portali (bkz. positionWordPopup): renk degiskenleri .ke-shell disinda da tanimli olsun */
+  .ke-word-popup{ --ke-yellow:#FFC20E; --ke-yellow-dark:#E0A500; --ke-ink:#1A2233; }
+  .ke-word-popup.ke-pop-narrow{ font-size:22px; padding:7px 18px; }
+  .ke-word-popup{ position:fixed; z-index:9000; right:auto; left:50%; bottom:auto; top:16%; transform:translateX(-50%) translateY(-8px) scale(.85); background:var(--ke-yellow); color:var(--ke-ink); padding:11px 28px; border-radius:20px; font-family:'Chewy','Fredoka',sans-serif; font-size:26px; font-weight:400; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease; z-index:9000; box-shadow:none; max-width:calc(100vw - 16px); text-align:center; }
   .ke-word-popup::before{
     content:''; position:absolute; left:50%; bottom:-14px; transform:translateX(-50%);
     border-left:7px solid transparent; border-right:7px solid transparent;
@@ -1957,15 +1960,23 @@ ${FONT_FACES}
   .ke-shell .ke-rk-key.ok{ background:#51CF66 !important; color:#fff !important; } .ke-shell .ke-rk-key.no{ background:#868E96 !important; color:#ddd !important; }
   /* Blok Yerlestir */
   .ke-bk-main{ flex:1; overflow-y:auto; display:flex; flex-direction:column; align-items:center; gap:14px; padding:8px 14px 18px; color:#fff; }
-  .ke-bk-board{ display:grid; grid-template-columns:repeat(8,1fr); gap:3px; width:min(440px, 92vw, 52vh); aspect-ratio:1; padding:6px; border-radius:16px; background:rgba(0,0,0,.28); }
-  .ke-bk-cell{ border-radius:6px; background:rgba(255,255,255,.1); box-shadow:inset 0 -3px 0 rgba(0,0,0,.18); }
-  .ke-bk-tray{ display:flex; gap:14px; justify-content:center; align-items:center; min-height:110px; width:min(440px,100%); }
-  .ke-bk-piece{ display:grid; gap:3px; width:max-content; padding:8px; border-radius:14px; background:rgba(255,255,255,.1); touch-action:none; cursor:grab; }
+  /* Tek olcek kaynagi: --bk-cell (JS computeSizes, tahta genisligi + gorunen yukseklikten) */
+  .ke-bk-board{ display:grid; grid-template-columns:repeat(8, var(--bk-cell, 36px)); grid-auto-rows:var(--bk-cell, 36px); gap:var(--bk-gap, 3px); padding:var(--bk-pad, 6px); border-radius:16px; background:rgba(0,0,0,.28); touch-action:none; }
+  .ke-bk-cell{ border-radius:6px; background:rgba(255,255,255,.1); box-shadow:inset 0 -3px 0 rgba(0,0,0,.18); box-sizing:border-box; }
+  .ke-bk-cell.pv{ background:var(--pv) !important; opacity:.55; }
+  .ke-bk-cell.bad{ outline:3px solid #FF6B6B; outline-offset:-3px; }
+  .ke-bk-tray{ display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; align-items:center; justify-items:center; width:min(440px,100%); min-height:calc(var(--bk-tray, 18px) * 4 + 30px); }
+  .ke-bk-slot{ display:flex; align-items:center; justify-content:center; min-width:0; }
+  .ke-bk-piece{ display:grid; gap:var(--bk-gap, 3px); width:max-content; padding:8px; border-radius:14px; background:rgba(255,255,255,.1); touch-action:none; cursor:grab; }
   .ke-bk-piece.sel{ outline:3px solid #FFD84D; }
-  .ke-bk-piece.empty{ width:60px; height:60px; background:transparent; }
-  .ke-bk-piece span{ width:28px; height:28px; border-radius:5px; box-shadow:inset 0 -3px 0 rgba(0,0,0,.2); }
-  .ke-bk-ghost{ position:fixed; z-index:9999; pointer-events:none; transform:translate(-50%,-50%); opacity:.85; }
-  .ke-bk-ghost span{ width:34px; height:34px; }
+  .ke-bk-piece.dragging{ opacity:.35; }
+  .ke-bk-piece.empty{ width:calc(var(--bk-tray, 18px) * 2); height:calc(var(--bk-tray, 18px) * 2); background:transparent; }
+  .ke-bk-piece span{ width:var(--bk-tray, 18px); height:var(--bk-tray, 18px); border-radius:4px; box-shadow:inset 0 -3px 0 rgba(0,0,0,.2); }
+  .ke-bk-ghost{ position:fixed; z-index:9999; pointer-events:none; display:grid; opacity:.9; }
+  .ke-bk-land .ke-bk-main{ flex-direction:row; flex-wrap:wrap; justify-content:center; align-items:center; column-gap:20px; row-gap:4px; padding-top:4px; }
+  .ke-bk-land .ke-bk-tray{ grid-template-columns:1fr; width:auto; min-height:0; gap:8px; }
+  .ke-bk-land .ke-jr-hint{ flex-basis:100%; margin:0; text-align:center; }
+  .ke-bk-ghost span{ border-radius:6px; box-shadow:inset 0 -3px 0 rgba(0,0,0,.2); }
   .ke-game-card-art{ font-size:48px; line-height:1.1; filter:drop-shadow(0 4px 4px rgba(0,0,0,.25)); }
   .ke-game-card-name{ font-family:'Fredoka','Baloo 2',sans-serif; font-size:17px; font-weight:700; }
   .ke-game-card-desc{ font-size:12px; font-weight:600; opacity:.92; line-height:1.3; }
@@ -5929,6 +5940,76 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
     });
   }
 
+  // Kelime balonu: position:fixed + portal. Kok neden (alt siradaki
+  // resimlerde balon ekran disinda kaliyordu): balon sahnenin icinde
+  // absolute idi ve konumu SAHNEYE gore hesaplaniyordu; sahne telefonda
+  // gorunen alandan uzun oldugunda "resmin alti" viewport'un disina dusuyor,
+  // kabugun overflow'u da kirpiyordu. Artik viewport koordinatlari
+  // (visualViewport) kullaniliyor. Tam ekranda body'deki ogeler gorunmedigi
+  // icin portal hedefi document.fullscreenElement || body.
+  // Neden bottom sheet degil (480px alti): balon tek bir kelime; resmin
+  // hemen yaninda durmasi kelime-resim eslesmesini goruyor. Alttan acilan
+  // sayfa kelimeyi resimden koparir ve "Sorulara Gec" / alt gezinmeyi kapatir.
+  let popupAnchor = null;
+  const POPUP_MARGIN = 8;
+  const POPUP_GAP = 16; // balonun ucundaki ucgen isaretci icin pay
+  function popupHost() { return document.fullscreenElement || document.body; }
+  function portalWordPopup() { const h = popupHost(); if (wordPopup.parentNode !== h) h.appendChild(wordPopup); }
+  function viewportBox() {
+    const vv = window.visualViewport;
+    return vv ? { top: vv.offsetTop, left: vv.offsetLeft, width: vv.width, height: vv.height }
+      : { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
+  }
+  function preferBelow(elRect) {
+    // Dar ekran izgarasinda alt satir -> altta (ustteki ikonu kapatmasin);
+    // genis ekranda ustte (yonerge balonunun altina inmeden).
+    if (sceneEl.classList.contains('ke-scene-narrow')) {
+      const rects = [...objectsHost.children].map((o) => o.getBoundingClientRect());
+      const gTop = Math.min(...rects.map((r) => r.top));
+      const gBottom = Math.max(...rects.map((r) => r.bottom));
+      return (gBottom - gTop) > elRect.height * 1.5 && (elRect.top + elRect.height / 2) > (gTop + gBottom) / 2;
+    }
+    return elRect.top - bubbleEl.getBoundingClientRect().bottom < wordPopup.offsetHeight + POPUP_GAP;
+  }
+  function positionWordPopup() {
+    if (!popupAnchor || !popupAnchor.isConnected || !wordPopup.classList.contains('ke-show')) return;
+    portalWordPopup();
+    const vp = viewportBox();
+    const r = popupAnchor.getBoundingClientRect();
+    const w = wordPopup.offsetWidth, h = wordPopup.offsetHeight;
+    const roomAbove = r.top - vp.top - POPUP_MARGIN;
+    const roomBelow = vp.top + vp.height - r.bottom - POPUP_MARGIN;
+    let below = preferBelow(r);
+    if (below && roomBelow < h + POPUP_GAP && roomAbove > roomBelow) below = false;   // flip: altta yer yok
+    if (!below && roomAbove < h + POPUP_GAP && roomBelow > roomAbove) below = true;   // flip: ustte yer yok
+    let top = below ? r.bottom + POPUP_GAP : r.top - h - POPUP_GAP;
+    top = Math.max(vp.top + POPUP_MARGIN, Math.min(vp.top + vp.height - h - POPUP_MARGIN, top));
+    let left = r.left + r.width / 2;
+    left = Math.max(vp.left + w / 2 + POPUP_MARGIN, Math.min(vp.left + vp.width - w / 2 - POPUP_MARGIN, left));
+    wordPopup.classList.toggle('ke-below', below);
+    wordPopup.classList.toggle('ke-pop-narrow', sceneEl.classList.contains('ke-scene-narrow'));
+    wordPopup.style.left = `${left}px`;
+    wordPopup.style.top = `${top}px`;
+  }
+  const repositionPopup = () => requestAnimationFrame(positionWordPopup);
+  window.addEventListener('resize', repositionPopup);
+  window.addEventListener('orientationchange', repositionPopup);
+  window.addEventListener('scroll', repositionPopup, true);
+  if (window.visualViewport) { window.visualViewport.addEventListener('resize', repositionPopup); window.visualViewport.addEventListener('scroll', repositionPopup); }
+  document.addEventListener('fullscreenchange', repositionPopup);
+  // Bolumden cikildiginda (sahne DOM'dan kalkinca) balonu ve dinleyicileri temizle
+  const popupWatch = new MutationObserver(() => {
+    if (sceneEl.isConnected) return;
+    wordPopup.remove();
+    window.removeEventListener('resize', repositionPopup);
+    window.removeEventListener('orientationchange', repositionPopup);
+    window.removeEventListener('scroll', repositionPopup, true);
+    if (window.visualViewport) { window.visualViewport.removeEventListener('resize', repositionPopup); window.visualViewport.removeEventListener('scroll', repositionPopup); }
+    document.removeEventListener('fullscreenchange', repositionPopup);
+    popupWatch.disconnect();
+  });
+  popupWatch.observe(container, { childList: true, subtree: true });
+
   episode.objects.forEach((obj, i) => {
     const el = document.createElement('div');
     el.className = 'ke-obj';
@@ -5956,50 +6037,18 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
       // rAF: popup'ın kendi boyutunu (getBoundingClientRect) ölçmeden
       // önce textContent/ke-show'un layout'a yansımasını bekliyoruz.
       const myToken = ++wordPopupClickToken;
+      popupAnchor = el;
+      if (sceneEl.classList.contains('ke-scene-narrow')) {
+        // İlk dokunuştan sonra yönerge metni gereksiz; üst satır balonuna yer açar.
+        bubbleEl.style.transition = 'opacity .2s ease';
+        bubbleEl.style.opacity = '0';
+      }
       requestAnimationFrame(() => {
         if (myToken !== wordPopupClickToken) return; // bu arada başka bir nesneye tıklandı
-        const sceneRect = sceneEl.getBoundingClientRect();
-        const elRect = el.getBoundingClientRect();
-        const popRect = wordPopup.getBoundingClientRect();
-        const gap = 16; // balonun ucundaki üçgen işaretçi için pay
-        let left = (elRect.left - sceneRect.left) + elRect.width / 2;
-        let top;
-        let below = false;
-        if (sceneEl.classList.contains('ke-scene-narrow')) {
-          // Dar ekran (ızgara): ÜST satır ikonu -> balon ÜSTTE (yönerge
-          // balonunun bulunduğu boşlukta), ALT satır ikonu -> balon ALTTA
-          // (ızgaranın altındaki boş şeritte). Eskiden hep ikonun üstüne
-          // konuyordu; alt satırda bu, üstteki başka bir ikonu kapatıyordu,
-          // üst satırda yer yoksa da aşağı inip alt ikonu kapatıyordu
-          // ("balon başka ikonun üzerinde çıkıyor" geri bildirimi).
-          const rects = [...objectsHost.children].map((o) => o.getBoundingClientRect());
-          const gTop = Math.min(...rects.map((r) => r.top));
-          const gBottom = Math.max(...rects.map((r) => r.bottom));
-          const multiRow = (gBottom - gTop) > elRect.height * 1.5;
-          below = multiRow && (elRect.top + elRect.height / 2) > (gTop + gBottom) / 2;
-          // İlk dokunuştan sonra yönerge metni ("Nesnelere dokun...")
-          // gereksiz; üst satır balonuna yer açmak için soluklaştırıyoruz.
-          bubbleEl.style.transition = 'opacity .2s ease';
-          bubbleEl.style.opacity = '0';
-          top = below
-            ? (elRect.bottom - sceneRect.top) + gap
-            : Math.max(4, (elRect.top - sceneRect.top) - popRect.height - gap);
-        } else {
-          // Geniş ekran (daire düzeni): balon ikonun üstünde, konuşma
-          // balonunun altına inmeden; yer yoksa ikonun altında.
-          const bubbleRect = bubbleEl.getBoundingClientRect();
-          const minTop = (bubbleRect.bottom - sceneRect.top) + 6;
-          top = (elRect.top - sceneRect.top) - popRect.height - gap;
-          if (top < minTop) { top = (elRect.bottom - sceneRect.top) + gap; below = true; }
-        }
-        wordPopup.classList.toggle('ke-below', below);
-        const minLeft = popRect.width / 2 + 4;
-        const maxLeft = sceneRect.width - popRect.width / 2 - 4;
-        left = Math.max(minLeft, Math.min(maxLeft, left));
-        wordPopup.style.left = `${left}px`;
-        wordPopup.style.top = `${top}px`;
+        positionWordPopup();
       });
-      speakWord(obj.word, mascotEl);
+      const completesEpisode = !el.classList.contains('ke-found') && foundCount + 1 === total;
+      if (!completesEpisode) speakWord(obj.word, mascotEl);
 
       if (!el.classList.contains('ke-found')) {
         el.classList.add('ke-found');
@@ -6009,7 +6058,12 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
         celebrateBounce(mascotEl);
         if (foundCount === total) {
           bubbleEl.textContent = L('Bölümü tamamladın! Şimdi öğrendiklerini doğrulayalım. 🔍', 'Episode done! Now let us check what you learned. 🔍');
-          setTimeout(startQuizWithDiscovered, 700);
+          // "Son kelimenin okumasi bitmeden quiz'e geciyor": sabit 700ms yerine
+          // son kelime okunduktan SONRA gec (ses takilirsa 4 sn yedek).
+          let started = false;
+          const go = () => { if (started) return; started = true; startQuizWithDiscovered(); };
+          speakWord(obj.word, mascotEl, () => setTimeout(go, 500));
+          setTimeout(go, 4000);
         } else {
           goToQuizCount.textContent = String(foundCount);
           goToQuizBtn.style.display = 'inline-block';
@@ -6644,7 +6698,7 @@ function startQuiz(host, container, episode, wordList, mascotEl, restartEpisode,
   progressChip.style.display = 'none';
   mainBubbleEl.style.display = 'none';
   mainBubbleEl.style.opacity = '1'; // keşifte soluklaştırılmış olabilir, sonradan geri gösterilince opak olsun
-  host.querySelector('#keWordPopup').classList.remove('ke-show');
+  { const wp = document.getElementById('keWordPopup'); if (wp) wp.classList.remove('ke-show'); }
   quizBubbleEl.textContent = askText;
   quizEl.classList.add('ke-show');
   mascotEl.classList.add('ke-mascot-compact');
@@ -7860,9 +7914,20 @@ async function showBonusQuiz(container, api, toolId, categories, onPass) {
           <div class="ke-bonus-icon">🏆</div>
           <p><b>${L(`${correct}/${words.length} doğru! Harika iş!`, `${correct}/${words.length} correct! Great job!`)}</b></p>
           <p>${L('1 oyun hakkı kazandın! 🎮', 'You earned 1 game token! 🎮')}</p>
-          <button type="button" class="ke-btn-primary" id="keBonusDone">${L('Süper!', 'Awesome!')}</button>
+          <div class="ke-btn-row">
+            <button type="button" class="ke-btn-secondary" id="keBonusDone">${L('Sonra', 'Later')}</button>
+            <button type="button" class="ke-btn-primary" id="keBonusPlay">🎮 ${L('Hemen oyna', 'Play now')}</button>
+          </div>
         `;
+        // "Quiz olunca sayfa acik kalmiyor, ana sayfaya donuyor, hata gibi":
+        // eskiden tek dugme yalniz sinavi kapatiyordu; kazanilan hak icin
+        // oyun secici hemen acilir. Oyundan cikinca cocuk sinavdan onceki
+        // ekranda kalir (ders ortasindaysa ders bozulmaz).
         bodyEl.querySelector('#keBonusDone').addEventListener('click', () => { close(); onPass(); });
+        bodyEl.querySelector('#keBonusPlay').addEventListener('click', () => {
+          close(); onPass();
+          setTimeout(() => showGamePicker(container, () => refreshGameBadge(container)), 320);
+        });
       } else {
         bodyEl.innerHTML = `
           <div class="ke-bonus-icon">💪</div>
@@ -8562,16 +8627,45 @@ function startBlockFit(container, onExit) {
   if (!GameTokens.spend()) { onExit(); return; }
   refreshGameBadge(container);
   const N = 8;
+  const GAP = 3;          // hucreler arasi bosluk (px) - tahta ve parcalar ayni
+  const PAD = 6;          // tahtanin ic kenar boslugu
+  const LIFT = 70;        // surukleyen parmak parcayi kapatmasin diye yukari kaldirma
   const shell = container.querySelector('.ke-shell');
   const overlay = document.createElement('div');
   overlay.className = 'ke-puzzle-game ke-blocks-game';
   shell.appendChild(overlay);
   const dummy = document.createElement('div');
-  let grid, tray, score, selected;
+  let grid, tray, score, selected, cellSize = 36, trayCell = 18, drag = null, over = false;
+
+  // ---- olcek: TEK kaynak cellSize (tahta genisligi + gorunen yukseklik) ----
+  function computeSizes() {
+    const W = overlay.clientWidth, H = overlay.clientHeight;
+    // Yatay telefon: tahta solda, tepsi sagda (ust uste dizince tahta 20px hucreye iniyordu)
+    const land = W > H * 1.2 && H < 560;
+    overlay.classList.toggle('ke-bk-land', land);
+    const availW = land ? (W - 28) * 0.62 : W - 28;
+    const availH = land ? H - 60 - 36 : H - 60 /* hud */ - 150 /* tepsi + ipucu */;
+    const boardPx = Math.max(200, Math.min(440, availW, availH));
+    cellSize = Math.floor((boardPx - PAD * 2 - GAP * (N - 1)) / N);
+    if (land) {
+      // 3 parca alt alta: en uzun parca 4 hucre -> dikeyde 3 x 4 hucre + bosluklar
+      const trayH = H - 60 - 36;
+      trayCell = Math.max(10, Math.floor(Math.min(cellSize * 0.6, (trayH - 3 * 16 - 2 * 8) / 12 - GAP)));
+    } else {
+      // 3 yuva yan yana, en genis parca 4 hucre -> yuvaya sigacak olcek
+      const slotW = (Math.min(availW, 440) - 2 * 12) / 3 - 16;
+      trayCell = Math.max(12, Math.floor(Math.min(cellSize * 0.6, (slotW - GAP * 3) / 4)));
+    }
+    overlay.style.setProperty('--bk-cell', `${cellSize}px`);
+    overlay.style.setProperty('--bk-tray', `${trayCell}px`);
+    overlay.style.setProperty('--bk-gap', `${GAP}px`);
+    overlay.style.setProperty('--bk-pad', `${PAD}px`);
+  }
+  const pitch = () => cellSize + GAP;
 
   function newGame() {
     grid = Array.from({ length: N }, () => new Array(N).fill(null));
-    score = 0; selected = -1;
+    score = 0; selected = -1; over = false;
     tray = [piece(), piece(), piece()];
     render();
   }
@@ -8581,6 +8675,7 @@ function startBlockFit(container, onExit) {
   }
   const fits = (p, r0, c0) => p.cells.every(([r, c]) => r0 + r >= 0 && r0 + r < N && c0 + c >= 0 && c0 + c < N && !grid[r0 + r][c0 + c]);
   const fitsAnywhere = (p) => { for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (fits(p, r, c)) return true; return false; };
+  const dims = (p) => [Math.max(...p.cells.map(([r]) => r)) + 1, Math.max(...p.cells.map(([, c]) => c)) + 1];
 
   function render() {
     overlay.innerHTML = `
@@ -8593,57 +8688,115 @@ function startBlockFit(container, onExit) {
         <div class="ke-bk-tray" id="keBkTray">${tray.map((p, i) => pieceHTML(p, i)).join('')}</div>
         <p class="ke-jr-hint">${L('Parçayı sürükle ya da önce parçaya, sonra tahtaya dokun.', 'Drag a block, or tap a block and then tap the board.')}</p>
       </div>`;
+    computeSizes();
     wireMuteButton(overlay.querySelector('#keBkMute'));
-    overlay.querySelector('#keBkClose').addEventListener('click', () => { overlay.remove(); onExit(); });
-    overlay.querySelectorAll('.ke-bk-piece').forEach((el) => wirePiece(el));
+    overlay.querySelector('#keBkClose').addEventListener('click', close);
+    overlay.querySelectorAll('.ke-bk-piece').forEach(wirePiece);
     overlay.querySelectorAll('.ke-bk-cell').forEach((cell) => cell.addEventListener('click', () => {
       if (selected < 0) return;
-      tryPlace(selected, Number(cell.dataset.r), Number(cell.dataset.c), 0, 0);
+      tryPlace(selected, Number(cell.dataset.r), Number(cell.dataset.c));
     }));
   }
   function pieceHTML(p, i) {
-    if (!p) return '<div class="ke-bk-piece empty"></div>';
-    const h = Math.max(...p.cells.map(([r]) => r)) + 1;
-    const w = Math.max(...p.cells.map(([, c]) => c)) + 1;
+    if (!p) return '<div class="ke-bk-slot"><div class="ke-bk-piece empty"></div></div>';
+    const [h, w] = dims(p);
     const set = new Set(p.cells.map(([r, c]) => `${r},${c}`));
     let cells = '';
     for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) {
-      cells += `<span data-r="${r}" data-c="${c}" style="${set.has(`${r},${c}`) ? `background:${p.hex}` : 'visibility:hidden'}"></span>`;
+      cells += `<span style="${set.has(`${r},${c}`) ? `background:${p.hex}` : 'visibility:hidden'}"></span>`;
     }
-    return `<div class="ke-bk-piece${selected === i ? ' sel' : ''}" data-i="${i}" style="grid-template-columns:repeat(${w},1fr)" aria-label="${p.name}">${cells}</div>`;
+    return `<div class="ke-bk-slot"><div class="ke-bk-piece${selected === i ? ' sel' : ''}" data-i="${i}" style="grid-template-columns:repeat(${w},var(--bk-tray))" aria-label="${p.name}" role="button">${cells}</div></div>`;
+  }
+
+  // ---- surukle: Pointer Events, koordinatlar tahtanin rect'ine gore ----
+  function boardOrigin() {
+    const r = overlay.querySelector('#keBkBoard').getBoundingClientRect();
+    return { x: r.left + PAD, y: r.top + PAD };
+  }
+  function targetCell(ghostX, ghostY) {
+    // hayalet parcanin sol-ust hucresinin MERKEZI hangi hucrede?
+    const o = boardOrigin();
+    const x = ghostX + cellSize / 2 - o.x;
+    const y = ghostY + cellSize / 2 - o.y;
+    return { r: Math.floor(y / pitch()), c: Math.floor(x / pitch()) };
+  }
+  function clearPreview() { overlay.querySelectorAll('.ke-bk-cell.pv, .ke-bk-cell.bad').forEach((c) => c.classList.remove('pv', 'bad')); }
+  function showPreview(p, r0, c0) {
+    clearPreview();
+    const ok = fits(p, r0, c0);
+    p.cells.forEach(([r, c]) => {
+      const cell = overlay.querySelector(`.ke-bk-cell[data-r="${r0 + r}"][data-c="${c0 + c}"]`);
+      if (cell) { cell.classList.add(ok ? 'pv' : 'bad'); if (ok) cell.style.setProperty('--pv', p.hex); }
+    });
+    return ok;
+  }
+  function makeGhost(p) {
+    const [h, w] = dims(p);
+    const g = document.createElement('div');
+    g.className = 'ke-bk-ghost';
+    g.style.gridTemplateColumns = `repeat(${w}, ${cellSize}px)`;
+    g.style.gap = `${GAP}px`;
+    const set = new Set(p.cells.map(([r, c]) => `${r},${c}`));
+    for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) {
+      const s = document.createElement('span');
+      s.style.width = s.style.height = `${cellSize}px`;
+      if (set.has(`${r},${c}`)) s.style.background = p.hex; else s.style.visibility = 'hidden';
+      g.appendChild(s);
+    }
+    (document.fullscreenElement || document.body).appendChild(g);
+    return g;
   }
   function wirePiece(el) {
     if (el.classList.contains('empty')) return;
     const i = Number(el.dataset.i);
     el.addEventListener('pointerdown', (ev) => {
+      if (over) return;
       ev.preventDefault();
-      const part = ev.target.closest('span');
-      const gr = part ? Number(part.dataset.r) : 0, gc = part ? Number(part.dataset.c) : 0;
-      const sx = ev.clientX, sy = ev.clientY;
-      let ghost = null, moved = false;
-      const move = (e) => {
-        if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) > 8) {
-          moved = true; ghost = el.cloneNode(true); ghost.classList.add('ke-bk-ghost');
-          ghost.style.width = el.offsetWidth * 1.4 + 'px'; document.body.appendChild(ghost);
-        }
-        if (ghost) { ghost.style.left = e.clientX + 'px'; ghost.style.top = (e.clientY - 60) + 'px'; }
-      };
-      const up = (e) => {
-        document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', up);
-        if (ghost) ghost.remove();
-        if (!moved) { selected = selected === i ? -1 : i; render(); return; }
-        const t = document.elementFromPoint(e.clientX, e.clientY - 60);
-        const cell = t && t.closest ? t.closest('.ke-bk-cell') : null;
-        if (cell) tryPlace(i, Number(cell.dataset.r), Number(cell.dataset.c), gr, gc);
-      };
-      document.addEventListener('pointermove', move); document.addEventListener('pointerup', up); document.addEventListener('pointercancel', up);
+      const pr = el.getBoundingClientRect();
+      const tp = trayCell + GAP;
+      const gr = Math.min(dims(tray[i])[0] - 1, Math.max(0, Math.floor((ev.clientY - pr.top - 8) / tp)));
+      const gc = Math.min(dims(tray[i])[1] - 1, Math.max(0, Math.floor((ev.clientX - pr.left - 8) / tp)));
+      drag = { i, gr, gc, sx: ev.clientX, sy: ev.clientY, moved: false, ghost: null, home: pr, cell: null };
+      try { el.setPointerCapture(ev.pointerId); } catch (e) { /* yok say */ }
     });
+    el.addEventListener('pointermove', (e) => {
+      if (!drag || drag.i !== i) return;
+      if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 8) {
+        drag.moved = true; drag.ghost = makeGhost(tray[i]); el.classList.add('dragging');
+      }
+      if (!drag.ghost) return;
+      const gx = e.clientX - (drag.gc + 0.5) * pitch();
+      const gy = e.clientY - LIFT - (drag.gr + 0.5) * pitch();
+      drag.ghost.style.left = `${gx}px`; drag.ghost.style.top = `${gy}px`;
+      const t = targetCell(gx, gy);
+      drag.cell = t;
+      showPreview(tray[i], t.r, t.c);
+    });
+    const end = () => {
+      if (!drag || drag.i !== i) return;
+      const d = drag; drag = null;
+      el.classList.remove('dragging');
+      clearPreview();
+      if (!d.moved) { selected = selected === i ? -1 : i; render(); return; }
+      if (d.cell && fits(tray[i], d.cell.r, d.cell.c)) { d.ghost.remove(); place(i, d.cell.r, d.cell.c); return; }
+      // gecersiz: parca baslangic konumuna geri doner
+      try { GameSfx.bad(); } catch (e) { /* yok say */ }
+      d.ghost.style.transition = 'left .25s ease, top .25s ease, opacity .25s ease';
+      d.ghost.style.left = `${d.home.left}px`; d.ghost.style.top = `${d.home.top}px`; d.ghost.style.opacity = '0';
+      setTimeout(() => d.ghost.remove(), 260);
+    };
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
   }
-  function tryPlace(i, r, c, gr, gc) {
+
+  function tryPlace(i, r, c) {
     const p = tray[i];
     if (!p) return;
-    const r0 = r - gr, c0 = c - gc;
-    if (!fits(p, r0, c0)) { try { GameSfx.bad(); } catch (e) { /* yok say */ } return; }
+    if (!fits(p, r, c)) { try { GameSfx.bad(); } catch (e) { /* yok say */ } showPreview(p, r, c); setTimeout(clearPreview, 500); return; }
+    place(i, r, c);
+  }
+  function place(i, r0, c0) {
+    const p = tray[i];
     p.cells.forEach(([dr, dc]) => { grid[r0 + dr][c0 + dc] = p.hex; });
     score += p.cells.length;
     speakWord(p.name, dummy);
@@ -8660,7 +8813,7 @@ function startBlockFit(container, onExit) {
     tray[i] = null; selected = -1;
     if (tray.every((x) => !x)) tray = [piece(), piece(), piece()];
     render();
-    if (!tray.some((x) => x && fitsAnywhere(x))) setTimeout(gameOver, 500);
+    if (!tray.some((x) => x && fitsAnywhere(x))) { over = true; setTimeout(gameOver, 500); }
   }
   function gameOver() {
     const isBest = GameBest.submit('blocks', score);
@@ -8678,10 +8831,20 @@ function startBlockFit(container, onExit) {
         </div>
       </div>`);
     if (isBest) launchConfetti(overlay);
-    overlay.querySelector('#keBkExit').addEventListener('click', () => { overlay.remove(); onExit(); });
+    overlay.querySelector('#keBkExit').addEventListener('click', close);
     const again = overlay.querySelector('#keBkAgain');
     if (again) again.addEventListener('click', () => { if (!GameTokens.spend()) return; refreshGameBadge(container); newGame(); });
   }
+  const onResize = () => requestAnimationFrame(computeSizes);
+  window.addEventListener('resize', onResize);
+  window.addEventListener('orientationchange', onResize);
+  function close() {
+    window.removeEventListener('resize', onResize);
+    window.removeEventListener('orientationchange', onResize);
+    overlay.remove(); onExit();
+  }
+  // test kancasi (yalniz gelistirme: tahtayi dogrudan doldurmak icin)
+  overlay._bk = { get grid() { return grid; }, get tray() { return tray; }, place: (i, r, c) => place(i, r, c), fits: (i, r, c) => fits(tray[i], r, c) };
   newGame();
 }
 

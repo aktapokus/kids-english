@@ -39,7 +39,7 @@ if ('serviceWorker' in navigator) {
   // (kullanicinin kendi geri bildirimi). Iki parca:
   //
   // (1) sw.js'i her build'de degisen bir ?v= sorgu dizgesiyle kaydediyoruz
-  // (asagida 7aba1928c3 yer tutucusu, build_pwa.py build hash'iyle
+  // (asagida 0447a57471 yer tutucusu, build_pwa.py build hash'iyle
   // degistiriyor) - GitHub Pages TUM dosyalari CDN'de 10 dakika
   // onbelleklediginden (Cache-Control: max-age=600, updateViaCache:'none'
   // SADECE tarayicinin KENDI HTTP onbellegini atlar, GitHub'in CDN edge
@@ -65,7 +65,7 @@ if ('serviceWorker' in navigator) {
   // Boylece kullanici HICBIR SEY yapmadan (site verisi temizlemeden) bir
   // sonraki dogal ac/kapa VEYA arka plandan on plana gelisinde guncel
   // surume geciyor - ama bu tek reload asla tekrarlanmiyor.
-  navigator.serviceWorker.register('sw.js?v=7aba1928c3', { updateViaCache: 'none' }).then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=0447a57471', { updateViaCache: 'none' }).then((reg) => {
     reg.update().catch(() => {});
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') reg.update().catch(() => {});
@@ -74,7 +74,7 @@ if ('serviceWorker' in navigator) {
   const hadControllerAtLoad = !!navigator.serviceWorker.controller;
   if (hadControllerAtLoad) {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      const target = '7aba1928c3';
+      const target = '0447a57471';
       let already = '';
       try { already = window.localStorage.getItem('ke_sw_reloaded_for') || ''; } catch (e) { /* yok say */ }
       if (already === target) return;
@@ -84,7 +84,9 @@ if ('serviceWorker' in navigator) {
       // GUVENLI bir ekrandayken (ana ekran / harita / kategori listesi,
       // acik panel yok) yapiliyor; degilse o ana kadar bekleniyor.
       const safe = () => !!document.querySelector('.ke-carnival-hero, .ke-journey, #keCategoryGrid')
-        && !document.querySelector('.ke-river-overlay-msg, .ke-bonus-quiz, .ke-game-panel, canvas');
+        && !document.querySelector('.ke-river-overlay-msg, .ke-bonus-quiz, .ke-game-panel, canvas, .ke-puzzle-game, .ke-quickmenu, .ke-jr-toast');
+      // .ke-puzzle-game: Yap-boz / Kelime Roketi / Blok Yerlestir katmani ana ekranin USTUNDE acilir;
+      // listede olmadiginda oyun ya da sinav biter bitmez sayfa yenilenip ana sayfaya donuyordu.
       const go = () => {
         try { window.localStorage.setItem('ke_sw_reloaded_for', target); } catch (e) { /* yok say */ }
         window.location.reload();
