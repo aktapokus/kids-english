@@ -2438,6 +2438,35 @@ ${FONT_FACES}
   .ke-jhome-actions{ display:flex; gap:8px; margin-top:10px; }
   .ke-shell .ke-jhome-go{ flex:1; font-size:18px !important; padding:13px 16px !important; background:#FFD84D !important; color:#3a2a00 !important; border:none !important; border-radius:16px !important; box-shadow:0 5px 0 #C99A12 !important; font-weight:800 !important; }
   .ke-shell .ke-jhome-map{ font-size:14px !important; padding:12px 14px !important; background:rgba(255,255,255,.16) !important; color:#fff !important; border:2px solid rgba(255,255,255,.45) !important; border-radius:16px !important; box-shadow:none !important; font-weight:800 !important; }
+  /* Sinif modu (akilli tahta): tam ekran, buyuk yazi, yuksek kontrast */
+  .ke-cm-lab{ display:block; font-size:12.5px; font-weight:800; color:var(--kb-chalk-dim,#ccc); margin:10px 0 4px; }
+  .ke-cm-sel{ width:100%; font-size:16px; padding:10px; border-radius:12px; border:2px solid rgba(255,255,255,.3); background:#fff; color:#1A2233; }
+  .ke-cm{ position:fixed; inset:0; z-index:9800; background:#12321f; color:#FFFDF4; display:flex; flex-direction:column; font-family:'Fredoka','Baloo 2',system-ui,sans-serif; }
+  .ke-cm-top{ display:flex; gap:14px; align-items:center; padding:10px 16px; font-size:clamp(14px,2vw,22px); font-weight:700; opacity:.9; }
+  .ke-cm-top span:first-child{ flex:1; }
+  .ke-cm button{ font:700 clamp(15px,2vw,24px) 'Fredoka',system-ui,sans-serif; padding:.5em .9em; border-radius:14px; border:3px solid rgba(255,255,255,.5); background:rgba(255,255,255,.12); color:#FFFDF4; cursor:pointer; }
+  .ke-cm button:disabled{ opacity:.35; }
+  .ke-cm-teams{ display:flex; gap:12px; justify-content:center; padding:0 12px; }
+  .ke-cm-team{ display:flex; align-items:center; gap:10px; padding:6px 12px; border-radius:16px; font-size:clamp(16px,2.2vw,26px); }
+  .ke-cm-team.t0{ background:rgba(229,57,53,.25); } .ke-cm-team.t1{ background:rgba(30,136,229,.25); }
+  .ke-cm-team span{ font-size:1.6em; font-weight:800; min-width:1.6em; text-align:center; }
+  .ke-cm-team button{ padding:.1em .6em; }
+  .ke-cm-stage{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2vh; padding:8px 16px; text-align:center; min-height:0; }
+  .ke-cm-pic{ display:flex; align-items:center; justify-content:center; }
+  .ke-cm-img.big{ max-height:48vh; max-width:80vw; border-radius:24px; background:#fff; }
+  .ke-cm-img{ max-height:22vh; border-radius:18px; background:#fff; }
+  .ke-cm-emo.big{ font-size:min(34vh,40vw); line-height:1; } .ke-cm-emo{ font-size:14vh; line-height:1; }
+  .ke-cm-word{ font-size:clamp(40px,8vw,110px); font-weight:700; color:#FFD84D; line-height:1.05; }
+  .ke-cm-sub{ font-size:clamp(18px,2.6vw,34px); max-width:90vw; }
+  .ke-cm-hide{ visibility:hidden; }
+  .ke-cm-lead{ font-size:clamp(22px,3.4vw,44px); color:#C8E6C9; }
+  .ke-cm-q{ font-size:clamp(28px,5vw,72px); font-weight:700; max-width:92vw; line-height:1.15; }
+  .ke-cm-opts{ display:flex; flex-wrap:wrap; gap:14px; justify-content:center; }
+  .ke-cm-opt{ font-size:clamp(22px,3.6vw,48px); font-weight:700; padding:.3em .8em; border-radius:18px; background:#FFFDF4; color:#12321f; min-width:4em; }
+  .ke-cm-opt.ok{ background:#66BB6A; color:#fff; } .ke-cm-opt.no{ opacity:.35; }
+  .ke-cm-bar{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px)); }
+  .ke-cm-end{ margin:auto; text-align:center; font-size:clamp(32px,6vw,80px); font-weight:700; }
+  .ke-cm-end p{ font-size:.5em; }
   /* Ogretmenin gorevi: sinif (yesil tahta) karti */
   .ke-task{ max-width:560px; margin:0 auto 14px; padding:12px 14px; border-radius:22px; text-align:left; position:relative; z-index:1;
     background:#E8F5E9; color:#1B3B24; box-shadow:0 5px 0 rgba(0,0,0,.25); border:3px solid #66BB6A; }
@@ -4941,6 +4970,164 @@ function showParentGate(container, api, toolId, categories) {
   ov.querySelector('#keGateNo').addEventListener('click', () => ov.remove());
 }
 
+
+// ============================================================
+// SINIF MODU (akilli tahta) - 2026-09-27 ogretmen degerlendirmesi:
+// "ogrenci basina cihaz yok, tahta var". Ogretmen bolumu tahtaya yansitir;
+// ilerlemeyi OGRETMEN yonetir (otomatik gecis yok), iki takim puani.
+// Yeni icerik yok: mevcut kartlar + bolumdeki soru turlari (cloze, review,
+// reverse); soru turu olmayan bolumde "resme uyan kelime" sorusu kurulur.
+// Klavye: <- -> gecis, bosluk goster, S oku, Esc cik.
+// ============================================================
+function classModePic(icon_type, icon, big) {
+  if (icon_type === 'emoji' || !icon_type) return `<span class="ke-cm-emo${big ? ' big' : ''}">${escapeProfileText(icon || '')}</span>`;
+  return `<img class="ke-cm-img${big ? ' big' : ''}" src="${new URL(icon, ASSET_BASE_URL).href}" alt="" draggable="false" />`;
+}
+function classModeSlides(ep, kind) {
+  const objs = ep.objects || [];
+  if (kind === 'words') {
+    return objs.map((o) => ({ t: 'word', pic: [o.icon_type, o.icon], word: o.word, tr: o.tr, say: o.word, sentence: o.sentence }));
+  }
+  const q = [];
+  (ep.cloze || []).forEach((c) => q.push({ t: 'q', text: c.sentence.replace(c.blank, '____'), full: c.sentence, options: c.options, answer: c.blank }));
+  (ep.reverse || []).forEach((r) => q.push({ t: 'q', lead: r.answer, text: `___${r.q.slice(r.qword.length)}`, full: `${r.q} ${r.answer}`, options: r.options, answer: r.qword, pic: ['emoji', r.icon] }));
+  (ep.review || []).forEach((r) => q.push({ t: 'q', text: r.sentence.replace(r.blank, '____'), full: r.sentence, options: r.choices.map((c) => c.word), answer: r.word }));
+  if (!q.length) {
+    objs.forEach((o, i) => {
+      const others = shuffle(objs.filter((x) => x !== o)).slice(0, 2).map((x) => x.word);
+      q.push({ t: 'q', pic: [o.icon_type, o.icon], text: L('Bu nedir?', 'What is this?'), full: o.word, options: shuffle([o.word, ...others]), answer: o.word });
+    });
+  }
+  return q;
+}
+function classModeOptions(categories) {
+  const byId = new Map(categories.map((c) => [c.id, c]));
+  const used = new Set();
+  const groups = JOURNEY_SECTORS.map((sec) => {
+    const opts = sec.planets.map((id) => byId.get(id)).filter(Boolean).map((c) => { used.add(c.id); return `<option value="${c.id}">${escapeProfileText(planetName({ id: c.id, cat: c }))}</option>`; }).join('');
+    return opts ? `<optgroup label="${escapeProfileText(sec.emoji + ' ' + (_lang === 'tr' ? sec.tr : sec.en) + ' · ' + sec.level)}">${opts}</optgroup>` : '';
+  }).join('');
+  const rest = categories.filter((c) => !used.has(c.id)).map((c) => `<option value="${c.id}">${escapeProfileText(catLabel(c))}</option>`).join('');
+  return groups + (rest ? `<optgroup label="${L('Diğer', 'Other')}">${rest}</optgroup>` : '');
+}
+function showClassModeSetup(container, api, toolId, categories) {
+  const host = container.querySelector('#keScreenHost');
+  const back = () => showParentArea(container, api, toolId, categories);
+  host.innerHTML = `
+    <button class="ke-back-btn" id="keCmBack">${ICON_BACK} ${L('Ebeveyn Alanı', 'Parent Area')}</button>
+    <div class="ke-profile-screen ke-parent" style="max-width:640px;">
+      <h1 class="ke-title">${bubbleTitleHTML(L('Sınıf modu', 'Classroom mode'))}</h1>
+      <div class="ke-week-card ke-parent-card">
+        <p class="ke-parent-p">${L('Tahtaya yansıtın. İlerlemeyi siz yönetirsiniz; sınıf iki takım olarak oynar.', 'Project it on the board. You control the pace; the class plays in two teams.')}</p>
+        <label class="ke-cm-lab">${L('Konu', 'Topic')}</label>
+        <select id="keCmCat" class="ke-cm-sel">${classModeOptions(categories)}</select>
+        <label class="ke-cm-lab">${L('Bölüm', 'Episode')}</label>
+        <select id="keCmEp" class="ke-cm-sel"></select>
+        <label class="ke-cm-lab">${L('Etkinlik', 'Activity')}</label>
+        <div class="ke-pick-row" style="justify-content:flex-start;">
+          <button type="button" class="ke-pick ke-sel" data-kind="words">🖼️ ${L('Kelimeler', 'Words')}</button>
+          <button type="button" class="ke-pick" data-kind="quiz">❓ ${L('Sorular (takım)', 'Quiz (teams)')}</button>
+        </div>
+        <div style="margin-top:12px;"><button type="button" class="ke-btn-primary" id="keCmStart">▶ ${L('Başlat', 'Start')}</button></div>
+        <p class="ke-parent-note">${L('Klavye: ← → geçiş · boşluk: göster · S: oku · Esc: çık', 'Keys: ← → move · space: reveal · S: speak · Esc: exit')}</p>
+      </div>
+    </div>`;
+  host.querySelector('#keCmBack').addEventListener('click', back);
+  pushBackState(back);
+  const catSel = host.querySelector('#keCmCat');
+  const epSel = host.querySelector('#keCmEp');
+  const fillEps = () => {
+    const c = categories.find((x) => x.id === catSel.value);
+    epSel.innerHTML = Array.from({ length: c ? c.episode_count : 0 }, (_, i) => `<option value="${i}">${L('Bölüm', 'Episode')} ${i + 1}</option>`).join('');
+  };
+  catSel.addEventListener('change', fillEps); fillEps();
+  let kind = 'words';
+  host.querySelectorAll('[data-kind]').forEach((b) => b.addEventListener('click', () => {
+    kind = b.dataset.kind;
+    host.querySelectorAll('[data-kind]').forEach((x) => x.classList.toggle('ke-sel', x === b));
+  }));
+  host.querySelector('#keCmStart').addEventListener('click', async () => {
+    let ep;
+    try {
+      const r = await api.apiFetch(`/api/tools/${toolId}/categories/${catSel.value}/episodes/${epSel.value}`);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      ep = await r.json();
+    } catch (e) { window.alert(L('Bölüm yüklenemedi: ', 'Could not load episode: ') + e.message); return; }
+    const slides = classModeSlides(ep, kind);
+    if (!slides.length) { window.alert(L('Bu bölümde gösterilecek içerik yok.', 'Nothing to show in this episode.')); return; }
+    runClassMode(container, slides, catLabel(categories.find((x) => x.id === catSel.value) || { title: '' }), kind);
+  });
+}
+function runClassMode(container, slides, title, kind) {
+  const ov = document.createElement('div');
+  ov.className = 'ke-cm';
+  document.body.appendChild(ov);
+  let i = 0, revealed = false;
+  const score = [0, 0];
+  const speak = (text) => { if (text) speakWord(text, ov.querySelector('.ke-cm-stage') || ov); };
+  function draw() {
+    const sl = slides[i];
+    revealed = false;
+    const teams = kind === 'quiz' ? `<div class="ke-cm-teams">${[0, 1].map((t) => `<div class="ke-cm-team t${t}"><b>${t ? '🔵' : '🔴'} ${L('Takım', 'Team')} ${t ? 'B' : 'A'}</b><span>${score[t]}</span><button type="button" data-t="${t}" data-d="-1">−</button><button type="button" data-t="${t}" data-d="1">+</button></div>`).join('')}</div>` : '';
+    const body = sl.t === 'word'
+      ? `<div class="ke-cm-pic">${classModePic(sl.pic[0], sl.pic[1], true)}</div>
+         <div class="ke-cm-word ke-cm-hide">${escapeProfileText(sl.word)}</div>
+         <div class="ke-cm-sub ke-cm-hide">${escapeProfileText(sl.tr || '')}${sl.sentence ? ` · <i>${escapeProfileText(sl.sentence)}</i>` : ''}</div>`
+      : `${sl.pic ? `<div class="ke-cm-pic small">${classModePic(sl.pic[0], sl.pic[1], false)}</div>` : ''}
+         ${sl.lead ? `<div class="ke-cm-lead">💬 ${escapeProfileText(sl.lead)}</div>` : ''}
+         <div class="ke-cm-q">${escapeProfileText(sl.text)}</div>
+         <div class="ke-cm-opts">${sl.options.map((o) => `<div class="ke-cm-opt" data-o="${escapeProfileText(o)}">${escapeProfileText(o)}</div>`).join('')}</div>`;
+    ov.innerHTML = `
+      <div class="ke-cm-top"><span>${escapeProfileText(title)}</span><span>${i + 1} / ${slides.length}</span>
+        <button type="button" data-a="fs" title="${L('Tam ekran', 'Full screen')}">⛶</button><button type="button" data-a="x" title="${L('Çık', 'Exit')}">✕</button></div>
+      ${teams}
+      <div class="ke-cm-stage">${body}</div>
+      <div class="ke-cm-bar">
+        <button type="button" data-a="prev"${i ? '' : ' disabled'}>◀ ${L('Önceki', 'Back')}</button>
+        <button type="button" data-a="show">👁 ${L('Göster', 'Reveal')}</button>
+        <button type="button" data-a="say">🔊 ${L('Oku', 'Speak')}</button>
+        <button type="button" data-a="next">${i < slides.length - 1 ? `${L('Sonraki', 'Next')} ▶` : `🏁 ${L('Bitir', 'Finish')}`}</button>
+      </div>`;
+    if (sl.t === 'word') speak(sl.say);
+  }
+  function reveal() {
+    const sl = slides[i];
+    revealed = true;
+    ov.querySelectorAll('.ke-cm-hide').forEach((e) => e.classList.remove('ke-cm-hide'));
+    if (sl.t === 'q') {
+      ov.querySelectorAll('.ke-cm-opt').forEach((e) => e.classList.toggle(e.dataset.o === sl.answer ? 'ok' : 'no', true));
+      const q = ov.querySelector('.ke-cm-q'); if (q && sl.full && !sl.lead) q.textContent = sl.full;
+      speak(sl.full);
+    } else speak(sl.sentence || sl.word);
+  }
+  function finish() {
+    const win = kind === 'quiz' ? (score[0] === score[1] ? L('Berabere! 🤝', "It's a draw! 🤝") : `${score[0] > score[1] ? '🔴 A' : '🔵 B'} ${L('takımı kazandı! 🏆', 'team wins! 🏆')}`) : L('Bitti! Aferin sınıf! 👏', 'Finished! Well done, class! 👏');
+    ov.innerHTML = `<div class="ke-cm-end"><div>${win}</div>${kind === 'quiz' ? `<p>🔴 ${score[0]} · 🔵 ${score[1]}</p>` : ''}<button type="button" data-a="x">✕ ${L('Kapat', 'Close')}</button></div>`;
+  }
+  const close = () => { document.removeEventListener('keydown', onKey); if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); ov.remove(); };
+  const go = (d) => { const n = i + d; if (n < 0) return; if (n >= slides.length) { finish(); return; } i = n; draw(); };
+  ov.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    const a = b.dataset.a;
+    if (b.dataset.t) { score[+b.dataset.t] = Math.max(0, score[+b.dataset.t] + (+b.dataset.d)); ov.querySelector(`.ke-cm-team.t${b.dataset.t} span`).textContent = score[+b.dataset.t]; return; }
+    if (a === 'x') close();
+    else if (a === 'fs') { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); else ov.requestFullscreen && ov.requestFullscreen().catch(() => {}); }
+    else if (a === 'prev') go(-1);
+    else if (a === 'next') go(1);
+    else if (a === 'show') reveal();
+    else if (a === 'say') { const sl = slides[i]; speak(sl.t === 'word' ? (revealed ? (sl.sentence || sl.word) : sl.word) : (revealed ? sl.full : sl.text.replace(/_+/g, '…'))); }
+  });
+  function onKey(e) {
+    if (e.key === 'ArrowRight') go(1);
+    else if (e.key === 'ArrowLeft') go(-1);
+    else if (e.key === ' ') { e.preventDefault(); reveal(); }
+    else if (e.key === 's' || e.key === 'S') ov.querySelector('[data-a="say"]')?.click();
+    else if (e.key === 'Escape') close();
+  }
+  document.addEventListener('keydown', onKey);
+  draw();
+}
+
 async function showParentArea(container, api, toolId, categories) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   const host = container.querySelector('#keScreenHost');
@@ -4995,6 +5182,11 @@ async function showParentArea(container, api, toolId, categories) {
       <p class="ke-parent-p">${cls.code ? `${escapeProfileText(cls.className || cls.code)} · ${classSyncLabel(cls)}` : L('Bir sınıfa katılmamış. Öğretmeniniz sınıf kodu verdiyse Avatar ekranının altından katılabilirsiniz.', 'Not in a class. If the teacher gave a class code, join from the bottom of the Avatar screen.')}</p>
     </div>
     <div class="ke-week-card ke-parent-card">
+      <div class="ke-kpi-lbl">🧑‍🏫 ${L('Sınıf modu (akıllı tahta)', 'Classroom mode (smart board)')}</div>
+      <p class="ke-parent-p">${L('Bir bölümü tahtaya yansıtın: büyük resimler, siz yönetirsiniz, iki takımla soru oyunu.', 'Project an episode on the board: big pictures, you control the pace, a two-team quiz.')}</p>
+      <div class="ke-pick-row" style="justify-content:flex-start;"><button type="button" class="ke-pick" id="keClassMode">▶ ${L('Sınıf modunu aç', 'Open classroom mode')}</button></div>
+    </div>
+    <div class="ke-week-card ke-parent-card">
       <div class="ke-kpi-lbl">🧑‍🏫 ${L('İçerik denetimi (öğretmen)', 'Content review (teacher)')}</div>
       <p class="ke-parent-p">${L('Açıkken kelime keşfinde dokunduğunuz kart için "⚑ Sorun bildir" düğmesi görünür. Hatalı görsel, cümle veya anlamı bize bildirirsiniz; ad ya da kişisel bilgi gönderilmez.', 'When on, a "⚑ Report" button appears for the card you tap in word discovery. Report a wrong picture, sentence or meaning; no name or personal data is sent.')}</p>
       <div class="ke-pick-row" style="justify-content:flex-start;"><button type="button" class="ke-pick${ContentReport.enabled() ? ' ke-sel' : ''}" id="keReportToggle" aria-pressed="${ContentReport.enabled()}">${ContentReport.enabled() ? L('Açık ✓', 'On ✓') : L('Kapalı', 'Off')}</button></div>
@@ -5010,6 +5202,7 @@ async function showParentArea(container, api, toolId, categories) {
     </div>`;
   void today;
   host.querySelector('#keParentExport').addEventListener('click', exportBackup);
+  host.querySelector('#keClassMode').addEventListener('click', () => showClassModeSetup(container, api, toolId, categories));
   host.querySelector('#keReportToggle').addEventListener('click', (e) => {
     const on = !ContentReport.enabled(); ContentReport.setEnabled(on);
     e.currentTarget.classList.toggle('ke-sel', on); e.currentTarget.setAttribute('aria-pressed', String(on));
