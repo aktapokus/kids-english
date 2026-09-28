@@ -5242,15 +5242,29 @@ function classModePic(icon_type, icon, big) {
   if (icon_type === 'emoji' || !icon_type) return `<span class="ke-cm-emo${big ? ' big' : ''}">${escapeProfileText(icon || '')}</span>`;
   return `<img class="ke-cm-img${big ? ' big' : ''}" src="${new URL(icon, ASSET_BASE_URL).href}" alt="" draggable="false" />`;
 }
+// Boslugu yalniz TAM KELIME olarak yerlestirir (2026-09-28): duz replace ilk
+// alt dizgeyi degistiriyordu - "Look! It's snowing now." + "now" ->
+// "s____ing". Kelime sinirinda eslesme yoksa eski davranisa duser.
+function blankOut(sentence, blank, repl) {
+  const s = String(sentence || ''), b = String(blank || '');
+  if (!b) return s;
+  const esc = b.replace(/[.*+?^$(){}|[\]\\]/g, '\\$&');
+  const rx = new RegExp("(^|[^\\w'])(" + esc + ")(?![\\w'])");
+  const m = s.match(rx);
+  if (!m) return s.replace(b, repl);
+  const at = m.index + m[1].length;
+  return s.slice(0, at) + repl + s.slice(at + b.length);
+}
+
 function classModeSlides(ep, kind) {
   const objs = ep.objects || [];
   if (kind === 'words') {
     return objs.map((o) => ({ t: 'word', pic: [o.icon_type, o.icon], word: o.word, tr: o.tr, say: o.word, sentence: o.sentence }));
   }
   const q = [];
-  (ep.cloze || []).forEach((c) => q.push({ t: 'q', text: c.sentence.replace(c.blank, '____'), full: c.sentence, options: c.options, answer: c.blank }));
+  (ep.cloze || []).forEach((c) => q.push({ t: 'q', text: blankOut(c.sentence, c.blank, '____'), full: c.sentence, options: c.options, answer: c.blank }));
   (ep.reverse || []).forEach((r) => q.push({ t: 'q', lead: r.answer, text: `___${r.q.slice(r.qword.length)}`, full: `${r.q} ${r.answer}`, options: r.options, answer: r.qword, pic: ['emoji', r.icon] }));
-  (ep.review || []).forEach((r) => q.push({ t: 'q', text: r.sentence.replace(r.blank, '____'), full: r.sentence, options: r.choices.map((c) => c.word), answer: r.word }));
+  (ep.review || []).forEach((r) => q.push({ t: 'q', text: blankOut(r.sentence, r.blank, '____'), full: r.sentence, options: r.choices.map((c) => c.word), answer: r.word }));
   if (!q.length) {
     objs.forEach((o, i) => {
       const others = shuffle(objs.filter((x) => x !== o)).slice(0, 2).map((x) => x.word);
@@ -5372,7 +5386,7 @@ function printBingoHTML(words, title) {
 function sheetItems(eps) {
   const items = [];
   eps.forEach((e) => {
-    (e.cloze || []).forEach((c) => items.push({ text: c.sentence.replace(c.blank, '__________'), answer: c.blank }));
+    (e.cloze || []).forEach((c) => items.push({ text: blankOut(c.sentence, c.blank, '__________'), answer: c.blank }));
     (e.objects || []).forEach((o) => {
       const w = String(o.word).split(' / ')[0].replace(/[?!.]+$/, '');
       const rx = new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(s|es)?\\b`, 'i');
@@ -9069,11 +9083,11 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
       slotsEl.innerHTML = '';
       const line = document.createElement('div');
       line.className = 'ke-slot ke-rv-line';
-      line.textContent = it.sentence.replace(it.blank, '____');
+      line.textContent = blankOut(it.sentence, it.blank, '____');
       slotsEl.appendChild(line);
       actionsEl.style.display = 'none';
       bankEl.innerHTML = '';
-      speakWord(it.sentence.replace(it.blank, '…'), mascotEl); // cevabi ele vermesin
+      speakWord(blankOut(it.sentence, it.blank, '…'), mascotEl); // cevabi ele vermesin
       const reveal = (msg, minMs) => {
         line.textContent = it.sentence; line.classList.add('ke-reveal');
         bubbleEl.textContent = msg;
@@ -9124,7 +9138,7 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
       slotsEl.innerHTML = '';
       const line = document.createElement('div');
       line.className = 'ke-slot ke-rv-line';
-      line.textContent = it.sentence.replace(it.blank, '____');
+      line.textContent = blankOut(it.sentence, it.blank, '____');
       slotsEl.appendChild(line);
       actionsEl.style.display = 'none';
       bankEl.innerHTML = '';
