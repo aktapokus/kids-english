@@ -2990,6 +2990,16 @@ ${FONT_FACES}
   .ke-rec-btn{ min-height:44px; padding:8px 14px; border-radius:14px; border:2px solid rgba(245,240,223,.35); background:rgba(255,255,255,.08); color:var(--kb-chalk); font:700 15px 'Fredoka','Baloo 2',sans-serif; cursor:pointer; }
   .ke-rec-btn.ke-rec-on{ background:#E5484D; border-color:#E5484D; color:#fff; animation: keRecPulse 1s ease-in-out infinite; }
   @keyframes keRecPulse{ 50%{ transform:scale(1.05); } }
+  .ke-offline{ display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; font-size:13px; font-weight:700; color:var(--kb-chalk); background:rgba(255,255,255,.07); border:1px dashed rgba(245,240,223,.35); border-radius:12px; padding:6px 12px; margin:8px 0; }
+  .ke-offline[hidden]{ display:none; }
+  .ke-offline small{ font-weight:600; opacity:.75; }
+  .ke-offline.ok{ border-style:solid; border-color:rgba(133,217,138,.45); color:#bfe8c1; }
+  .ke-vn-card{ max-width:460px; text-align:left; }
+  .ke-vn-card h2{ margin:0 0 8px; font-size:20px; }
+  .ke-vn-p{ font-size:14.5px; line-height:1.45; margin:0 0 8px; }
+  .ke-vn-steps{ font-size:14px; line-height:1.45; padding-left:20px; margin:0 0 10px; }
+  .ke-vn-steps.ke-vn-hl{ outline:3px solid #FFD75A; border-radius:8px; }
+  .ke-vn-btns{ flex-wrap:wrap; margin-top:10px; }
   .ke-story-list{ display:flex; flex-direction:column; gap:14px; max-width:560px; margin:0 auto; position:relative; z-index:1; }
   .ke-story-card{
     display:flex; align-items:center; gap:14px; text-align:left; cursor:pointer;
@@ -4326,6 +4336,46 @@ function renderWordOfDay(el, d) {
     el.classList.add('ke-av-pop');
   });
 }
+// Internetsiz kullanim gostergesi (2026-09-28): SW onbellegindeki dosya
+// sayisi / toplam. Bitene kadar "hazirlaniyor %x", bitince "hazir".
+// Yalniz yayin (PWA) surumunde; SW yoksa hic gorunmez.
+async function offlineState() {
+  if (!window.KE_STATIC || !('caches' in window) || !window.KE_SW_VER || !('serviceWorker' in navigator)) return null;
+  try {
+    // SW kaydi hic yoksa (tarayici reddetti, gizli sekme vb.) gosterge
+    // "%0"da takili kalmasin: hic gosterme.
+    if (!(await navigator.serviceWorker.getRegistration())) return null;
+    const name = 'ke-' + window.KE_SW_VER;
+    if (!(await caches.has(name))) return { done: 0, total: 0 };
+    const c = await caches.open(name);
+    const t = await c.match('__ke_total__');
+    const total = t ? Number(await t.text()) : 0;
+    const keys = await c.keys();
+    const done = keys.filter((r) => !/__ke_(total|manifest)__/.test(r.url)).length;
+    return { done, total, complete: !!(await c.match('__ke_manifest__')) };
+  } catch (e) { return null; }
+}
+function mountOffline(host) {
+  const el = host.querySelector('#keOffline');
+  if (!el) return;
+  const paint = async () => {
+    if (!host.contains(el)) return;
+    const st = await offlineState();
+    if (!st) { el.hidden = true; return; }
+    el.hidden = false;
+    if (st.complete) {
+      el.className = 'ke-offline ok';
+      el.textContent = L('✅ İnternetsiz kullanıma hazır', '✅ Ready to use offline');
+      return;
+    }
+    const pct = st.total ? Math.min(99, Math.floor((st.done / st.total) * 100)) : 0;
+    el.className = 'ke-offline';
+    el.innerHTML = `⬇️ ${L('İnternetsiz kullanım için hazırlanıyor', 'Getting ready for offline use')} <b>%${pct}</b><small>${navigator.onLine ? L('Uygulamayı açık tutun', 'Keep the app open') : L('İnternet gelince devam edecek', 'Will continue when online')}</small>`;
+    setTimeout(paint, 3000);
+  };
+  paint();
+}
+
 async function mountWordOfDay(host, api, toolId, categories) {
   const el = host.querySelector('#keWotd');
   if (!el) return;
@@ -4372,6 +4422,7 @@ function showSectionMenu(container, api, toolId, categories) {
     ${journeyHomeCardHTML(categories)}
     <div class="ke-task" id="keTask" hidden></div>
     <div class="ke-wotd" id="keWotd" hidden></div>
+    <div class="ke-offline" id="keOffline" hidden></div>
     ${dueTotal ? `<button type="button" class="ke-due-chip" id="keDueChip">🔁 ${L(`Bugün ${dueTotal} kelime tekrar`, `${dueTotal} words to review today`)} <span>→</span></button>` : ''}
     </div><div class="ke-home-right">
     <h2 class="ke-lib-head">📚 ${L('Kütüphane', 'Library')} <span>${L('serbest çalışma — istediğin konuyu seç', 'free practice — pick any topic')}</span></h2>
@@ -4383,6 +4434,8 @@ function showSectionMenu(container, api, toolId, categories) {
   wireJourneyHomeCard(host, container, api, toolId, categories);
   mountTask(host, container, api, toolId, categories);
   mountWordOfDay(host, api, toolId, categories);
+  mountOffline(host);
+  setTimeout(() => { maybeVoiceNotice(container); }, 1500);
   host.querySelector('#keWhoChip').addEventListener('click', () => showWhoIsPlaying(container, api, toolId, categories));
   const dueChip = host.querySelector('#keDueChip');
   if (dueChip) dueChip.addEventListener('click', () => { const c = dueByCat[0][0]; startReviewSession(container, api, toolId, categories, c.id, c.title); });
@@ -8002,6 +8055,90 @@ function speakWord(word, mascotEl, onDone) {
 // Telefonda "ses çalışmıyor" durumunda tanı koymak için ana sayfadaki
 // "Ses testi" düğmesi: kaç ses/İngilizce ses var, güvenli bağlam mı,
 // konuşma başladı mı/hata verdi mi — hepsini ekranda gösteriyor.
+// ---- Ingilizce ses kontrolu (2026-09-28) ----
+// Web sayfasi ses paketi YUKLEYEMEZ ve telefon ayarlarini ACAMAZ; bu yuzden
+// ilk acilista kontrol edip veliye bir kez nasil yuklenecegini gosteriyoruz.
+// "Kesin" degil: bazi Android surumleri localService'i yanlis bildiriyor;
+// asil guvence "Sesi dene" dugmesi. APK surumunde ses verisi ekrani dogrudan
+// acilabilecek (ACTION_INSTALL_TTS_DATA).
+const VOICE_NOTICE_KEY = 'ke_voice_notice_v1'; // 'ok' | 'never'
+let _voiceNoticeShown = false;
+function voiceStatus() {
+  return new Promise((resolve) => {
+    if (!('speechSynthesis' in window)) { resolve('unsupported'); return; }
+    const judge = () => {
+      const en = window.speechSynthesis.getVoices().filter((v) => voiceLang(v).startsWith('en'));
+      if (!en.length) return 'none';
+      return en.some((v) => v.localService) ? 'ok' : 'online';
+    };
+    if (window.speechSynthesis.getVoices().length) { resolve(judge()); return; }
+    let done = false;
+    const fin = () => { if (done) return; done = true; resolve(window.speechSynthesis.getVoices().length ? judge() : 'none'); };
+    window.speechSynthesis.addEventListener('voiceschanged', fin, { once: true });
+    setTimeout(fin, 3000);
+  });
+}
+async function maybeVoiceNotice(container) {
+  if (_voiceNoticeShown) return;
+  let pref = null;
+  try { pref = window.localStorage.getItem(VOICE_NOTICE_KEY); } catch (e) { /* yok say */ }
+  if (pref) return;
+  const st = await voiceStatus();
+  if (st === 'ok') return;
+  if (_voiceNoticeShown || !container.isConnected) return;
+  _voiceNoticeShown = true;
+  const android = /android/i.test(navigator.userAgent);
+  const why = st === 'unsupported'
+    ? L('Bu tarayıcı sesli okumayı desteklemiyor. Chrome ya da Safari ile açmayı deneyin.', 'This browser cannot read aloud. Try Chrome or Safari.')
+    : st === 'none'
+      ? L('Bu cihazda İngilizce ses bulunamadı. Aktapokus konuşamayabilir.', 'No English voice was found on this device. Aktapokus may not be able to speak.')
+      : L('Bu cihazdaki İngilizce ses yalnızca internetle çalışıyor olabilir. İnternet yokken Aktapokus konuşamayabilir.', 'The English voice on this device may only work online. Without internet Aktapokus may not speak.');
+  const steps = android
+    ? `<ol class="ke-vn-steps">
+        <li>${L('<b>Google Konuşma Hizmetleri</b>’ni yükleyin ya da güncelleyin (aşağıdaki düğme).', 'Install or update <b>Speech Services by Google</b> (button below).')}</li>
+        <li>${L('Telefonda <b>Ayarlar → Erişilebilirlik</b> (bazı telefonlarda <b>Sistem → Dil ve giriş</b>) → <b>Metin okuma çıkışı</b>.', 'On the phone: <b>Settings → Accessibility</b> (or <b>System → Languages & input</b>) → <b>Text-to-speech output</b>.')}</li>
+        <li>${L('<b>Tercih edilen motor: Google</b> → ⚙ → <b>Ses verilerini yükle</b> → <b>English (United Kingdom)</b> → indir.', '<b>Preferred engine: Google</b> → ⚙ → <b>Install voice data</b> → <b>English (United Kingdom)</b> → download.')}</li>
+      </ol>
+      <a class="ke-pick" href="https://play.google.com/store/apps/details?id=com.google.android.tts" target="_blank" rel="noopener">▶ ${L('Google Konuşma Hizmetleri', 'Speech Services by Google')}</a>`
+    : `<p class="ke-vn-p">${L('iPhone/iPad: <b>Ayarlar → Erişilebilirlik → Seslendirilen İçerik → Sesler → English</b> altından bir ses indirin. Bilgisayarda işletim sisteminin ses ayarlarından İngilizce ses ekleyin.', 'iPhone/iPad: <b>Settings → Accessibility → Spoken Content → Voices → English</b> and download a voice. On a computer, add an English voice in the system speech settings.')}</p>`;
+  const ov = document.createElement('div');
+  ov.className = 'ke-river-overlay-msg ke-jr-sheet ke-vn';
+  ov.style.position = 'fixed'; ov.style.zIndex = '96';
+  ov.innerHTML = `<div class="ke-river-msg-card ke-vn-card">
+      <h2>🔊 ${L('Aktapokus’un sesi için bir adım', 'One step for Aktapokus’s voice')}</h2>
+      <p class="ke-vn-p">${L('<b>Veliler için:</b> ', '<b>For parents:</b> ')}${why}</p>
+      ${st === 'unsupported' ? '' : steps}
+      <div class="ke-vn-test" id="keVnTest"></div>
+      <div class="ke-btn-row ke-vn-btns">
+        ${st === 'unsupported' ? '' : `<button type="button" class="ke-btn-primary" data-v="test">🔊 ${L('Sesi dene', 'Test the voice')}</button>`}
+        <button type="button" class="ke-btn-secondary" data-v="later">${L('Daha sonra', 'Later')}</button>
+        <button type="button" class="ke-btn-secondary" data-v="never">${L('Bir daha gösterme', 'Don’t show again')}</button>
+      </div></div>`;
+  (container.querySelector('.ke-shell') || document.body).appendChild(ov);
+  const close = () => ov.remove();
+  const remember = (v) => { try { window.localStorage.setItem(VOICE_NOTICE_KEY, v); } catch (e) { /* yok say */ } };
+  const testBox = ov.querySelector('#keVnTest');
+  ov.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-v]'); if (!b) return;
+    const v = b.dataset.v;
+    if (v === 'later') close();
+    else if (v === 'never') { remember('never'); close(); }
+    else if (v === 'heard') { remember('ok'); close(); }
+    else if (v === 'notheard') {
+      testBox.innerHTML = `<p class="ke-vn-p">⚠️ ${L('Yukarıdaki adımları uygulayıp yeniden deneyin. Telefonun medya sesinin açık olduğundan da emin olun.', 'Follow the steps above and try again. Also check that the phone media volume is up.')}</p>`;
+      ov.querySelector('.ke-vn-steps')?.classList.add('ke-vn-hl');
+    } else if (v === 'test') {
+      const m = document.createElement('div');
+      testBox.innerHTML = `<p class="ke-vn-p">🎧 ${L('Dinleyin…', 'Listen…')}</p>`;
+      speakWord('Hello! I am Aktapokus.', m, () => {
+        testBox.innerHTML = `<p class="ke-vn-p">${L('Sesi duydunuz mu?', 'Did you hear the voice?')}</p>
+          <div class="ke-btn-row"><button type="button" class="ke-btn-primary" data-v="heard">✅ ${L('Evet, duydum', 'Yes, I heard it')}</button>
+          <button type="button" class="ke-btn-secondary" data-v="notheard">❌ ${L('Hayır', 'No')}</button></div>`;
+      });
+    }
+  });
+}
+
 function runSoundTest(infoEl) {
   const lines = [];
   const show = () => { infoEl.textContent = lines.join(' • '); };

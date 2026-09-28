@@ -54,10 +54,10 @@ Uygulama içindeki **Ebeveyn Alanı**'nda:
 
 ## İnternetsiz kullanım ve güncellemeler
 
-- **İnternetsiz çalışır.** Uygulamayı iyi bir internetle bir kez açıp birkaç dakika bekleyin ve **ana ekrana ekleyin** ("Ana ekrana ekle" / "Uygulamayı yükle"). Sonra internet olmadan açılır.
+- **İnternetsiz çalışır.** Uygulamayı iyi bir internetle bir kez açıp birkaç dakika bekleyin ve **ana ekrana ekleyin** ("Ana ekrana ekle" / "Uygulamayı yükle"). Ana ekranda **"✅ İnternetsiz kullanıma hazır"** yazınca internet olmadan da açılır.
 - Yalnızca **konuşma tanıma** ve **sınıf eşitlemesi** internet ister. İnternetsiz yapılan çalışma kaybolmaz; bağlantı gelince gönderilir.
 - **Ses:** Aktapokus telefonun kendi İngilizce sesiyle konuşur. İnternetsiz ses için telefonda İngilizce ses paketi gerekir; uygulama eksikse ilk açılışta nasıl yükleneceğini gösterir.
-- **Güncellemeler kendiliğinden gelir.** Uygulamayı internetliyken açmanız yeterli; yeni içerik ve düzeltmeler otomatik iner, yeniden kurmak gerekmez.
+- **Güncellemeler kendiliğinden gelir.** Uygulamayı internetliyken açmanız yeterli; yeni içerik ve düzeltmeler otomatik iner, yeniden kurmak gerekmez. Yalnızca değişen dosyalar indiği için güncellemeler mobil veriyi yormaz.
 
 ## Android uygulaması (APK)
 
