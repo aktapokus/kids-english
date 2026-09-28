@@ -3001,6 +3001,9 @@ ${FONT_FACES}
   .ke-vn-steps{ font-size:14px; line-height:1.45; padding-left:20px; margin:0 0 10px; }
   .ke-vn-steps.ke-vn-hl{ outline:3px solid #FFD75A; border-radius:8px; }
   .ke-vn-btns{ flex-wrap:wrap; margin-top:10px; }
+  /* Anlami ne? - metin secenekleri (resimli kartlarin yerine) */
+  .ke-shell .ke-scene .ke-quiz.ke-meaning .ke-quiz-cards{ display:flex !important; flex-direction:column !important; gap:10px !important; height:auto !important; flex:0 0 auto !important; width:100% !important; max-width:460px !important; margin:0 auto !important; }
+  .ke-shell .ke-scene .ke-quiz.ke-meaning .ke-quiz-card.ke-mean-opt{ aspect-ratio:auto !important; height:auto !important; min-height:60px !important; width:100% !important; flex:0 0 auto !important; display:flex !important; align-items:center; justify-content:center; font:700 21px 'Fredoka','Baloo 2',sans-serif !important; color:#1A2233 !important; padding:10px 14px !important; text-align:center; white-space:normal; }
   .ke-story-list{ display:flex; flex-direction:column; gap:14px; max-width:560px; margin:0 auto; position:relative; z-index:1; }
   .ke-story-card{
     display:flex; align-items:center; gap:14px; text-align:left; cursor:pointer;
@@ -8369,6 +8372,90 @@ function startQuiz(host, container, episode, wordList, mascotEl, restartEpisode,
 // dinlemiyor/tanımıyor, kelimeyi kendi sesiyle söylüyor. SpeechRecognition
 // tarayıcıda yoksa (ör. Firefox) akış hiç kilitlenmiyor — çocuk kendi
 // kendine yüksek sesle tekrar eder, "Devam Et" ile ilerler.
+// "Anlami ne?" (2026-09-28, kullanici: "cocuk ogrendigini saniyor, kelimeyi
+// soyluyor ama aslinda anlamini bilmiyor"). Konus turu yalniz telaffuzu,
+// cumle/harf turlari kalibi olcuyor; bu tur ANLAMI olcer: kelime + ses,
+// 3 Turkce secenek (ayni bolumun diger kartlarindan). Yanlis bilinen kelime
+// resimli soru turuyla ayni tekrar kuyruguna girer (Progress.recordMistake).
+// Bolumu yeniden baslatmaz; yanlis secenek elenir, cocuk tekrar dener.
+function meaningItems(wordList) {
+  const clean = (t) => String(t || '').trim();
+  const usable = wordList.filter((o) => clean(o.tr) && o.word);
+  if (usable.length < 3) return [];
+  return usable.map((o) => {
+    const others = shuffle(usable.filter((x) => x !== o && clean(x.tr).toLowerCase() !== clean(o.tr).toLowerCase()))
+      .map((x) => clean(x.tr)).filter((t, i, a) => a.indexOf(t) === i).slice(0, 2);
+    return others.length < 2 ? null : { obj: o, options: shuffle([clean(o.tr), ...others]), answer: clean(o.tr) };
+  }).filter(Boolean);
+}
+function startMeaningRound(host, container, episode, wordList, mascotEl, onDone) {
+  const items = shuffle(meaningItems(wordList));
+  if (!items.length) { onDone(); return; }
+  setEpisodePhase(host, 'speak');
+  const quizEl = host.querySelector('#keQuiz');
+  const progressChip = host.querySelector('#keProgress');
+  const mainBubbleEl = host.querySelector('#keBubble');
+  const bubbleEl = host.querySelector('#keQuizBubble');
+  const progEl = host.querySelector('#keQuizProgress');
+  const wordEl = host.querySelector('#keQuizWord');
+  const cardsHost = host.querySelector('#keQuizCards');
+  const replayBtn = host.querySelector('#keQuizReplay');
+  const ask = L('Bu kelime ne demek? 🤔 Doğru anlamı seç.', 'What does this word mean? 🤔 Pick the right meaning.');
+  progressChip.style.display = 'none';
+  mainBubbleEl.style.display = 'none';
+  quizEl.classList.add('ke-show', 'ke-meaning');
+  mascotEl.classList.add('ke-mascot-compact');
+  setMascotPose(host, 'think');
+  let i = 0, attempts = 0;
+  const end = () => {
+    quizEl.classList.remove('ke-show', 'ke-meaning');
+    wordEl.classList.remove('ke-quiz-sentence');
+    mascotEl.classList.remove('ke-mascot-compact');
+    setMascotPose(host, 'idle');
+    progressChip.style.display = '';
+    mainBubbleEl.style.display = '';
+    onDone();
+  };
+  function render() {
+    if (i >= items.length) { end(); return; }
+    const it = items[i];
+    attempts = 0;
+    bubbleEl.textContent = ask;
+    progEl.textContent = `${L('Anlamı ne?', 'Meaning')} ${i + 1} / ${items.length}`;
+    wordEl.classList.remove('ke-quiz-sentence');
+    wordEl.textContent = it.obj.word;
+    cardsHost.innerHTML = '';
+    it.options.forEach((t) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ke-quiz-card ke-mean-opt';
+      b.textContent = t;
+      b.addEventListener('click', () => pick(b, t, it));
+      cardsHost.appendChild(b);
+    });
+    speakWord(it.obj.word, mascotEl);
+  }
+  function pick(b, t, it) {
+    if (b.disabled) return;
+    attempts++;
+    if (t === it.answer) {
+      b.classList.add('ke-correct');
+      cardsHost.querySelectorAll('.ke-mean-opt').forEach((x) => { x.disabled = true; });
+      celebrateBounce(mascotEl);
+      bubbleEl.textContent = `✅ ${it.obj.word} = ${it.answer}`;
+      setTimeout(() => { i++; render(); }, 1100);
+      return;
+    }
+    b.classList.add('ke-wrong');
+    b.disabled = true;
+    if (attempts === 1) Progress.recordMistake(episode.category_id, it.obj);
+    mascotReact(mascotEl, false);
+    bubbleEl.textContent = L('Olmadı, bir daha dene! 💪', 'Not quite, try again! 💪');
+  }
+  replayBtn.onclick = () => { if (items[i]) speakWord(items[i].obj.word, mascotEl); };
+  render();
+}
+
 function startSpeakRound(host, container, episode, wordList, mascotEl, score, onDone) {
   setEpisodePhase(host, 'speak');
   const speakEl = host.querySelector('#keSpeak');
@@ -8483,7 +8570,7 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
   function renderItem() {
     if (idx >= order.length) {
       endSpeak();
-      startSentenceRound(host, container, episode, wordList, mascotEl, score, onDone);
+      startMeaningRound(host, container, episode, wordList, mascotEl, () => startSentenceRound(host, container, episode, wordList, mascotEl, score, onDone));
       return;
     }
     const obj = wordList[order[idx]];
