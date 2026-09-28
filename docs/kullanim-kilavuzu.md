@@ -100,6 +100,7 @@ Her bölümde 4–6 kelime vardır. Aşamalar sırayla gelir; üstteki simgeler 
 |---|---|---|
 | 👀 **Keşif** | Resimlere dokunur, kelimeyi ve cümlesini dinler. | Anlam ve telaffuz (girdi) |
 | ❓ **Soru** | Sesi dinler, doğru resmi seçer. İlk yanlışta ikinci hak verilir. | Dinleyerek tanıma |
+| 🇹🇷 **Anlamı ne?** | (A1) Söylediği kelimenin Türkçe anlamını 3 seçenekten seçer. | Kelimeyi söylemekle anlamını bilmek aynı şey değil |
 | 🎤 **Konuş** | Kelimeyi söyler, uygulama dinler. İsterse **🔴 Sesimi kaydet** ile kendini kaydedip Aktapokus'la karşılaştırır. Puan yoktur. | Telaffuz, özgüven |
 | 🧩 **Cümle** | Kelime taşlarını sıraya dizerek cümle kurar. | Kelimeyi cümle içinde kullanma |
 | 🔤 **Harf** | İlk harfler hazır; kalan harfleri tamamlar. | Yazılış |
@@ -132,6 +133,7 @@ Macera sırasını beklemeden istenen konu açılır.
 | **Conversations** | Günlük konuşma kalıpları |
 | **Maths in English** | Matematik Yolu, Sayı Yağmuru, Çarpım Tablosu |
 | **Story Time** | Sesli okunan Aktapokus hikâyeleri. Çocuk kendi sesiyle okuyup kaydedebilir. |
+| **🇹🇷 Türkçe Destek** | Her düzeyde açık: "Türkler burada karıştırır" oyunu (ör. *I am agree* → *I agree*), 💡 Neden? notları, Türkçeden Kur alıştırması |
 | **Sing & Move (Şarkı ve Hareket)** | 6 tekerleme ve "Aktapokus Says" hareket oyunu (bkz. 3.5) |
 
 ### 3.5 Şarkı ve Hareket
@@ -172,6 +174,7 @@ Aktapokus'a dokunun ve **👪 Ebeveyn**'i seçin. Ekrana basit bir çarpma sorus
 | **🔁 En çok zorlandığı kelimeler** | En çok yanlış yapılan 12 kelime, kaç kez yanlış yapıldığı ve konusu | Bu kelimeleri gün içinde doğal anlarda kullanın ("Where is your **bag**?"). |
 | **🏫 Öğretmen sınıfı** | Hangi sınıfa bağlı olduğu ve son eşitleme durumu | — |
 | **📅 Haftalık özet** | Son 7 günde öğrenilen kelimeler (resimli) ve **evde birlikte söyleyebileceğiniz 3 kısa cümle** (🔊 ile dinlenir) | Ekran görüntüsü alın ya da yazdırın, buzdolabına asın. Cümleyi siz söyleyin, çocuk tekrar etsin, sonra rol değiştirin. |
+| **🇹🇷 Türkçe destek** | **Otomatik** (önerilen): A1'de "Anlamı ne?", "Türkçeden Kur" ve 💡 Neden? açık; çocuk A2'ye geçince bölümlerden kalkar. **Hep açık** / **Kapalı** da seçilebilir. | Çocuk zorlanıyorsa A2'de de açın; İngilizcesi iyiyse A1'de kapatabilirsiniz. |
 | **⏱️ Oturum uzunluğu** | Kaç bölümden sonra "Devam mı, yarın mı?" sorulacağı: 1, 2, 3 bölüm ya da "Sorma" | 2.–3. sınıf için 1–2 bölüm önerilir. Sizin seçiminiz, öğretmenin seçiminin önüne geçer. |
 | **🧑‍🏫 Sınıf modu** | Akıllı tahta ve basılı materyal (bkz. 5.6). **Yalnızca sınıfa bağlı olmayan cihazlarda** görünür. | Evde büyük ekranda da kullanılabilir. |
 | **🧑‍🏫 İçerik denetimi** | Açıkken kelime kartlarında "⚑ Sorun bildir" düğmesi çıkar. **Yalnızca sınıfa bağlı olmayan cihazlarda** görünür. | Hatalı resim, cümle ya da anlam görürseniz bildirin (bkz. 5.8). |

@@ -513,6 +513,60 @@ const SessionLen = {
 };
 let _goHomeFn = null;
 
+// Turkce destek (2026-09-28, kullanici onayi). Destek akista A1'e ozel ve
+// kademeli: Ay (2. sinif) yalniz "Anlami ne?"; diger A1 istasyonlari + ceviri
+// ("Turkceden Kur") + "Neden?"; A2/B1'de akistan kalkar. Veli/ogretmen
+// Ebeveyn Alani'ndan Otomatik / Hep acik / Kapali secer. Ayrica Kutuphane'de
+// her duzeyde acik "Turkce Destek" bolumu.
+const TR_SUPPORT_KEY = 'ke_tr_support_v1'; // 'auto' | 'on' | 'off'
+const TrSupport = {
+  mode() { try { const v = window.localStorage.getItem(TR_SUPPORT_KEY); return ['auto', 'on', 'off'].includes(v) ? v : 'auto'; } catch (e) { return 'auto'; } },
+  setMode(v) { try { window.localStorage.setItem(TR_SUPPORT_KEY, v); } catch (e) { /* yok say */ } },
+  level(catId) {
+    const id = String(catId || '');
+    if (id.endsWith('_a2') || id.endsWith('_b1')) return 'a2';
+    const sec = (typeof JOURNEY_SECTORS !== 'undefined') ? JOURNEY_SECTORS.find((x) => x.planets.includes(id)) : null;
+    return sec && sec.id === 'moon' ? 'moon' : 'a1';
+  },
+  flags(catId) {
+    const m = this.mode();
+    if (m === 'off') return { meaning: false, translate: false, why: false };
+    if (m === 'on') return { meaning: true, translate: true, why: true };
+    const lv = this.level(catId);
+    if (lv === 'moon') return { meaning: true, translate: false, why: false };
+    if (lv === 'a1') return { meaning: true, translate: true, why: true };
+    return { meaning: false, translate: false, why: false };
+  },
+};
+// Neden? metni: kacis + *italik* / **kalin** / ***ikisi***
+function whyHTML(txt) {
+  return escapeProfileText(String(txt || ''))
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<b><i>$1</i></b>')
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/\*(.+?)\*/g, '<i>$1</i>');
+}
+function showWhyCard(container, title, txt) {
+  const ov = document.createElement('div');
+  ov.className = 'ke-river-overlay-msg ke-jr-sheet ke-why';
+  ov.style.position = 'fixed'; ov.style.zIndex = '96';
+  ov.innerHTML = `<div class="ke-river-msg-card ke-why-card"><h2>💡 ${escapeProfileText(title || L('Neden?', 'Why?'))}</h2>
+    <p class="ke-why-p">${whyHTML(txt)}</p>
+    <button type="button" class="ke-btn-primary" data-x>${L('Anladım 👍', 'Got it 👍')}</button></div>`;
+  (container.querySelector('.ke-shell') || document.body).appendChild(ov);
+  ov.addEventListener('click', (e) => { if (e.target === ov || e.target.closest('[data-x]')) ov.remove(); });
+}
+function mountWhyButton(host, container, episode) {
+  if (!episode || !episode.why_tr || !TrSupport.flags(episode.category_id).why) return;
+  const bar = host.querySelector('#kePhaseBar');
+  if (!bar || host.querySelector('.ke-why-btn')) return;
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'ke-why-btn';
+  b.textContent = L('💡 Neden?', '💡 Why?');
+  b.addEventListener('click', () => showWhyCard(container, L('Neden böyle?', 'Why is it like this?'), episode.why_tr));
+  bar.after(b);
+}
+
 // Ogretmen girisi (2026-09-28, kullanici: "ogretmen portalina girisi ayir,
 // parent altindan girme"). Sinif modu + basili materyal ogretmen panelinden
 // index.html#sinif-modu ile acilir. Kosul: bu cihazda ogretmen paneline giris
@@ -3004,6 +3058,21 @@ ${FONT_FACES}
   /* Anlami ne? - metin secenekleri (resimli kartlarin yerine) */
   .ke-shell .ke-scene .ke-quiz.ke-meaning .ke-quiz-cards{ display:flex !important; flex-direction:column !important; gap:10px !important; height:auto !important; flex:0 0 auto !important; width:100% !important; max-width:460px !important; margin:0 auto !important; }
   .ke-shell .ke-scene .ke-quiz.ke-meaning .ke-quiz-card.ke-mean-opt{ aspect-ratio:auto !important; height:auto !important; min-height:60px !important; width:100% !important; flex:0 0 auto !important; display:flex !important; align-items:center; justify-content:center; font:700 21px 'Fredoka','Baloo 2',sans-serif !important; color:#1A2233 !important; padding:10px 14px !important; text-align:center; white-space:normal; }
+  .ke-story-card.ke-tr-card{ background:linear-gradient(135deg,#D84343,#9E2A2A); }
+  .ke-why-btn{ display:block; margin:6px auto 0; font:700 14px 'Fredoka','Baloo 2',sans-serif; color:#1A2233; background:#FFD75A; border:0; border-radius:99px; padding:6px 14px; cursor:pointer; }
+  .ke-why-card{ max-width:480px; text-align:left; }
+  .ke-why-card h2{ margin:0 0 8px; font-size:20px; }
+  .ke-why-p{ font-size:15.5px; line-height:1.55; margin:0 0 12px; }
+  .ke-why-block{ text-align:left; background:rgba(255,255,255,.07); border-radius:14px; padding:10px 14px; margin-bottom:10px; color:var(--kb-chalk); }
+  .ke-why-block .ke-why-p{ margin:4px 0 0; }
+  .ke-tr-stage{ gap:12px; }
+  .ke-tr-prompt{ font:700 22px 'Fredoka','Baloo 2',sans-serif; color:#FFD75A; }
+  .ke-tr-opts{ display:flex; flex-direction:column; gap:10px; width:100%; max-width:420px; }
+  .ke-tr-opt{ font:700 19px 'Fredoka','Baloo 2',sans-serif; color:#1A2233; background:#FFFDF4; border:0; border-radius:14px; padding:12px 14px; min-height:52px; cursor:pointer; }
+  .ke-tr-opt.ok{ background:#66BB6A; color:#fff; } .ke-tr-opt.no{ background:#E5484D; color:#fff; text-decoration:line-through; opacity:.8; }
+  .ke-tr-note{ min-height:44px; font-size:15px; font-weight:600; color:var(--kb-chalk); line-height:1.4; }
+  .ke-tr-line{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; min-height:54px; padding:8px; border:2px dashed rgba(245,240,223,.35); border-radius:14px; width:100%; }
+  .ke-tr-bank{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
   .ke-story-list{ display:flex; flex-direction:column; gap:14px; max-width:560px; margin:0 auto; position:relative; z-index:1; }
   .ke-story-card{
     display:flex; align-items:center; gap:14px; text-align:left; cursor:pointer;
@@ -3927,6 +3996,10 @@ const SECTIONS = [
   // Ogretmen degerlendirmesi 5a (2026-09-28): Maarif 2-4. sinif ritim/muzik/
   // hareket. Jetonla acilan oyun degil, ucretsiz ogrenme etkinligi; veri
   // ui/chants/chants.json (ozgun tekerlemeler, telifli sarki yok).
+  { id: 'trsupport', title: 'Turkish Help', sub: 'Why? notes, common mistakes, translation', subTr: 'Neden? notları, sık hatalar, çeviri', titleTr: 'Türkçe Destek', motif: '🇹🇷',
+    theme: { c: '#D84343', dark: '#B22E2E', tint: '#F5B5B5' },
+    special: 'trsupport',
+    pick: () => false },
   { id: 'singmove', title: 'Sing & Move', sub: 'Chants and Aktapokus Says', subTr: 'Tekerlemeler ve Aktapokus Says', titleTr: 'Şarkı ve Hareket', motif: '🎵',
     theme: { c: '#E07A2F', dark: '#B35E1F', tint: '#F4C08F' },
     special: 'singmove',
@@ -3969,6 +4042,7 @@ function resumeLastScreen(container, api, toolId, categories) {
   }
   if (s && s.screen === 'stories') { showStoryList(container, api, toolId, categories); return; }
   if (s && s.screen === 'singmove') { showSingMove(container, api, toolId, categories); return; }
+  if (s && s.screen === 'trsupport') { showTrSupport(container, api, toolId, categories); return; }
   if (s && s.screen === 'story' && s.storyId) { showStoryReader(container, api, toolId, categories, s.storyId, s.page); return; }
   showSectionMenu(container, api, toolId, categories);
 }
@@ -4488,6 +4562,8 @@ function showSectionMenu(container, api, toolId, categories) {
         ? L('Sesli okuma hikayesi', 'A read-along story')
         : sec.special === 'singmove'
           ? L('Söyle, tekrarla, hareket et', 'Chant, echo, move')
+          : sec.special === 'trsupport'
+            ? L('Her düzeyde açık', 'Open at every level')
         : L(`${cats.length} kategori · ${words} kelime`, `${cats.length} ${cats.length === 1 ? "category" : "categories"} · ${words} words`);
     if (sec.locked) { card.disabled = true; card.style.opacity = '.6'; card.style.cursor = 'not-allowed'; }
     card.innerHTML = `
@@ -4502,6 +4578,7 @@ function showSectionMenu(container, api, toolId, categories) {
       card.addEventListener('click', () => {
         if (sec.special === 'stories') showStoryList(container, api, toolId, categories);
         else if (sec.special === 'singmove') showSingMove(container, api, toolId, categories);
+        else if (sec.special === 'trsupport') showTrSupport(container, api, toolId, categories);
         else showCategoryGrid(container, api, toolId, categories, sec.id);
       });
     }
@@ -5657,6 +5734,15 @@ async function showParentArea(container, api, toolId, categories) {
       <div class="ke-pick-row" style="justify-content:flex-start;"><button type="button" class="ke-pick" id="keWeekly">📅 ${L('Özeti aç', 'Open summary')}</button></div>
     </div>
     <div class="ke-week-card ke-parent-card">
+      <div class="ke-kpi-lbl">🇹🇷 ${L('Türkçe destek', 'Turkish support')}</div>
+      <p class="ke-parent-p">${L('Otomatik: A1\'de Türkçe anlam kontrolü, Türkçeden Kur ve 💡 Neden? açıklamaları açık; çocuk A2\'ye geçince bölümlerden kalkar. Kütüphane\'deki "Türkçe Destek" bölümü her zaman açıktır.', 'Auto: Turkish meaning checks, build-from-Turkish and 💡 Why? notes at A1; they leave the episodes at A2. The Library "Turkish Help" section is always open.')}</p>
+      <div class="ke-pick-row" style="justify-content:flex-start;" id="keTrMode">
+        <button type="button" class="ke-pick" data-m="auto">${L('Otomatik', 'Auto')}</button>
+        <button type="button" class="ke-pick" data-m="on">${L('Hep açık', 'Always on')}</button>
+        <button type="button" class="ke-pick" data-m="off">${L('Kapalı', 'Off')}</button>
+      </div>
+    </div>
+    <div class="ke-week-card ke-parent-card">
       <div class="ke-kpi-lbl">⏱️ ${L('Oturum uzunluğu', 'Session length')}</div>
       <p class="ke-parent-p">${L('Bu kadar bölüm bitince Aktapokus "Devam mı, yarın mı?" diye sorar. Kısa ve sık çalışmak, uzun tek oturumdan daha kalıcıdır.', 'After this many episodes Aktapokus asks "Keep going or tomorrow?". Short, frequent sessions stick better than one long one.')}</p>
       <div class="ke-pick-row" style="justify-content:flex-start;" id="keSessLen">
@@ -5677,6 +5763,10 @@ async function showParentArea(container, api, toolId, categories) {
   void today;
   host.querySelector('#keParentExport').addEventListener('click', exportBackup);
   host.querySelector('#keWeekly').addEventListener('click', () => showWeeklySummary(api, toolId, categories));
+  const trRow = host.querySelector('#keTrMode');
+  const paintTr = () => trRow.querySelectorAll('[data-m]').forEach((b) => { const on = b.dataset.m === TrSupport.mode(); b.classList.toggle('ke-sel', on); b.setAttribute('aria-pressed', String(on)); });
+  trRow.querySelectorAll('[data-m]').forEach((b) => b.addEventListener('click', () => { TrSupport.setMode(b.dataset.m); paintTr(); }));
+  paintTr();
   const sessRow = host.querySelector('#keSessLen');
   const paintSess = () => {
     const v = SessionLen.get();
@@ -6537,6 +6627,191 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
 // yok, sadece sayfa sayfa resim + metin + sesli okuma, sonda küçük bir
 // sözlük. Tamamlanınca Progress'e 'story_<id>' sahte-kategorisi olarak
 // tek bir yıldız işleniyor (rozet/seri sistemiyle tutarlı kalsın diye).
+// ---- Turkce Destek bolumu (2026-09-28) ----
+// Onayli 10 not (turkce_destek_onizleme). Oyun: Turkce anlam + iki Ingilizce
+// secenek (yanlis/dogru); secince kisa not.
+const TR_MISTAKES = [
+  { tr: 'Katılıyorum.', wrong: 'I am agree.', right: 'I agree.', note: 'agree zaten "katılmak" demek; önüne am gelmez.' },
+  { tr: '10 yaşındayım.', wrong: 'I have 10 years.', right: 'I am 10 years old.', note: 'Yaş söylerken am/is/are kullanılır: I am 10.' },
+  { tr: 'O (kız) bir öğretmen.', wrong: 'He is a teacher.', right: 'She is a teacher.', note: 'Türkçede tek "o" var; İngilizcede kız için she, erkek için he, eşya ve hayvan için it.' },
+  { tr: 'Evdeyim.', wrong: 'I am in home.', right: 'I am at home.', note: 'Ev için at home denir.' },
+  { tr: 'Saat üçte geliyorum.', wrong: 'I come in three o\u2019clock.', right: 'I come at three o\u2019clock.', note: 'Saatlerle at kullanılır: at three o\u2019clock.' },
+  { tr: 'Fotoğraf çekiyorum.', wrong: 'I make a photo.', right: 'I take a photo.', note: 'Fotoğraf "çekilir": take a photo.' },
+  { tr: 'Ödevimi yapıyorum.', wrong: 'I make my homework.', right: 'I do my homework.', note: 'Ödev için do kullanılır: do homework.' },
+  { tr: 'O uzun boylu.', wrong: 'He is long.', right: 'He is tall.', note: 'İnsan boyu için tall; long eşyalar için: a long river.' },
+  { tr: 'Türkiye\u2019denim.', wrong: 'I am coming from Türkiye.', right: 'I am from Türkiye.', note: 'Nereli olduğunu söylerken: I am from …' },
+  { tr: 'Işığı aç.', wrong: 'Open the light.', right: 'Turn on the light.', note: 'Işık "açılmaz", yakılır: turn on the light.' },
+];
+const WHY_CATEGORY_IDS = ['irregular_verbs', 'irregular_verbs_a2', 'time_machine', 'have_to_a2', 'made_of_a2', 'telling_time', 'get'];
+const TR_PILOT_CATEGORY_IDS = ['daily_life', 'jobs_professions', 'daily_life_a2', 'home_a2'];
+
+function showTrSupport(container, api, toolId, categories) {
+  stopSinging();
+  _journeyMode = false;
+  Resume.save({ screen: 'trsupport' });
+  const host = container.querySelector('#keScreenHost');
+  const back = () => showSectionMenu(container, api, toolId, categories);
+  host.innerHTML = `
+    <button class="ke-back-btn" id="keSectionsBack">${ICON_BACK} ${L('Bölümler', 'Sections')}</button>
+    <div class="ke-landing-header">
+      <h1 class="ke-title">${bubbleTitleHTML(L('Türkçe Destek', 'Turkish Help'))}</h1>
+      <p class="ke-subtitle">${L('Anlamını bil, nedenini öğren, hatadan kaçın!', 'Know the meaning, learn why, avoid mistakes!')}</p>
+    </div>
+    <div class="ke-story-list" id="keTrList"></div>`;
+  host.querySelector('#keSectionsBack').addEventListener('click', back);
+  const list = host.querySelector('#keTrList');
+  const add = (icon, eyebrow, title, meta, fn) => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'ke-story-card ke-sm-card ke-tr-card';
+    card.innerHTML = `<span class="ke-sm-icon">${icon}</span><div class="ke-story-info"><div class="ke-story-eyebrow">${eyebrow}</div><div class="ke-story-title">${title}</div><div class="ke-story-meta">${meta}</div></div>`;
+    card.addEventListener('click', fn);
+    list.appendChild(card);
+  };
+  add('🚫', L('Oyun', 'Game'), L('Türkler burada karıştırır', 'Common mistakes'), L('Hangisi doğru? 10 soru', 'Which is right? 10 questions'), () => runTrMistakes(container, api, toolId, categories));
+  add('💡', L('Kitapçık', 'Booklet'), L('Neden? notları', 'Why? notes'), L('Yapılar ve Get açıklamaları', 'Structures and Get explained'), () => showWhyBooklet(container, api, toolId, categories));
+  add('🔁', L('Alıştırma', 'Practice'), L('Türkçeden Kur', 'Build from Turkish'), L('Türkçe cümleyi İngilizce kur', 'Build the English sentence'), () => runTrPractice(container, api, toolId, categories));
+  pushBackState(back);
+}
+
+function trScreen(container, api, toolId, categories, title) {
+  const host = container.querySelector('#keScreenHost');
+  const back = () => showTrSupport(container, api, toolId, categories);
+  host.innerHTML = `<button class="ke-back-btn" id="keTrBack">${ICON_BACK} ${L('Türkçe Destek', 'Turkish Help')}</button>
+    <div class="ke-sm-stage ke-tr-stage"><h2 class="ke-story-card-title">${title}</h2><div id="keTrBody"></div></div>`;
+  host.querySelector('#keTrBack').addEventListener('click', back);
+  pushBackState(back);
+  return host.querySelector('#keTrBody');
+}
+
+function runTrMistakes(container, api, toolId, categories) {
+  const body = trScreen(container, api, toolId, categories, `🚫 ${L('Türkler burada karıştırır', 'Common mistakes')}`);
+  const items = shuffle(TR_MISTAKES.slice());
+  let i = 0, stars = 0;
+  const m = document.createElement('div');
+  const next = () => {
+    if (i >= items.length) {
+      body.innerHTML = `<div class="ke-sm-move">${stars >= 8 ? '🏆' : '🌟'}</div><div class="ke-sm-cmd">⭐ ${stars} / ${items.length}</div>
+        <div class="ke-sm-btns"><button type="button" class="ke-btn-primary" id="keTrAgain">🔁 ${L('Yeniden oyna', 'Play again')}</button></div>`;
+      body.querySelector('#keTrAgain').onclick = () => runTrMistakes(container, api, toolId, categories);
+      return;
+    }
+    const it = items[i];
+    let answered = false, first = true;
+    const opts = shuffle([it.wrong, it.right]);
+    body.innerHTML = `<div class="ke-sm-score">${i + 1} / ${items.length} · ⭐ ${stars}</div>
+      <div class="ke-tr-prompt">🇹🇷 ${escapeProfileText(it.tr)}</div>
+      <div class="ke-sm-cue">${L('Hangisi doğru İngilizce?', 'Which is correct English?')}</div>
+      <div class="ke-tr-opts">${opts.map((o) => `<button type="button" class="ke-tr-opt">${escapeProfileText(o)}</button>`).join('')}</div>
+      <div class="ke-tr-note" id="keTrNote"></div>`;
+    body.querySelectorAll('.ke-tr-opt').forEach((b) => b.addEventListener('click', () => {
+      if (answered) return;
+      if (b.textContent === it.right) {
+        answered = true;
+        if (first) stars++;
+        b.classList.add('ok');
+        body.querySelector('#keTrNote').innerHTML = `✅ <b>${escapeProfileText(it.right)}</b><br>${escapeProfileText(it.note)}`;
+        speakWord(it.right, m);
+        setTimeout(() => { i++; next(); }, 2600);
+      } else {
+        first = false;
+        b.classList.add('no'); b.disabled = true;
+        body.querySelector('#keTrNote').textContent = L('Bu Türkçe gibi düşünülmüş! Diğerine bak. 🙂', 'That is thinking in Turkish! Try the other one. 🙂');
+      }
+    }));
+  };
+  next();
+}
+
+async function showWhyBooklet(container, api, toolId, categories) {
+  const body = trScreen(container, api, toolId, categories, `💡 ${L('Neden? notları', 'Why? notes')}`);
+  body.innerHTML = `<p class="ke-sm-tip">${L('Yükleniyor…', 'Loading…')}</p>`;
+  const blocks = [];
+  for (const cid of WHY_CATEGORY_IDS) {
+    const c = categories.find((x) => x.id === cid);
+    if (!c) continue;
+    const seen = new Set();
+    for (let i = 0; i < c.episode_count; i++) {
+      try {
+        const r = await api.apiFetch(`/api/tools/${toolId}/categories/${cid}/episodes/${i}`);
+        if (!r.ok) continue;
+        const e = await r.json();
+        if (e.why_tr && !seen.has(e.why_tr)) { seen.add(e.why_tr); blocks.push({ title: catLabel(c) + (c.episode_count > 1 && cid === 'get' ? ` · ${i + 1}` : ''), txt: e.why_tr }); }
+      } catch (err) { /* cevrimdisi: atla */ }
+    }
+  }
+  body.innerHTML = blocks.length
+    ? blocks.map((b) => `<div class="ke-why-block"><div class="ke-story-eyebrow">${escapeProfileText(b.title)}</div><p class="ke-why-p">${whyHTML(b.txt)}</p></div>`).join('')
+    : `<p class="ke-sm-tip">${L('Not bulunamadı.', 'No notes found.')}</p>`;
+}
+
+async function runTrPractice(container, api, toolId, categories) {
+  const body = trScreen(container, api, toolId, categories, `🔁 ${L('Türkçeden Kur', 'Build from Turkish')}`);
+  body.innerHTML = `<p class="ke-sm-tip">${L('Yükleniyor…', 'Loading…')}</p>`;
+  const pool = [];
+  for (const cid of TR_PILOT_CATEGORY_IDS) {
+    try {
+      const r = await api.apiFetch(`/api/tools/${toolId}/categories/${cid}/episodes/0`);
+      if (r.ok) (await r.json()).objects.forEach((o) => { if (o.sentence_tr) pool.push(o); });
+    } catch (e) { /* atla */ }
+  }
+  const items = shuffle(pool).slice(0, 8);
+  if (!items.length) { body.innerHTML = `<p class="ke-sm-tip">${L('Alıştırma bulunamadı.', 'No practice found.')}</p>`; return; }
+  let i = 0, stars = 0;
+  const m = document.createElement('div');
+  const next = () => {
+    if (i >= items.length) {
+      body.innerHTML = `<div class="ke-sm-move">🌟</div><div class="ke-sm-cmd">⭐ ${stars} / ${items.length}</div>
+        <div class="ke-sm-btns"><button type="button" class="ke-btn-primary" id="keTrAgain">🔁 ${L('Yeniden', 'Again')}</button></div>`;
+      body.querySelector('#keTrAgain').onclick = () => runTrPractice(container, api, toolId, categories);
+      return;
+    }
+    const it = items[i];
+    const words = it.sentence.split(' ');
+    const norm = (w) => w.toLowerCase().replace(/[.,!?]/g, '');
+    const have = new Set(words.map(norm));
+    const cand = shuffle(items.concat(pool).filter((x) => x !== it)).flatMap((x) => x.sentence.split(' ')).filter((w) => !have.has(norm(w)));
+    const extra = cand.length ? cand[0].replace(/[.,!?]$/, '') : null;
+    const tiles = shuffle(words.map((w, k) => ({ w, k })).concat(extra ? [{ w: extra, k: -1 }] : []));
+    const placed = [];
+    let tries = 0;
+    body.innerHTML = `<div class="ke-sm-score">${i + 1} / ${items.length} · ⭐ ${stars}</div>
+      <div class="ke-tr-prompt">🇹🇷 ${escapeProfileText(it.sentence_tr)}</div>
+      <div class="ke-tr-line" id="keTrLine"></div>
+      <div class="ke-tr-bank" id="keTrBank"></div>
+      <div class="ke-sm-btns"><button type="button" class="ke-btn-primary ke-sm-alt" id="keTrReset">↺ ${L('Baştan', 'Reset')}</button>
+      <button type="button" class="ke-btn-primary" id="keTrCheck" disabled>✓ ${L('Kontrol Et', 'Check')}</button></div>
+      <div class="ke-tr-note" id="keTrNote"></div>`;
+    const line = body.querySelector('#keTrLine'), bank = body.querySelector('#keTrBank'), check = body.querySelector('#keTrCheck');
+    const paint = () => {
+      line.innerHTML = placed.length ? placed.map((t, j) => `<button type="button" class="ke-tile ke-tr-placed" data-j="${j}">${escapeProfileText(t.w)}</button>`).join('') : `<span class="ke-sm-tip">${L('Kelimelere dokun…', 'Tap the words…')}</span>`;
+      bank.innerHTML = tiles.map((t, j) => `<button type="button" class="ke-tile" data-t="${j}"${placed.includes(t) ? ' disabled style="opacity:.3"' : ''}>${escapeProfileText(t.w)}</button>`).join('');
+      check.disabled = placed.length !== words.length;
+      line.querySelectorAll('[data-j]').forEach((b) => b.onclick = () => { placed.splice(Number(b.dataset.j), 1); paint(); });
+      bank.querySelectorAll('[data-t]').forEach((b) => b.onclick = () => { const t = tiles[Number(b.dataset.t)]; if (!placed.includes(t)) { placed.push(t); paint(); } });
+    };
+    body.querySelector('#keTrReset').onclick = () => { placed.length = 0; paint(); };
+    check.onclick = () => {
+      const ok = placed.map((t) => t.w).join(' ') === it.sentence;
+      const note = body.querySelector('#keTrNote');
+      if (ok) {
+        if (!tries) stars++;
+        note.innerHTML = `✅ <b>${escapeProfileText(it.sentence)}</b>`;
+        check.disabled = true;
+        speakThen(it.sentence, m, 1200, () => { i++; next(); });
+      } else if (++tries >= 2) {
+        note.innerHTML = `💡 ${L('Doğrusu', 'Correct')}: <b>${escapeProfileText(it.sentence)}</b>`;
+        check.disabled = true;
+        speakThen(it.sentence, m, 2600, () => { i++; next(); });
+      } else {
+        note.textContent = L('Sıra biraz farklı, tekrar dene! 🔄', 'The order is a bit different, try again! 🔄');
+      }
+    };
+    paint();
+  };
+  next();
+}
+
 // ---- Sarki ve Hareket (ogretmen degerlendirmesi 5a) ----
 // Tekerleme: satir satir "dinle - senin siran" (yanki) ya da hep birlikte.
 // Aktapokus Says: "Aktapokus says ..." duyarsan yap, duymazsan kipirdama.
@@ -7268,6 +7543,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
   renderMap(host, episode.episode_index, episode.episode_count, jumpToEpisode, completedSet, journeyEpisodeGate(categories, episode));
   ['#keBubble', '#keQuizBubble', '#keSentenceBubble'].forEach((sel) => addSpeakButton(host.querySelector(sel)));
   wirePhaseBar(host);
+  mountWhyButton(host, container, episode);
 
   const leaveEpisode = () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -7625,6 +7901,7 @@ function renderConversationEpisodeScene(container, api, toolId, categories, epis
   renderMap(host, episode.episode_index, episode.episode_count, jumpToEpisode, completedSet, journeyEpisodeGate(categories, episode));
   ['#keBubble', '#keQuizBubble', '#keSentenceBubble'].forEach((sel) => addSpeakButton(host.querySelector(sel)));
   wirePhaseBar(host);
+  mountWhyButton(host, container, episode);
 
   const leaveEpisode = () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -8403,7 +8680,7 @@ function meaningItems(wordList) {
   }).filter(Boolean);
 }
 function startMeaningRound(host, container, episode, wordList, mascotEl, onDone) {
-  const items = shuffle(meaningItems(wordList));
+  const items = TrSupport.flags(episode.category_id).meaning ? shuffle(meaningItems(wordList)) : [];
   if (!items.length) { onDone(); return; }
   setEpisodePhase(host, 'speak');
   const quizEl = host.querySelector('#keQuiz');
@@ -8468,6 +8745,47 @@ function startMeaningRound(host, container, episode, wordList, mascotEl, onDone)
   }
   replayBtn.onclick = () => { if (items[i]) speakWord(items[i].obj.word, mascotEl); };
   render();
+}
+
+// Telaffuz eslestirme (2026-09-28, kullanici: "saatler aktivitesinde dogru
+// soyledigim halde tekrar dene diyor"). Tarayici tanimasi sayilari rakamla
+// yaziyor ("seven o'clock" -> "7:00" / "7 o'clock"), noktalama koymuyor
+// ("What time is it?" asla eslesmiyordu) ve yalniz ilk tahmin kontrol
+// ediliyordu. Simdi: her iki taraf normalize edilir (kucuk harf, noktalama ve
+// kesme isareti atilir, rakam -> kelime, saat bicimi -> o'clock/half past/
+// quarter) ve tanimanin tum alternatifleri denenir.
+const SP_NUM_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
+const SP_TENS = { 2: 'twenty', 3: 'thirty', 4: 'forty', 5: 'fifty', 6: 'sixty', 7: 'seventy', 8: 'eighty', 9: 'ninety' };
+function spNumToWords(n) {
+  n = Number(n);
+  if (n <= 20) return SP_NUM_WORDS[n];
+  if (n < 100) return SP_TENS[Math.floor(n / 10)] + (n % 10 ? ' ' + SP_NUM_WORDS[n % 10] : '');
+  if (n === 100) return 'one hundred';
+  return String(n);
+}
+function normSpeech(t) {
+  let x = String(t || '').toLowerCase();
+  // 7:00 / 7.30 / 10:15 -> saat ifadesi
+  x = x.replace(/\b(\d{1,2})[:.](\d{2})\b/g, (_, h, m) => {
+    const hh = Number(h) % 12 || 12, mm = Number(m);
+    if (mm === 0) return `${spNumToWords(hh)} oclock`;
+    if (mm === 30) return `half past ${spNumToWords(hh)}`;
+    if (mm === 15) return `quarter past ${spNumToWords(hh)}`;
+    if (mm === 45) return `quarter to ${spNumToWords(hh % 12 + 1)}`;
+    return `${spNumToWords(hh)} ${spNumToWords(mm)}`;
+  });
+  x = x.replace(/\b(\d{1,3})\b/g, (d) => spNumToWords(d));
+  x = x.replace(/o['\u2019]?\s?clock/g, 'oclock');
+  x = x.replace(/[\u2019']/g, '').replace(/-/g, ' ').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return x;
+}
+function speechMatches(heardList, target) {
+  // "Afraid / Scared" gibi iki bicimli kartlarda ikisi de kabul
+  const targets = String(target || '').split(' / ').map(normSpeech).filter(Boolean);
+  return heardList.some((h) => {
+    const n = ` ${normSpeech(h)} `;
+    return targets.some((t) => n.includes(` ${t} `));
+  });
 }
 
 function startSpeakRound(host, container, episode, wordList, mascotEl, score, onDone) {
@@ -8683,8 +9001,10 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
 
     recognition.onresult = (e) => {
       const last = e.results[e.results.length - 1];
-      const heard = (last[0].transcript || '').toLowerCase().trim();
-      finishAttempt(heard.includes(target), heard);
+      const alts = [];
+      for (let k = 0; k < last.length; k++) if (last[k] && last[k].transcript) alts.push(last[k].transcript);
+      const heard = (alts[0] || '').toLowerCase().trim();
+      finishAttempt(speechMatches(alts, target), heard);
     };
     recognition.onerror = (e) => {
       if (e.error === 'no-speech' && tryRestart()) return;
@@ -8979,8 +9299,12 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
   mascotEl.classList.add('ke-mascot-compact');
   setMascotPose(host, 'write');
 
-  const order = wordList.map((_, i) => i);
+  let order = wordList.map((_, i) => i);
   let idx = 0;
+  // Turkceden Kur (ceviri): kart cumlesinin Turkcesi gosterilir, cocuk
+  // Ingilizce taslari dizer (tum kelimeler bos). Veri: kart.sentence_tr.
+  let trMode = false;
+  const trList = TrSupport.flags(episode.category_id).translate ? wordList.filter((o) => o.sentence_tr).slice(0, 4) : [];
 
   function endSentenceRound() {
     sEl.classList.remove('ke-show');
@@ -8998,13 +9322,21 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
   // Bosluk doldur -> Hatirla -> harf turu. Yapilar bolumu (2026-09-27).
   let extraAt = 0;
   function toLetters() {
-    const steps = [['pairs', startPairsRound], ['cloze', startClozeRound], ['review', startReviewRound]];
+    const steps = [['pairs', startPairsRound], ['cloze', startClozeRound], ['review', startReviewRound], ['__tr', startTranslateRound]];
     while (extraAt < steps.length) {
       const [key, run] = steps[extraAt++];
-      if (episode[key] && episode[key].length) { run(); return; }
+      const has = key === '__tr' ? trList.length : (episode[key] && episode[key].length);
+      if (has) { run(); return; }
     }
     endSentenceRound();
     startLetterRound(host, container, episode, wordList, mascotEl, score, onDone);
+  }
+
+  function startTranslateRound() {
+    trMode = true;
+    order = trList.map((_, i) => i);
+    idx = 0;
+    renderItem();
   }
 
   // "Ikizler" (Fiil Ikizleri): sol sutun yalin fiil, sag sutun gecmis hali;
@@ -9298,19 +9630,22 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
 
   function renderItem() {
     if (idx >= order.length) {
+      if (trMode) { toLetters(); return; }
       if (episode.dialogues && episode.dialogues.length) { startDialogueRound(); return; }
       if (episode.reverse && episode.reverse.length) { startReverseRound(); return; }
       toLetters();
       return;
     }
-    const obj = wordList[order[idx]];
+    const obj = trMode ? trList[order[idx]] : wordList[order[idx]];
     const tokens = (obj.sentence || `${obj.word}.`).split(' ');
-    const blanks = sentenceBlanks(tokens, obj.word, sentenceStage(episode.category_id));
+    const blanks = trMode ? new Set(tokens.map((_, i) => i)) : sentenceBlanks(tokens, obj.word, sentenceStage(episode.category_id));
     const scaffold = blanks.size < tokens.length;
-    const ask = scaffold
-      ? L('Eksik kelimeyi bul, boş kutuya koy, sonra Kontrol Et! 🧩', 'Find the missing word, put it in the empty box, then press Check! 🧩')
-      : askText;
-    progressEl.textContent = `${L('Cümle', 'Sentence')} ${idx + 1} / ${order.length}`;
+    const ask = trMode
+      ? L(`🇹🇷 „${obj.sentence_tr}“ — bunu İngilizce kur! 🧩`, `🇹🇷 "${obj.sentence_tr}" — build it in English! 🧩`)
+      : scaffold
+        ? L('Eksik kelimeyi bul, boş kutuya koy, sonra Kontrol Et! 🧩', 'Find the missing word, put it in the empty box, then press Check! 🧩')
+        : askText;
+    progressEl.textContent = trMode ? `🇹🇷 ${L('Türkçeden Kur', 'From Turkish')} ${idx + 1} / ${order.length}` : `${L('Cümle', 'Sentence')} ${idx + 1} / ${order.length}`;
     bubbleEl.textContent = ask;
     const iconEl = host.querySelector('#keSentenceIcon');
     if (iconEl) iconEl.innerHTML = renderObjectIcon(obj);
