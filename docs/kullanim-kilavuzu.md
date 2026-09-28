@@ -156,8 +156,8 @@ Aktapokus'a dokunun ve **👪 Ebeveyn**'i seçin. Ekrana basit bir çarpma sorus
 | **🏫 Öğretmen sınıfı** | Hangi sınıfa bağlı olduğu ve son eşitleme durumu | — |
 | **📅 Haftalık özet** | Son 7 günde öğrenilen kelimeler (resimli) ve **evde birlikte söyleyebileceğiniz 3 kısa cümle** (🔊 ile dinlenir) | Ekran görüntüsü alın ya da yazdırın, buzdolabına asın. Cümleyi siz söyleyin, çocuk tekrar etsin, sonra rol değiştirin. |
 | **⏱️ Oturum uzunluğu** | Kaç bölümden sonra "Devam mı, yarın mı?" sorulacağı: 1, 2, 3 bölüm ya da "Sorma" | 2.–3. sınıf için 1–2 bölüm önerilir. Sizin seçiminiz, öğretmenin seçiminin önüne geçer. |
-| **🧑‍🏫 Sınıf modu** | Akıllı tahta ve basılı materyal (öğretmenler için, bkz. 5.6) | Evde büyük ekranda da kullanılabilir. |
-| **🧑‍🏫 İçerik denetimi** | Açıkken kelime kartlarında "⚑ Sorun bildir" düğmesi çıkar | Hatalı resim, cümle ya da anlam görürseniz bildirin (bkz. 5.8). |
+| **🧑‍🏫 Sınıf modu** | Akıllı tahta ve basılı materyal (bkz. 5.6). **Yalnızca sınıfa bağlı olmayan cihazlarda** görünür. | Evde büyük ekranda da kullanılabilir. |
+| **🧑‍🏫 İçerik denetimi** | Açıkken kelime kartlarında "⚑ Sorun bildir" düğmesi çıkar. **Yalnızca sınıfa bağlı olmayan cihazlarda** görünür. | Hatalı resim, cümle ya da anlam görürseniz bildirin (bkz. 5.8). |
 | **💾 Yedekleme** | İlerlemeyi dosya olarak indirme ya da geri yükleme | Telefon değiştirmeden ya da uygulamayı silmeden önce mutlaka yedek alın. |
 
 ### 4.3 "Devam mı, yarın mı?"
@@ -240,12 +240,19 @@ Sınıfın adına tıklayınca liste açılır.
 
 ### 5.6 Sınıf modu (akıllı tahta)
 
-Öğretmen cihazında uygulamayı açın, **Ebeveyn Alanı**'na girin ve **Sınıf modunu aç**'a basın.
+Sınıf modu öğretmen panelinden açılır:
+
+1. Öğretmen paneline giriş yapın.
+2. En üstteki **🧑‍🏫 Sınıf modu ve basılı materyal** kutusunda **▶ Sınıf modunu aç**'a basın. Uygulama yeni sekmede doğrudan sınıf modunda açılır.
+
+> Sınıf modu yalnızca o cihazda öğretmen paneline giriş yapılmışsa açılır; giriş Supabase'e sorularak doğrulanır. Öğrenciler bağlantıyı bilse bile açamaz. Sınıfa katılmış öğrenci cihazlarının Ebeveyn Alanı'nda sınıf modu ve içerik denetimi hiç görünmez. Sınıfa bağlı olmayan (bireysel, ev) kullanımda veli, sınıf modunu Ebeveyn Alanı'ndan açmaya devam edebilir.
+
+Kurulum ekranında:
 
 1. **Konu** ve **bölüm** seçin.
 2. **Etkinlik** seçin:
    - **Kelimeler:** Büyük resim, kelime ve cümle. Geçişi siz yönetirsiniz.
-   - **Sorular (takım):** Sınıf iki takım olarak oynar; takımlar sırayla cevaplar.
+   - **Sorular (takım):** Sınıf iki takım olarak oynar; takımlar sırayla cevaplar. Seçeneğe fareyle, tahtaya dokunarak ya da 1–4 tuşlarıyla basılır. Yanlış seçenek kırmızı olur, diğer takım deneyebilir. Doğru seçenekte cevap açılır; resim sorularında örnek cümle ve Türkçe anlamı da gösterilip okunur. Puanı takım kutularındaki + / − ile siz verirsiniz.
 3. **Başlat**'a basın. Klavye kısayolları: ← → geçiş, boşluk göster, **S** sesli oku, **Esc** çık. Tam ekran için tarayıcının tam ekran düğmesini kullanın.
 
 **Kullanım fikirleri**
@@ -268,7 +275,7 @@ Sınıf modu ekranında konu ve bölüm seçtikten sonra **🖨️ Basılı mate
 
 ### 5.8 İçerik denetimi (sorun bildir)
 
-Ebeveyn Alanı'nda **İçerik denetimi**ni açın. Kelime keşfinde bir karta dokunduğunuzda **⚑ Sorun bildir** düğmesi çıkar.
+Kendi cihazınızda (sınıfa katılmamış bir cihaz) Ebeveyn Alanı'nda **İçerik denetimi**ni açın. Öğrenci cihazlarında bu seçenek bilerek gösterilmez. Kelime keşfinde bir karta dokunduğunuzda **⚑ Sorun bildir** düğmesi çıkar.
 
 - Nedeni seçin: görsel kelimeye uymuyor, cümle hatalı ya da doğal değil, Türkçe anlam hatalı, telaffuz/ses sorunu, seviyeye uygun değil ya da diğer. İsterseniz kısa bir not ekleyin (ör. "doğrusu: …").
 - Bildirimlerde ad ya da kişisel bilgi gönderilmez.

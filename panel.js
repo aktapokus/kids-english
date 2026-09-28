@@ -511,6 +511,57 @@ const SessionLen = {
   get() { const l = this.local(); if (l !== null && [0, 1, 2, 3].includes(l)) return l; const t = this.teacher(); return t !== null ? t : 2; },
 };
 let _goHomeFn = null;
+
+// Ogretmen girisi (2026-09-28, kullanici: "ogretmen portalina girisi ayir,
+// parent altindan girme"). Sinif modu + basili materyal ogretmen panelinden
+// index.html#sinif-modu ile acilir. Kosul: bu cihazda ogretmen paneline giris
+// yapilmis olmali; oturum Supabase'e sorularak dogrulanir (yalniz tarayici
+// kaydina guvenilmez). Sinifa katilmis ogrenci cihazinda Ebeveyn Alani'nda bu
+// araclar hic gorunmez; sinifa bagli olmayan (bireysel) cihazda veli acabilir.
+const TEACHER_SESSION_KEY = 'ke_teacher_session_v1';
+const TeacherGate = {
+  _load() { try { return JSON.parse(window.localStorage.getItem(TEACHER_SESSION_KEY)); } catch (e) { return null; } },
+  // -> { email } | { error: 'none'|'offline'|'expired' }
+  async check() {
+    const s = this._load();
+    if (!s || !s.access_token) return { error: 'none' };
+    const user = (tok) => fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${tok}` } });
+    try {
+      let r = await user(s.access_token);
+      if (r.status === 401 && s.refresh_token) {
+        const rr = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY }, body: JSON.stringify({ refresh_token: s.refresh_token }),
+        });
+        if (!rr.ok) return { error: 'expired' };
+        const ns = await rr.json();
+        try { window.localStorage.setItem(TEACHER_SESSION_KEY, JSON.stringify(ns)); } catch (e) { /* yok say */ }
+        r = await user(ns.access_token);
+      }
+      if (!r.ok) return { error: 'expired' };
+      const u = await r.json();
+      return { email: u.email || '' };
+    } catch (e) { return { error: 'offline' }; }
+  },
+};
+async function openTeacherMode(container, api, toolId, categories) {
+  const host = container.querySelector('#keScreenHost');
+  host.innerHTML = `<div style="padding:60px;text-align:center;color:rgba(245,247,250,.7);">🧑‍🏫 ${L('Öğretmen girişi kontrol ediliyor…', 'Checking teacher sign-in…')}</div>`;
+  const g = await TeacherGate.check();
+  if (g.email) { showClassModeSetup(container, api, toolId, categories, { teacher: g.email }); return; }
+  const why = g.error === 'offline'
+    ? L('İnternet bağlantısı yok. Öğretmen girişi doğrulanamadı.', 'No internet connection; the teacher sign-in could not be checked.')
+    : L('Sınıf modu yalnızca öğretmen paneline giriş yapmış öğretmenler içindir.', 'Classroom mode is only for teachers signed in to the teacher panel.');
+  host.innerHTML = `<div class="ke-profile-screen ke-parent" style="max-width:520px;text-align:center;">
+      <h1 class="ke-title">${bubbleTitleHTML(L('Öğretmen girişi', 'Teacher sign-in'))}</h1>
+      <div class="ke-week-card ke-parent-card"><p class="ke-parent-p">🔒 ${why}</p>
+        <div class="ke-pick-row"><a class="ke-pick" href="teacher.html">🏫 ${L('Öğretmen paneline git', 'Go to the teacher panel')}</a>
+        <button type="button" class="ke-pick" id="keTmHome">🏠 ${L('Uygulamaya dön', 'Back to the app')}</button></div></div>
+    </div>`;
+  host.querySelector('#keTmHome').addEventListener('click', () => {
+    try { history.replaceState(null, '', location.pathname); } catch (e) { /* yok say */ }
+    location.reload();
+  });
+}
 const REPORT_QUEUE_KEY = 'ke_report_queue_v1';
 const REPORT_REASONS = () => [
   ['image', L('Görsel kelimeye uymuyor', "The picture doesn't match")],
@@ -521,7 +572,8 @@ const REPORT_REASONS = () => [
   ['other', L('Diğer', 'Other')],
 ];
 const ContentReport = {
-  enabled() { try { return window.localStorage.getItem(REPORT_MODE_KEY) === '1'; } catch (e) { return false; } },
+  // Sinifa katilmis ogrenci cihazinda hic acilmaz (ogretmen araci).
+  enabled() { try { if (Classroom.get().code) return false; return window.localStorage.getItem(REPORT_MODE_KEY) === '1'; } catch (e) { return false; } },
   setEnabled(on) { try { window.localStorage.setItem(REPORT_MODE_KEY, on ? '1' : '0'); } catch (e) { /* yok say */ } },
   _queue() { try { return JSON.parse(window.localStorage.getItem(REPORT_QUEUE_KEY)) || []; } catch (e) { return []; } },
   _saveQueue(q) { try { window.localStorage.setItem(REPORT_QUEUE_KEY, JSON.stringify(q.slice(-50))); } catch (e) { /* yok say */ } },
@@ -3764,7 +3816,8 @@ export async function mount(container, api, toolId) {
     return;
   }
 
-  if (Profiles.all().length > 1) showWhoIsPlaying(container, api, toolId, categories);
+  if (location.hash === '#sinif-modu') openTeacherMode(container, api, toolId, categories);
+  else if (Profiles.all().length > 1) showWhoIsPlaying(container, api, toolId, categories);
   else if (Profiles.exists()) resumeLastScreen(container, api, toolId, categories);
   else showWelcome(container, api, toolId, categories);
   // Guard, ILK render'DAN SONRA kuruluyor - once .ke-carnival-hero/
@@ -5133,11 +5186,13 @@ function classModeOptions(categories) {
   const rest = categories.filter((c) => !used.has(c.id)).map((c) => `<option value="${c.id}">${escapeProfileText(catLabel(c))}</option>`).join('');
   return groups + (rest ? `<optgroup label="${L('Diğer', 'Other')}">${rest}</optgroup>` : '');
 }
-function showClassModeSetup(container, api, toolId, categories) {
+function showClassModeSetup(container, api, toolId, categories, opts) {
   const host = container.querySelector('#keScreenHost');
-  const back = () => showParentArea(container, api, toolId, categories);
+  const teacher = opts && opts.teacher;
+  const back = teacher ? () => { location.href = 'teacher.html'; } : () => showParentArea(container, api, toolId, categories);
   host.innerHTML = `
-    <button class="ke-back-btn" id="keCmBack">${ICON_BACK} ${L('Ebeveyn Alanı', 'Parent Area')}</button>
+    <button class="ke-back-btn" id="keCmBack">${ICON_BACK} ${teacher ? L('Öğretmen paneli', 'Teacher panel') : L('Ebeveyn Alanı', 'Parent Area')}</button>
+    ${teacher ? `<p class="ke-parent-note" style="text-align:center;">🧑‍🏫 ${escapeProfileText(teacher)}</p>` : ''}
     <div class="ke-profile-screen ke-parent" style="max-width:640px;">
       <h1 class="ke-title">${bubbleTitleHTML(L('Sınıf modu', 'Classroom mode'))}</h1>
       <div class="ke-week-card ke-parent-card">
@@ -5484,7 +5539,7 @@ async function showParentArea(container, api, toolId, categories) {
       <div class="ke-kpi-lbl">🏫 ${L('Öğretmen sınıfı', 'Teacher class')}</div>
       <p class="ke-parent-p">${cls.code ? `${escapeProfileText(cls.className || cls.code)} · ${classSyncLabel(cls)}` : L('Bir sınıfa katılmamış. Öğretmeniniz sınıf kodu verdiyse Avatar ekranının altından katılabilirsiniz.', 'Not in a class. If the teacher gave a class code, join from the bottom of the Avatar screen.')}</p>
     </div>
-    <div class="ke-week-card ke-parent-card">
+    ${cls.code ? '' : `<div class="ke-week-card ke-parent-card">
       <div class="ke-kpi-lbl">🧑‍🏫 ${L('Sınıf modu (akıllı tahta)', 'Classroom mode (smart board)')}</div>
       <p class="ke-parent-p">${L('Bir bölümü tahtaya yansıtın: büyük resimler, siz yönetirsiniz, iki takımla soru oyunu.', 'Project an episode on the board: big pictures, you control the pace, a two-team quiz.')}</p>
       <div class="ke-pick-row" style="justify-content:flex-start;"><button type="button" class="ke-pick" id="keClassMode">▶ ${L('Sınıf modunu aç', 'Open classroom mode')}</button></div>
@@ -5493,7 +5548,7 @@ async function showParentArea(container, api, toolId, categories) {
       <div class="ke-kpi-lbl">🧑‍🏫 ${L('İçerik denetimi (öğretmen)', 'Content review (teacher)')}</div>
       <p class="ke-parent-p">${L('Açıkken kelime keşfinde dokunduğunuz kart için "⚑ Sorun bildir" düğmesi görünür. Hatalı görsel, cümle veya anlamı bize bildirirsiniz; ad ya da kişisel bilgi gönderilmez.', 'When on, a "⚑ Report" button appears for the card you tap in word discovery. Report a wrong picture, sentence or meaning; no name or personal data is sent.')}</p>
       <div class="ke-pick-row" style="justify-content:flex-start;"><button type="button" class="ke-pick${ContentReport.enabled() ? ' ke-sel' : ''}" id="keReportToggle" aria-pressed="${ContentReport.enabled()}">${ContentReport.enabled() ? L('Açık ✓', 'On ✓') : L('Kapalı', 'Off')}</button></div>
-    </div>
+    </div>`}
     ${window.KE_STATIC ? `<div class="ke-week-card ke-parent-card">
       <div class="ke-kpi-lbl">📖 ${L('Kullanım kılavuzu', 'User guide')}</div>
       <p class="ke-parent-p">${L('Veli ve öğretmen için ayrıntılı rehber: neyi nereden takip edersiniz, evde nasıl destek olursunuz, sınıf modu ve basılı materyal.', 'Detailed guide for parents and teachers (in Turkish): what to follow, how to help at home, classroom mode and printables.')}</p>
@@ -5536,8 +5591,8 @@ async function showParentArea(container, api, toolId, categories) {
   };
   sessRow.querySelectorAll('[data-n]').forEach((b) => b.addEventListener('click', () => { SessionLen.setLocal(Number(b.dataset.n)); paintSess(); }));
   paintSess();
-  host.querySelector('#keClassMode').addEventListener('click', () => showClassModeSetup(container, api, toolId, categories));
-  host.querySelector('#keReportToggle').addEventListener('click', (e) => {
+  host.querySelector('#keClassMode')?.addEventListener('click', () => showClassModeSetup(container, api, toolId, categories));
+  host.querySelector('#keReportToggle')?.addEventListener('click', (e) => {
     const on = !ContentReport.enabled(); ContentReport.setEnabled(on);
     e.currentTarget.classList.toggle('ke-sel', on); e.currentTarget.setAttribute('aria-pressed', String(on));
     e.currentTarget.textContent = on ? L('Açık ✓', 'On ✓') : L('Kapalı', 'Off');
