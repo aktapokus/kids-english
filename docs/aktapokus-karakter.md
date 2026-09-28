@@ -151,6 +151,13 @@ Uygulama tarafı: `--aktapokus-eye`, `ui/mascot/eye_domains.json`.
   - 11 (`characters.json`);
   - 12 (Bölüm 2'nin 9. ve 10. görselleri; metin olduğu gibi yayında).
 
+**Güncelleme 2026-09-28 (kullanıcı onayıyla, "hepsini onaylıyorum"):**
+- 1 ve 2 düzeltildi. Bölüm 1 kart 9 artık "The Digital Lens" başlığını taşıyor ve metinde "digital lens" geçiyor. Kart 10'da cam konuşmuyor; "HELLO, EXPLORER" yazısını geminin küçük ekranı gösteriyor. Sözlüğe "lens: mercek, cam" eklendi.
+- 11 düzeltildi. `characters.json`'da gözü değil, gözlüğün sağ camı yazıyor. Kimlikler (`object:digital_eye`, `ep2_red_eye`) kalıcı anahtar oldukları için değişmedi.
+- Hâlâ açık:
+  - 12 (Bölüm 2 görselleri 9–10, yeni görsel gerekiyor);
+  - AÇIK 3 ("knows every name" mutlaklığı; kullanıcı kararı).
+
 Uygulamanın kendi arayüz metinleri çelişki içermiyor. Kontrol edilen yerler:
 - karşılama: "Kelime Yıldızları uzaya dağıldı…";
 - tepki balonları;
