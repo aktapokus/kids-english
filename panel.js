@@ -843,7 +843,8 @@ const Recall = {
     const due = Date.now() + RECALL_DAYS[0] * 86400000;
     (objs || []).forEach((o) => {
       if (!o || !o.word || o.icon_type === undefined || d[o.word]) return;
-      d[o.word] = { w: o.word, tr: o.tr, it: o.icon_type, ic: o.icon, c: catId, box: 0, due };
+      // t: ogrenildigi an, s: kart cumlesi (haftalik veli ozeti, 5d)
+      d[o.word] = { w: o.word, tr: o.tr, it: o.icon_type, ic: o.icon, c: catId, box: 0, due, t: Date.now(), s: o.sentence || '' };
     });
     this._save(d);
   },
@@ -851,6 +852,12 @@ const Recall = {
     const now = Date.now();
     return Object.values(this._load()).filter((r) => r.due <= now && !(exclude && exclude.has(r.w)))
       .sort((a, b) => a.due - b.due).slice(0, n);
+  },
+  // Son 7 gunde ogrenilenler. Eski kayitlarda t yok: kutu 0'dakiler icin
+  // ilk tekrar tarihinden geri hesaplanir (ilk tekrar = ogrenme + RECALL_DAYS[0]).
+  learnedSince(ms) {
+    return Object.values(this._load()).map((r) => ({ ...r, t: r.t || (r.box === 0 ? r.due - RECALL_DAYS[0] * 86400000 : 0) }))
+      .filter((r) => r.t >= ms).sort((a, b) => a.t - b.t);
   },
   result(word, ok) {
     const d = this._load();
@@ -2481,6 +2488,18 @@ ${FONT_FACES}
   .pr-hint{ display:inline-flex; width:12mm; height:12mm; vertical-align:middle; margin-right:3mm; align-items:center; justify-content:center; }
   .pr-hint img{ max-width:100%; max-height:100%; object-fit:contain; } .pr-hint .pr-emo{ font-size:9mm; } .pr-key{ margin-top:14px; font-size:13px; color:#555; }
   .pr-warn{ font-size:16px; color:#b00; }
+  .pr-week h2{ margin:4px 0 8px; } .pr-week h3{ margin:16px 0 6px; }
+  .pr-week-big{ font-size:20px; background:#FFF4CC; border-radius:10px; padding:10px 12px; }
+  .pr-week-sents{ font-size:19px; line-height:1.5; padding-left:22px; }
+  .pr-week-sents li{ margin-bottom:8px; } .pr-week-sents small{ display:block; font-size:12px; color:#777; }
+  .pr-say{ border:0; background:#E8F1FF; border-radius:50%; width:34px; height:34px; cursor:pointer; font-size:16px; vertical-align:middle; }
+  .pr-week-tip{ font-size:13.5px; color:#555; }
+  .pr-week-words{ display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px; }
+  .pr-week-w{ border:1px solid #ddd; border-radius:10px; padding:6px; display:flex; flex-direction:column; align-items:center; text-align:center; break-inside:avoid; }
+  .pr-week-w b{ font-size:14px; } .pr-week-w small{ font-size:11.5px; color:#666; }
+  .pr-week-pic img{ width:48px; height:48px; object-fit:contain; } .pr-week-pic .pr-emo{ font-size:38px; line-height:1; }
+  .pr-week-foot{ margin-top:14px; font-size:12px; color:#777; }
+  @media print{ .pr-say{ display:none; } }
   @media print{
     body.ke-printing > *:not(.ke-print){ display:none !important; }
     .ke-print{ position:static; overflow:visible; background:#fff; }
@@ -5231,6 +5250,79 @@ function printSheetHTML(eps, title) {
     <ol class="pr-list">${items.map((x) => `<li>${x.pic ? `<span class="pr-hint">${printPic(x.pic)}</span>` : ''}${escapeProfileText(x.text)}</li>`).join('')}</ol>
     <details class="pr-key"><summary>${L('Cevap anahtarı', 'Answer key')}</summary><ol>${items.map((x) => `<li>${escapeProfileText(x.answer)}</li>`).join('')}</ol></details></div>`;
 }
+// ---- Haftalik veli ozeti (ogretmen degerlendirmesi 5d) ----
+// Veri yalniz bu cihazdan (Recall); hicbir yere gonderilmez. Veli ekran
+// goruntusu alir ya da yazdirir. Evde soylenecek 3 cumle: bu hafta ogrenilen
+// kartlarin kisa cumleleri, mumkunse farkli konulardan.
+function weeklySentences(list) {
+  const ok = list.filter((r) => r.s && r.s.split(/\s+/).length <= 8 && !/[“"]/.test(r.s));
+  const byCat = new Map();
+  shuffle(ok).forEach((r) => { if (!byCat.has(r.c)) byCat.set(r.c, r); });
+  const picked = [...byCat.values()];
+  shuffle(ok).forEach((r) => { if (picked.length < 3 && !picked.includes(r)) picked.push(r); });
+  return picked.slice(0, 3);
+}
+// Eski kayitlarda cumle (s) yok: ilgili kategorilerin bolumlerinden bir
+// kez doldurulur ve kaydedilir (en fazla 4 kategori).
+async function backfillRecallSentences(api, toolId, categories, list) {
+  const need = [...new Set(list.filter((r) => !r.s).map((r) => r.c))].slice(0, 4);
+  if (!need.length || !api) return;
+  const found = {};
+  for (const cid of need) {
+    const c = (categories || []).find((x) => x.id === cid);
+    if (!c) continue;
+    for (let i = 0; i < c.episode_count; i++) {
+      try {
+        const r = await api.apiFetch(`/api/tools/${toolId}/categories/${cid}/episodes/${i}`);
+        if (!r.ok) continue;
+        ((await r.json()).objects || []).forEach((o) => { if (o.word && o.sentence) found[o.word] = o.sentence; });
+      } catch (e) { /* cevrimdisi: cumlesiz devam */ }
+    }
+  }
+  const d = Recall._load();
+  let changed = false;
+  Object.values(d).forEach((r) => { if (!r.s && found[r.w]) { r.s = found[r.w]; changed = true; } });
+  if (changed) Recall._save(d);
+}
+async function showWeeklySummary(api, toolId, categories) {
+  const p = Profiles.active();
+  const since = Date.now() - 7 * 86400000;
+  await backfillRecallSentences(api, toolId, categories, Recall.learnedSince(since));
+  const list = Recall.learnedSince(since);
+  const sents = weeklySentences(list);
+  const fmt = (t) => new Date(t).toLocaleDateString(_lang === 'tr' ? 'tr-TR' : 'en-GB', { day: 'numeric', month: 'long' });
+  const range = `${fmt(since)} – ${fmt(Date.now())}`;
+  const catName = (id) => { const c = (categories || []).find((x) => x.id === id); return c ? catLabel(c) : ''; };
+  const words = list.map((r) => ({ word: r.w, tr: r.tr, icon: r.ic, icon_type: r.it }));
+  const body = list.length ? `
+    <div class="pr-week-big">${L(`Bu hafta <b>${list.length}</b> yeni kelime öğrendi! 🎉`, `Learned <b>${list.length}</b> new words this week! 🎉`)}</div>
+    ${sents.length ? `<h3>🏠 ${L('Evde birlikte söyleyin', 'Say these together at home')}</h3>
+    <ol class="pr-week-sents">${sents.map((r, i) => `<li><button type="button" class="pr-say" data-i="${i}" aria-label="${L('Dinle', 'Listen')}">🔊</button> <b>${escapeProfileText(r.s)}</b><small>${escapeProfileText(catName(r.c))}</small></li>`).join('')}</ol>
+    <p class="pr-week-tip">${L('İpucu: Cümleyi söyleyin, çocuğunuz tekrar etsin; sonra yer değiştirin. Hata düzeltmeyin, doğrusunu tekrar söylemeniz yeterli.', 'Tip: say the sentence, let your child repeat it, then swap. No need to correct mistakes; just say it again correctly.')}</p>` : ''}
+    <h3>📚 ${L('Bu haftanın kelimeleri', "This week's words")}</h3>
+    <div class="pr-week-words">${words.map((o) => `<div class="pr-week-w"><span class="pr-week-pic">${printPic(o)}</span><b>${escapeProfileText(o.word)}</b><small>${escapeProfileText(o.tr || '')}</small></div>`).join('')}</div>`
+    : `<p class="pr-warn">${L('Son 7 günde yeni kelime yok. Birkaç bölüm bitirince burada görünecek.', 'No new words in the last 7 days. They will appear here after a few episodes.')}</p>`;
+  const ov = document.createElement('div');
+  ov.className = 'ke-print';
+  ov.innerHTML = `<div class="ke-print-bar"><b>📅 ${L('Haftalık özet', 'Weekly summary')}</b>
+      <button type="button" data-a="print">${L('Yazdır', 'Print')}</button><button type="button" data-a="x">✕ ${L('Kapat', 'Close')}</button></div>
+    <div class="ke-print-page pr-week"><div class="pr-head">Aktapokus Kids English · ${L('Haftalık özet', 'Weekly summary')}</div>
+      <h2>${escapeProfileText((p && p.name) || '')} · ${range}</h2>${body}
+      <p class="pr-week-foot">${L('Bu özet yalnızca bu cihazdaki ilerlemeden hazırlandı; hiçbir yere gönderilmedi. Ekran görüntüsü alabilir ya da yazdırabilirsiniz.', 'Made only from progress on this device; nothing was sent anywhere. Take a screenshot or print it.')}</p></div>`;
+  document.body.appendChild(ov);
+  document.body.classList.add('ke-printing');
+  const close = () => { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); ov.remove(); document.body.classList.remove('ke-printing'); };
+  ov.querySelector('[data-a="x"]').addEventListener('click', close);
+  ov.querySelector('[data-a="print"]').addEventListener('click', () => window.print());
+  ov.querySelectorAll('.pr-say').forEach((b) => b.addEventListener('click', () => {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(sents[Number(b.dataset.i)].s);
+    u.rate = 0.8; applyEnglishVoice(u); window._keLastUtter = u;
+    window.speechSynthesis.speak(u);
+  }));
+}
+
 function showPrintable(kind, catTitle, scope, eps) {
   const words = printWords(eps);
   const title = `${catTitle} · ${scope}`;
@@ -5381,6 +5473,11 @@ async function showParentArea(container, api, toolId, categories) {
       <div class="ke-pick-row" style="justify-content:flex-start;"><button type="button" class="ke-pick${ContentReport.enabled() ? ' ke-sel' : ''}" id="keReportToggle" aria-pressed="${ContentReport.enabled()}">${ContentReport.enabled() ? L('Açık ✓', 'On ✓') : L('Kapalı', 'Off')}</button></div>
     </div>
     <div class="ke-week-card ke-parent-card">
+      <div class="ke-kpi-lbl">📅 ${L('Haftalık özet', 'Weekly summary')}</div>
+      <p class="ke-parent-p">${L('Son 7 günde öğrenilen kelimeler ve evde birlikte söyleyebileceğiniz 3 cümle. Ekran görüntüsü alın ya da yazdırın.', 'Words learned in the last 7 days and 3 sentences to say together at home. Screenshot or print it.')}</p>
+      <div class="ke-pick-row" style="justify-content:flex-start;"><button type="button" class="ke-pick" id="keWeekly">📅 ${L('Özeti aç', 'Open summary')}</button></div>
+    </div>
+    <div class="ke-week-card ke-parent-card">
       <div class="ke-kpi-lbl">⏱️ ${L('Oturum uzunluğu', 'Session length')}</div>
       <p class="ke-parent-p">${L('Bu kadar bölüm bitince Aktapokus "Devam mı, yarın mı?" diye sorar. Kısa ve sık çalışmak, uzun tek oturumdan daha kalıcıdır.', 'After this many episodes Aktapokus asks "Keep going or tomorrow?". Short, frequent sessions stick better than one long one.')}</p>
       <div class="ke-pick-row" style="justify-content:flex-start;" id="keSessLen">
@@ -5400,6 +5497,7 @@ async function showParentArea(container, api, toolId, categories) {
     </div>`;
   void today;
   host.querySelector('#keParentExport').addEventListener('click', exportBackup);
+  host.querySelector('#keWeekly').addEventListener('click', () => showWeeklySummary(api, toolId, categories));
   const sessRow = host.querySelector('#keSessLen');
   const paintSess = () => {
     const v = SessionLen.get();
