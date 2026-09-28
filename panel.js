@@ -530,12 +530,12 @@ const TrSupport = {
   },
   flags(catId) {
     const m = this.mode();
-    if (m === 'off') return { meaning: false, translate: false, why: false };
-    if (m === 'on') return { meaning: true, translate: true, why: true };
+    if (m === 'off') return { meaning: false, translate: false, why: false, sentenceTr: false };
+    if (m === 'on') return { meaning: true, translate: true, why: true, sentenceTr: true };
     const lv = this.level(catId);
-    if (lv === 'moon') return { meaning: true, translate: false, why: false };
-    if (lv === 'a1') return { meaning: true, translate: true, why: true };
-    return { meaning: false, translate: false, why: false };
+    if (lv === 'moon') return { meaning: true, translate: false, why: false, sentenceTr: true };
+    if (lv === 'a1') return { meaning: true, translate: true, why: true, sentenceTr: true };
+    return { meaning: false, translate: false, why: false, sentenceTr: false };
   },
 };
 // Neden? metni: kacis + *italik* / **kalin** / ***ikisi***
@@ -3073,6 +3073,9 @@ ${FONT_FACES}
   .ke-tr-note{ min-height:44px; font-size:15px; font-weight:600; color:var(--kb-chalk); line-height:1.4; }
   .ke-tr-line{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; min-height:54px; padding:8px; border:2px dashed rgba(245,240,223,.35); border-radius:14px; width:100%; }
   .ke-tr-bank{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+  .ke-tr-hint{ display:block; margin:6px auto 0; font:700 14px 'Fredoka','Baloo 2',sans-serif; color:#1A2233; background:#FFE9A8; border:2px solid #FFD75A; border-radius:12px; padding:6px 12px; cursor:pointer; max-width:92%; }
+  .ke-tr-hint[hidden]{ display:none; }
+  .ke-tr-hint:disabled{ cursor:default; opacity:1; background:#FFF6D6; }
   .ke-story-list{ display:flex; flex-direction:column; gap:14px; max-width:560px; margin:0 auto; position:relative; z-index:1; }
   .ke-story-card{
     display:flex; align-items:center; gap:14px; text-align:left; cursor:pointer;
@@ -8014,7 +8017,7 @@ function renderConversationEpisodeScene(container, api, toolId, categories, epis
         ? L(' Bir sonraki konunun kilidi açıldı.', ' The next topic is unlocked.')
         : L(' Bu bölümü tamamladın!', ' You finished this section!'));
     const scoreEl = host.querySelector('#keScore');
-    scoreEl.textContent = `${L('Skor', 'Score')}: ${score.correct} / ${score.total} ⭐`;
+    scoreEl.textContent = `${L('Skor', 'Score')}: ${score.correct} / ${score.total} ⭐` + (score.sent ? ` · 🧩 ${score.sent.stars} / ${score.sent.total}` : '');
     scoreEl.style.display = 'block';
     host.querySelector('#keRewardChip').textContent = `⭐ ${rewardLabel(episode.reward_label)}`;
     const nextBtn = host.querySelector('#keNextEpisodeBtn');
@@ -9370,8 +9373,24 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
   // Ingilizce taslari dizer (tum kelimeler bos). Veri: kart.sentence_tr.
   let trMode = false;
   const trList = TrSupport.flags(episode.category_id).translate ? wordList.filter((o) => o.sentence_tr).slice(0, 4) : [];
+  // Cumle Turkcesi (A1, 2026-09-28): dogru kurulunca Turkcesi gorunur;
+  // "🇹🇷 Ipucu · ⭐1" ile once de gorulebilir ama o cumlenin yildizi gider.
+  // Cumle yildizi = ipucusuz + ilk denemede dogru; kutlamada gosterilir.
+  const showTr = TrSupport.flags(episode.category_id).sentenceTr;
+  let sentStars = 0, sentTotal = 0;
+  let hintBtn = host.querySelector('#keTrHint');
+  if (!hintBtn) {
+    hintBtn = document.createElement('button');
+    hintBtn.type = 'button';
+    hintBtn.id = 'keTrHint';
+    hintBtn.className = 'ke-tr-hint';
+    bubbleEl.after(hintBtn);
+  }
+  hintBtn.hidden = true;
 
   function endSentenceRound() {
+    if (hintBtn) hintBtn.hidden = true;
+    if (score && sentTotal) score.sent = { stars: sentStars, total: sentTotal };
     sEl.classList.remove('ke-show');
     mascotEl.classList.remove('ke-mascot-compact');
     setMascotPose(host, 'idle');
@@ -9712,6 +9731,17 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
         : askText;
     progressEl.textContent = trMode ? `🇹🇷 ${L('Türkçeden Kur', 'From Turkish')} ${idx + 1} / ${order.length}` : `${L('Cümle', 'Sentence')} ${idx + 1} / ${order.length}`;
     bubbleEl.textContent = ask;
+    let hintUsed = false;
+    const trText = !trMode && showTr && obj.sentence_tr ? obj.sentence_tr : '';
+    if (!trMode) sentTotal++;
+    hintBtn.hidden = !trText;
+    hintBtn.disabled = false;
+    hintBtn.textContent = L('🇹🇷 İpucu · ⭐1', '🇹🇷 Hint · ⭐1');
+    hintBtn.onclick = () => {
+      hintUsed = true;
+      hintBtn.disabled = true;
+      hintBtn.textContent = `🇹🇷 ${trText}`;
+    };
     const iconEl = host.querySelector('#keSentenceIcon');
     if (iconEl) iconEl.innerHTML = renderObjectIcon(obj);
 
@@ -9843,13 +9873,16 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
       const isCorrect = slotEls.every((s, i) => Number(s.dataset.origIndex) === i);
       if (isCorrect) {
         checkBtn.disabled = true;
-        bubbleEl.textContent = L('Harika cümle! 🎉', 'Great sentence! 🎉');
+        if (!trMode && !hintUsed && wrongAttempts === 0) sentStars++;
+        bubbleEl.textContent = L('Harika cümle! 🎉', 'Great sentence! 🎉') + (!trMode && !hintUsed && wrongAttempts === 0 ? ' ⭐' : '');
+        if (trText) { hintBtn.hidden = false; hintBtn.disabled = true; hintBtn.textContent = `🇹🇷 ${trText}`; }
         celebrateBounce(mascotEl);
-        speakThen(obj.sentence, mascotEl, 1300, () => { idx++; renderItem(); });
+        speakThen(obj.sentence, mascotEl, trText ? 2600 : 1300, () => { idx++; renderItem(); });
       } else if (++wrongAttempts >= 2) {
         checkBtn.disabled = true;
         slotEls.forEach((sl, i) => { sl.textContent = tokens[i]; sl.classList.remove('ke-filled'); sl.classList.add('ke-reveal'); });
         bubbleEl.textContent = L(`Doğru cümle: ${obj.sentence} 💡`, `The correct sentence: ${obj.sentence} 💡`);
+        if (trText) { hintBtn.hidden = false; hintBtn.disabled = true; hintBtn.textContent = `🇹🇷 ${trText}`; }
         try { Progress.recordMistake(episode.category_id, obj); } catch (e) { /* yok say */ }
         mascotReact(mascotEl, false);
         speakThen(obj.sentence, mascotEl, 3200, () => { idx++; renderItem(); });
@@ -10131,7 +10164,7 @@ function showCelebration(host, container, episode, wordList, score, onDone) {
         : L(' Bu kategoriyi tamamladın!', ' You finished this category!'));
   const scoreEl = host.querySelector('#keScore');
   if (score) {
-    scoreEl.textContent = `${L('Skor', 'Score')}: ${score.correct} / ${score.total} ⭐`;
+    scoreEl.textContent = `${L('Skor', 'Score')}: ${score.correct} / ${score.total} ⭐` + (score.sent ? ` · 🧩 ${score.sent.stars} / ${score.sent.total}` : '');
     scoreEl.style.display = 'block';
   } else {
     scoreEl.style.display = 'none';
