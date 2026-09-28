@@ -4299,12 +4299,26 @@ function taskCardHTML(a, categories) {
     ${a.note ? `<p class="ke-task-note">📝 ${escapeProfileText(a.note)}</p>` : ''}
     <div class="ke-task-items">${taskItemsHTML(a, categories)}</div>`;
 }
+// Ogretmenin sinif icin sectigi baslangic istasyonu (assignment.start_sector).
+// Profil basina bir kez uygulanir; ogretmen sonra degistirirse yenisi uygulanir.
+function applyTeacherStart(a, categories) {
+  const sec = a && a.start_sector;
+  if (!sec) return;
+  const key = 'ke_start_applied_v1_' + Profiles.active().id;
+  let done = null;
+  try { done = window.localStorage.getItem(key); } catch (e) { /* yok say */ }
+  if (done === sec) return;
+  Journey.startAt(sec, categories);
+  try { window.localStorage.setItem(key, sec); } catch (e) { /* yok say */ }
+}
+
 async function mountTask(host, container, api, toolId, categories) {
   const el = host.querySelector('#keTask');
   if (!el || !Classroom.get().code) return;
   const pid = Profiles.active().id;
   const a = await Classroom.fetchAssignment();
   if (!el.isConnected || Profiles.active().id !== pid) return;
+  applyTeacherStart(a, categories);
   if (!a || (!(a.items || []).length && !a.review)) return;
   el.innerHTML = taskCardHTML(a, categories);
   el.hidden = false;
@@ -4770,6 +4784,31 @@ const Journey = {
     if (p.cleared || i === 0) return true;
     const done = Progress.getCategory(p.id).completed;
     return done.includes(i) || done.includes(i - 1);
+  },
+  // Baslangic sinifi (2026-09-28, ogretmen geri bildirimi: "ogretmen ileri
+  // siniflari acabilmeli"). Hedef istasyondan onceki tum gezegenler "atlandi"
+  // sayilir (tekrar oynanabilir), onceki istasyon kutlamalari cikmaz, roket
+  // hedef istasyonun ilk gezegenine gecer. Yalniz ILERI: ilerleme silinmez.
+  startAt(sectorId, categories) {
+    const si = JOURNEY_SECTORS.findIndex((x) => x.id === sectorId);
+    if (si <= 0) return false;
+    const have = new Set((categories || []).map((c) => c.id));
+    const before = JOURNEY_SECTORS.slice(0, si);
+    const d = this._load();
+    before.forEach((sec) => {
+      sec.planets.forEach((id) => { if (have.has(id) && !d.skipped.includes(id)) d.skipped.push(id); });
+      if (!d.cps.includes(sec.id)) d.cps.push(sec.id);
+    });
+    const idx = before.reduce((n, sec) => n + sec.planets.filter((id) => have.has(id)).length, 0);
+    d.at = Math.max(Number(d.at) || 0, idx);
+    this._save(d);
+    return true;
+  },
+  // Su anki baslangic: atlanmis tam istasyonlarin sonrasindaki ilk istasyon
+  startSector(categories) {
+    const st = this.state(categories);
+    const firstOpen = st.sectors.find((x) => !x.cleared);
+    return firstOpen ? firstOpen.sec.id : null;
   },
   markSkipped(ids) {
     const d = this._load();
@@ -5734,6 +5773,14 @@ async function showParentArea(container, api, toolId, categories) {
       <div class="ke-pick-row" style="justify-content:flex-start;"><button type="button" class="ke-pick" id="keWeekly">📅 ${L('Özeti aç', 'Open summary')}</button></div>
     </div>
     <div class="ke-week-card ke-parent-card">
+      <div class="ke-kpi-lbl">🎯 ${L('Başlangıç sınıfı', 'Starting grade')}</div>
+      <p class="ke-parent-p">${L('Çocuğunuz daha üst bir sınıftaysa Macera\'yı o sınıftan başlatın. Önceki istasyonlar "geçildi" sayılır, istenirse yine oynanabilir. İlerleme silinmez; yalnızca ileri alınabilir.', 'If your child is in a higher grade, start the Adventure there. Earlier stations count as passed and can still be played. Progress is never deleted; you can only move forward.')}</p>
+      <div class="ke-pick-row" style="justify-content:flex-start;" id="keStartSec">
+        ${JOURNEY_SECTORS.filter((x) => x.id !== 'saturn').map((x) => `<button type="button" class="ke-pick" data-sec="${x.id}">${x.emoji} ${escapeProfileText(x.level)}</button>`).join('')}
+      </div>
+      <p class="ke-parent-note" id="keStartNote"></p>
+    </div>
+    <div class="ke-week-card ke-parent-card">
       <div class="ke-kpi-lbl">🇹🇷 ${L('Türkçe destek', 'Turkish support')}</div>
       <p class="ke-parent-p">${L('Otomatik: A1\'de Türkçe anlam kontrolü, Türkçeden Kur ve 💡 Neden? açıklamaları açık; çocuk A2\'ye geçince bölümlerden kalkar. Kütüphane\'deki "Türkçe Destek" bölümü her zaman açıktır.', 'Auto: Turkish meaning checks, build-from-Turkish and 💡 Why? notes at A1; they leave the episodes at A2. The Library "Turkish Help" section is always open.')}</p>
       <div class="ke-pick-row" style="justify-content:flex-start;" id="keTrMode">
@@ -5763,6 +5810,24 @@ async function showParentArea(container, api, toolId, categories) {
   void today;
   host.querySelector('#keParentExport').addEventListener('click', exportBackup);
   host.querySelector('#keWeekly').addEventListener('click', () => showWeeklySummary(api, toolId, categories));
+  const secRow = host.querySelector('#keStartSec');
+  const paintSec = () => {
+    const cur = Journey.startSector(categories);
+    const ci = JOURNEY_SECTORS.findIndex((x) => x.id === cur);
+    secRow.querySelectorAll('[data-sec]').forEach((b) => {
+      const bi = JOURNEY_SECTORS.findIndex((x) => x.id === b.dataset.sec);
+      b.classList.toggle('ke-sel', b.dataset.sec === cur);
+      b.disabled = bi < ci; // yalniz ileri
+    });
+  };
+  secRow.querySelectorAll('[data-sec]').forEach((b) => b.addEventListener('click', () => {
+    const x = JOURNEY_SECTORS.find((q) => q.id === b.dataset.sec);
+    if (!x || b.disabled) return;
+    Journey.startAt(x.id, categories);
+    host.querySelector('#keStartNote').textContent = L(`✅ Macera artık ${x.tr} (${x.level}) ile başlıyor.`, `✅ The Adventure now starts at ${x.en} (${x.level}).`);
+    paintSec();
+  }));
+  paintSec();
   const trRow = host.querySelector('#keTrMode');
   const paintTr = () => trRow.querySelectorAll('[data-m]').forEach((b) => { const on = b.dataset.m === TrSupport.mode(); b.classList.toggle('ke-sel', on); b.setAttribute('aria-pressed', String(on)); });
   trRow.querySelectorAll('[data-m]').forEach((b) => b.addEventListener('click', () => { TrSupport.setMode(b.dataset.m); paintTr(); }));
@@ -6668,7 +6733,7 @@ function showTrSupport(container, api, toolId, categories) {
     card.addEventListener('click', fn);
     list.appendChild(card);
   };
-  add('🚫', L('Oyun', 'Game'), L('Türkler burada karıştırır', 'Common mistakes'), L('Hangisi doğru? 10 soru', 'Which is right? 10 questions'), () => runTrMistakes(container, api, toolId, categories));
+  add('🚫', L('Oyun', 'Game'), L('Sık yapılan hatalar', 'Common mistakes'), L('Hangisi doğru? 10 soru', 'Which is right? 10 questions'), () => runTrMistakes(container, api, toolId, categories));
   add('💡', L('Kitapçık', 'Booklet'), L('Neden? notları', 'Why? notes'), L('Yapılar ve Get açıklamaları', 'Structures and Get explained'), () => showWhyBooklet(container, api, toolId, categories));
   add('🔁', L('Alıştırma', 'Practice'), L('Türkçeden Kur', 'Build from Turkish'), L('Türkçe cümleyi İngilizce kur', 'Build the English sentence'), () => runTrPractice(container, api, toolId, categories));
   pushBackState(back);
@@ -6685,7 +6750,7 @@ function trScreen(container, api, toolId, categories, title) {
 }
 
 function runTrMistakes(container, api, toolId, categories) {
-  const body = trScreen(container, api, toolId, categories, `🚫 ${L('Türkler burada karıştırır', 'Common mistakes')}`);
+  const body = trScreen(container, api, toolId, categories, `🚫 ${L('Sık yapılan hatalar', 'Common mistakes')}`);
   const items = shuffle(TR_MISTAKES.slice());
   let i = 0, stars = 0;
   const m = document.createElement('div');
