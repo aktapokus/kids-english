@@ -51,6 +51,23 @@ Aktapokus Kids English, ilkokul ve ortaokulun ilk yılları (2.–6. sınıf, 7.
 3. Size verilen **sınıf kodunu** (ABCD-1234 biçiminde) tahtaya yazın ya da veli grubuna gönderin.
 4. Öğrenciler katıldıkça listede görünür. Veriler uygulama açıkken ve internet varken yaklaşık 1 dakikada bir güncellenir.
 
+
+### İnternetsiz kullanım ve güncellemeler
+
+Uygulama internetle bir kez açıldıktan sonra **internetsiz çalışır**. Bunun için:
+
+1. **İlk açılışı iyi bir internetle yapın ve birkaç dakika açık bırakın.** Uygulama temel dosyaları hemen, resim ve sesleri arka planda indirir (toplam yaklaşık 47 MB). Erken kapatılırsa eksikler bir sonraki internetli açılışta tamamlanır.
+2. **Ana ekrana ekleyin** ("Ana ekrana ekle" / "Uygulamayı yükle"). iPhone ve iPad'de bu **çok önemlidir**: Safari, ana ekrana eklenmemiş siteler bir süre kullanılmazsa kaydedilen dosyaları ve ilerlemeyi silebilir.
+3. **İngilizce ses paketi yüklü olsun.** Aktapokus telefonun kendi metin okuma sesiyle konuşur. İnternetsiz ses için telefonda İngilizce ses paketi gerekir. Uygulama eksikliği fark ederse ilk açılışta nasıl yükleneceğini gösterir; **🔊 Ses Testi** ile her zaman kontrol edebilirsiniz.
+4. **Gizli (incognito) sekmede kullanmayın.** Sekme kapanınca her şey silinir.
+5. **Tarayıcı verilerini temizlemeden önce** Ebeveyn Alanı'ndan **Yedek indir** yapın.
+
+**İnternet gerektirenler:** 🎤 Konuş aşamasındaki konuşma tanıma (internet yoksa çocuk kelimeyi söyleyip Devam'a basar), sınıf eşitlemesi, haftanın görevi, sorun bildirimi ve sıralama listesi. İnternetsiz yapılan çalışma kaybolmaz; bağlantı gelince gönderilir.
+
+**Güncellemeler kendiliğinden gelir.** Uygulamayı internetliyken açmanız yeterli: yeni içerik hemen gelir, yeni resimler arka planda iner ve uygulama ana ekrandayken kendini bir kez yeniler (oyun ya da bölüm ortasında kesmez). Kapalı duran bir cihaz, bir sonraki açılışta yetişir.
+
+**İnterneti zayıf okullar için:** Tabletleri bir kez okulun ya da evin Wi-Fi'ında açıp birkaç dakika bekletin; sonra sınıfta internetsiz kullanılabilir.
+
 ---
 
 ## 3. Çocuk uygulamada ne yapar?
