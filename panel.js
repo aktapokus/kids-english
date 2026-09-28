@@ -5118,7 +5118,7 @@ function classModeSlides(ep, kind) {
   if (!q.length) {
     objs.forEach((o, i) => {
       const others = shuffle(objs.filter((x) => x !== o)).slice(0, 2).map((x) => x.word);
-      q.push({ t: 'q', pic: [o.icon_type, o.icon], text: L('Bu nedir?', 'What is this?'), full: o.word, options: shuffle([o.word, ...others]), answer: o.word });
+      q.push({ t: 'q', pic: [o.icon_type, o.icon], text: L('Bu nedir?', 'What is this?'), full: o.word, sentence: o.sentence || '', tr: o.tr || '', options: shuffle([o.word, ...others]), answer: o.word });
     });
   }
   return q;
@@ -5384,7 +5384,12 @@ function runClassMode(container, slides, title, kind) {
     if (sl.t === 'q') {
       ov.querySelectorAll('.ke-cm-opt').forEach((e) => e.classList.toggle(e.dataset.o === sl.answer ? 'ok' : 'no', true));
       const q = ov.querySelector('.ke-cm-q'); if (q && sl.full && !sl.lead) q.textContent = sl.full;
-      speak(sl.full);
+      // Resim sorusunda cevap tek kelime: ornek cumle ve anlami da gosterilir
+      // (ogretmen geri bildirimi: "ornek cumle guzel ve anlamli oluyor").
+      if (sl.sentence && q && !ov.querySelector('.ke-cm-sub')) {
+        q.insertAdjacentHTML('afterend', `<div class="ke-cm-sub">${escapeProfileText(sl.tr)}${sl.tr ? ' · ' : ''}<i>${escapeProfileText(sl.sentence)}</i></div>`);
+      }
+      speak(sl.sentence || sl.full);
     } else speak(sl.sentence || sl.word);
   }
   function pickOpt(b) {
