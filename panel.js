@@ -2442,6 +2442,38 @@ ${FONT_FACES}
   .ke-jhome-actions{ display:flex; gap:8px; margin-top:10px; }
   .ke-shell .ke-jhome-go{ flex:1; font-size:18px !important; padding:13px 16px !important; background:#FFD84D !important; color:#3a2a00 !important; border:none !important; border-radius:16px !important; box-shadow:0 5px 0 #C99A12 !important; font-weight:800 !important; }
   .ke-shell .ke-jhome-map{ font-size:14px !important; padding:12px 14px !important; background:rgba(255,255,255,.16) !important; color:#fff !important; border:2px solid rgba(255,255,255,.45) !important; border-radius:16px !important; box-shadow:none !important; font-weight:800 !important; }
+  /* Basili materyal: ekranda onizleme, baskida yalniz materyal */
+  .ke-print{ position:fixed; inset:0; z-index:9900; overflow:auto; background:#e9e6de; color:#1a1a1a; font-family:'Fredoka','Baloo 2',system-ui,sans-serif; }
+  .ke-print-bar{ position:sticky; top:0; display:flex; gap:10px; align-items:center; padding:10px 14px; background:#1A2233; color:#fff; z-index:1; }
+  .ke-print-bar b{ flex:1; } .ke-print-bar button{ font:700 15px system-ui,sans-serif; padding:8px 14px; border-radius:10px; border:0; cursor:pointer; }
+  .ke-print-page{ background:#fff; max-width:794px; margin:14px auto; padding:18px; box-shadow:0 2px 12px rgba(0,0,0,.2); }
+  .pr-head{ font-size:12px; color:#666; margin-bottom:10px; }
+  .pr-cards{ display:grid; grid-template-columns:repeat(2,1fr); gap:0; }
+  .pr-card{ border:1.5px dashed #999; height:88mm; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4mm; break-inside:avoid; }
+  .pr-card img{ max-width:70mm; max-height:55mm; object-fit:contain; } .pr-card .pr-emo{ font-size:40mm; line-height:1; }
+  .pr-word{ font-size:11mm; font-weight:700; }
+  .pr-bingos{ display:grid; grid-template-columns:repeat(2,1fr); gap:6mm; }
+  .pr-bingo{ border:2px solid #333; border-radius:4mm; padding:3mm; break-inside:avoid; }
+  .pr-bingo-h{ text-align:center; font-weight:800; margin-bottom:2mm; }
+  .pr-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:1.5mm; }
+  .pr-cell{ border:1px solid #999; aspect-ratio:1; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .pr-cell img{ max-width:100%; max-height:100%; object-fit:contain; } .pr-cell .pr-emo{ font-size:14mm; }
+  .pr-caller{ break-before:page; } .pr-caller ol{ columns:2; font-size:14px; }
+  .pr-sheet h2{ margin:6px 0 10px; }
+  .pr-namerow{ display:flex; justify-content:space-between; font-size:15px; }
+  .pr-bank{ display:flex; flex-wrap:wrap; gap:8px; border:2px solid #333; border-radius:8px; padding:8px; margin-bottom:12px; }
+  .pr-bank span{ font-weight:700; padding:2px 8px; border:1px solid #999; border-radius:6px; }
+  .pr-list{ font-size:19px; line-height:2.2; }
+  .pr-hint{ display:inline-flex; width:12mm; height:12mm; vertical-align:middle; margin-right:3mm; align-items:center; justify-content:center; }
+  .pr-hint img{ max-width:100%; max-height:100%; object-fit:contain; } .pr-hint .pr-emo{ font-size:9mm; } .pr-key{ margin-top:14px; font-size:13px; color:#555; }
+  .pr-warn{ font-size:16px; color:#b00; }
+  @media print{
+    body.ke-printing > *:not(.ke-print){ display:none !important; }
+    .ke-print{ position:static; overflow:visible; background:#fff; }
+    .ke-print-bar{ display:none; }
+    .ke-print-page{ box-shadow:none; margin:0; max-width:none; padding:0; }
+    .pr-key{ break-before:page; } .pr-key[open] summary{ display:none; }
+  }
   /* Sinif modu (akilli tahta): tam ekran, buyuk yazi, yuksek kontrast */
   .ke-cm-lab{ display:block; font-size:12.5px; font-weight:800; color:var(--kb-chalk-dim,#ccc); margin:10px 0 4px; }
   .ke-cm-sel{ width:100%; font-size:16px; padding:10px; border-radius:12px; border:2px solid rgba(255,255,255,.3); background:#fff; color:#1A2233; }
@@ -5033,6 +5065,12 @@ function showClassModeSetup(container, api, toolId, categories) {
           <button type="button" class="ke-pick" data-kind="quiz">❓ ${L('Sorular (takım)', 'Quiz (teams)')}</button>
         </div>
         <div style="margin-top:12px;"><button type="button" class="ke-btn-primary" id="keCmStart">▶ ${L('Başlat', 'Start')}</button></div>
+        <label class="ke-cm-lab">🖨️ ${L('Basılı materyal (seçili konu ve bölümden)', 'Printables (from the chosen topic and episode)')}</label>
+        <div class="ke-pick-row" style="justify-content:flex-start;">
+          <button type="button" class="ke-pick" data-print="cards">🃏 ${L('Kelime kartları', 'Flashcards')}</button>
+          <button type="button" class="ke-pick" data-print="bingo">🎯 ${L('Tombala', 'Bingo')}</button>
+          <button type="button" class="ke-pick" data-print="sheet">📝 ${L('Çalışma kâğıdı', 'Worksheet')}</button>
+        </div>
         <p class="ke-parent-note">${L('Klavye: ← → geçiş · boşluk: göster · S: oku · Esc: çık', 'Keys: ← → move · space: reveal · S: speak · Esc: exit')}</p>
       </div>
     </div>`;
@@ -5042,7 +5080,8 @@ function showClassModeSetup(container, api, toolId, categories) {
   const epSel = host.querySelector('#keCmEp');
   const fillEps = () => {
     const c = categories.find((x) => x.id === catSel.value);
-    epSel.innerHTML = Array.from({ length: c ? c.episode_count : 0 }, (_, i) => `<option value="${i}">${L('Bölüm', 'Episode')} ${i + 1}</option>`).join('');
+    epSel.innerHTML = Array.from({ length: c ? c.episode_count : 0 }, (_, i) => `<option value="${i}">${L('Bölüm', 'Episode')} ${i + 1}</option>`).join('')
+      + `<option value="all">${L('Tüm bölümler (yalnız basılı materyal)', 'All episodes (printables only)')}</option>`;
   };
   catSel.addEventListener('change', fillEps); fillEps();
   let kind = 'words';
@@ -5050,7 +5089,22 @@ function showClassModeSetup(container, api, toolId, categories) {
     kind = b.dataset.kind;
     host.querySelectorAll('[data-kind]').forEach((x) => x.classList.toggle('ke-sel', x === b));
   }));
+  host.querySelectorAll('[data-print]').forEach((b) => b.addEventListener('click', async () => {
+    const c = categories.find((x) => x.id === catSel.value);
+    if (!c) return;
+    const idx = epSel.value === 'all' ? Array.from({ length: c.episode_count }, (_, i) => i) : [Number(epSel.value)];
+    let eps;
+    try {
+      eps = await Promise.all(idx.map(async (i) => {
+        const r = await api.apiFetch(`/api/tools/${toolId}/categories/${c.id}/episodes/${i}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }));
+    } catch (e) { window.alert(L('Bölüm yüklenemedi: ', 'Could not load episode: ') + e.message); return; }
+    showPrintable(b.dataset.print, catLabel(c), epSel.value === 'all' ? L('Tüm bölümler', 'All episodes') : `${L('Bölüm', 'Episode')} ${Number(epSel.value) + 1}`, eps);
+  }));
   host.querySelector('#keCmStart').addEventListener('click', async () => {
+    if (epSel.value === 'all') { window.alert(L('Sınıf modu için bir bölüm seçin.', 'Choose one episode for classroom mode.')); return; }
     let ep;
     try {
       const r = await api.apiFetch(`/api/tools/${toolId}/categories/${catSel.value}/episodes/${epSel.value}`);
@@ -5062,6 +5116,75 @@ function showClassModeSetup(container, api, toolId, categories) {
     runClassMode(container, slides, catLabel(categories.find((x) => x.id === catSel.value) || { title: '' }), kind);
   });
 }
+// ---- Basili materyal (2026-09-28, ogretmen degerlendirmesi 4b) ----
+// Secilen konu/bolumden: kelime kartlari (A4'e 6, kesme cizgili), tombala
+// (8 farkli 3x3 kart + cekilis listesi), calisma kagidi (bosluk doldurma +
+// kelime havuzu). Yalniz materyal basilir (@media print).
+function printPic(o) {
+  if (!o.icon) return '';
+  if (o.icon_type === 'emoji') return `<span class="pr-emo">${escapeProfileText(o.icon)}</span>`;
+  return `<img src="${new URL(o.icon, ASSET_BASE_URL).href}" alt="" />`;
+}
+function printWords(eps) {
+  const seen = new Set();
+  return eps.flatMap((e) => e.objects || []).filter((o) => o.word && !seen.has(o.word) && seen.add(o.word));
+}
+function printCardsHTML(words) {
+  return `<div class="pr-cards">${words.map((o) => `<div class="pr-card"><div class="pr-pic">${printPic(o)}</div><div class="pr-word">${escapeProfileText(o.word)}</div></div>`).join('')}</div>`;
+}
+function printBingoHTML(words, title) {
+  if (words.length < 9) return `<p class="pr-warn">${L('Tombala için en az 9 kelime gerekiyor; "Tüm bölümler"i seçin.', 'Bingo needs at least 9 words; choose "All episodes".')}</p>`;
+  // Oyun makul surede bitsin: havuz en fazla 16 kelime (kartlar + cekilis ayni havuzdan)
+  words = shuffle(words.slice()).slice(0, 16);
+  const cards = Array.from({ length: 8 }, (_, k) => {
+    const pick = shuffle(words.slice()).slice(0, 9);
+    return `<div class="pr-bingo"><div class="pr-bingo-h">🎯 BINGO · ${k + 1}</div><div class="pr-grid">${pick.map((o) => `<div class="pr-cell">${printPic(o)}</div>`).join('')}</div></div>`;
+  }).join('');
+  const caller = `<div class="pr-caller"><h3>${L('Öğretmen çekiliş listesi', 'Teacher call list')} · ${escapeProfileText(title)}</h3><ol>${shuffle(words.slice()).map((o) => `<li>${escapeProfileText(o.word)} <small>(${escapeProfileText(o.tr || '')})</small></li>`).join('')}</ol>
+    <p>${L('Öğretmen kelimeyi İngilizce söyler; çocuk resmi işaretler. Satır tamamlayan "Bingo!" der.', 'The teacher says the word in English; children mark the picture. A full line calls "Bingo!".')}</p></div>`;
+  return `<div class="pr-bingos">${cards}</div>${caller}`;
+}
+function sheetItems(eps) {
+  const items = [];
+  eps.forEach((e) => {
+    (e.cloze || []).forEach((c) => items.push({ text: c.sentence.replace(c.blank, '__________'), answer: c.blank }));
+    (e.objects || []).forEach((o) => {
+      const w = String(o.word).split(' / ')[0].replace(/[?!.]+$/, '');
+      const rx = new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(s|es)?\\b`, 'i');
+      const m = (o.sentence || '').match(rx);
+      // Kart cumlesi birden cok kelimeye uyabilir ("The ___ is very big.") -> resim ipucu tek cevabi gosterir
+      if (m) items.push({ text: o.sentence.replace(m[0], '__________'), answer: m[0], pic: o });
+    });
+  });
+  const seen = new Set();
+  return shuffle(items.filter((x) => !seen.has(x.text) && seen.add(x.text))).slice(0, 10);
+}
+function printSheetHTML(eps, title) {
+  const items = sheetItems(eps);
+  if (!items.length) return `<p class="pr-warn">${L('Bu seçimde boşluk doldurulacak cümle yok.', 'No gap-fill sentences in this selection.')}</p>`;
+  const bank = shuffle([...new Set(items.map((x) => x.answer))]);
+  return `<div class="pr-sheet"><div class="pr-namerow"><span>${L('Ad', 'Name')}: ____________________</span><span>${L('Tarih', 'Date')}: ____________</span></div>
+    <h2>${escapeProfileText(title)}</h2>
+    <div class="pr-bank">${bank.map((w) => `<span>${escapeProfileText(w)}</span>`).join('')}</div>
+    <ol class="pr-list">${items.map((x) => `<li>${x.pic ? `<span class="pr-hint">${printPic(x.pic)}</span>` : ''}${escapeProfileText(x.text)}</li>`).join('')}</ol>
+    <details class="pr-key"><summary>${L('Cevap anahtarı', 'Answer key')}</summary><ol>${items.map((x) => `<li>${escapeProfileText(x.answer)}</li>`).join('')}</ol></details></div>`;
+}
+function showPrintable(kind, catTitle, scope, eps) {
+  const words = printWords(eps);
+  const title = `${catTitle} · ${scope}`;
+  const body = kind === 'cards' ? printCardsHTML(words) : kind === 'bingo' ? printBingoHTML(words, title) : printSheetHTML(eps, title);
+  const ov = document.createElement('div');
+  ov.className = 'ke-print';
+  ov.innerHTML = `<div class="ke-print-bar"><b>🖨️ ${escapeProfileText(title)}</b>
+      <button type="button" data-a="print">${L('Yazdır', 'Print')}</button><button type="button" data-a="x">✕ ${L('Kapat', 'Close')}</button></div>
+    <div class="ke-print-page"><div class="pr-head">Aktapokus Kids English · ${escapeProfileText(title)}</div>${body}</div>`;
+  document.body.appendChild(ov);
+  document.body.classList.add('ke-printing');
+  const close = () => { ov.remove(); document.body.classList.remove('ke-printing'); };
+  ov.querySelector('[data-a="x"]').addEventListener('click', close);
+  ov.querySelector('[data-a="print"]').addEventListener('click', () => window.print());
+}
+
 function runClassMode(container, slides, title, kind) {
   const ov = document.createElement('div');
   ov.className = 'ke-cm';
