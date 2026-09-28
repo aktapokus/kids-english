@@ -497,6 +497,20 @@ function isNameAllowed(name) {
 // Tablo: meb_research/content_reports_schema.sql (yalniz ekleme). Baglanti
 // yoksa bildirim cihazda siraya alinir, sonraki acilista gonderilir.
 const REPORT_MODE_KEY = 'ke_report_mode_v1';
+// Kisa oturum (ogretmen degerlendirmesi 5b): N bolum bitince kutlamada
+// "devam mi, yarin mi?" sorulur. Oncelik: ebeveyn ayari (bu cihaz) >
+// ogretmenin haftalik gorevdeki session_len'i > varsayilan 2. 0 = sorma.
+const SESSION_LEN_KEY = 'ke_session_len_v1';
+const SessionLen = {
+  count: 0,
+  local() { try { const v = localStorage.getItem(SESSION_LEN_KEY); return v === null ? null : Number(v); } catch (e) { return null; } },
+  setLocal(n) { try { if (n === null) localStorage.removeItem(SESSION_LEN_KEY); else localStorage.setItem(SESSION_LEN_KEY, String(n)); } catch (e) { /* yok say */ } },
+  teacher() {
+    try { const a = Classroom._load().assignment; const n = a && Number(a.session_len); return [1, 2, 3].includes(n) ? n : null; } catch (e) { return null; }
+  },
+  get() { const l = this.local(); if (l !== null && [0, 1, 2, 3].includes(l)) return l; const t = this.teacher(); return t !== null ? t : 2; },
+};
+let _goHomeFn = null;
 const REPORT_QUEUE_KEY = 'ke_report_queue_v1';
 const REPORT_REASONS = () => [
   ['image', L('Görsel kelimeye uymuyor', "The picture doesn't match")],
@@ -2891,6 +2905,9 @@ ${FONT_FACES}
   .ke-sm-btns .ke-btn-primary.ke-sm-alt{ background:#3B4A63; color:#fff; }
   .ke-sm-tip{ font-size:13px; color:rgba(245,247,250,.75); margin:0; }
   .ke-sm-score{ font-weight:800; color:var(--kb-chalk); }
+  .ke-break{ margin-top:12px; padding-top:10px; border-top:2px dashed rgba(245,240,223,.35); }
+  .ke-break p{ margin:0 0 8px; font-weight:700; }
+  .ke-break .ke-break-tip{ font-weight:600; opacity:.85; }
   .ke-story-list{ display:flex; flex-direction:column; gap:14px; max-width:560px; margin:0 auto; position:relative; z-index:1; }
   .ke-story-card{
     display:flex; align-items:center; gap:14px; text-align:left; cursor:pointer;
@@ -4238,6 +4255,7 @@ async function mountWordOfDay(host, api, toolId, categories) {
 }
 
 function showSectionMenu(container, api, toolId, categories) {
+  _goHomeFn = () => showSectionMenu(container, api, toolId, categories);
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   EyeLens.setDomain(null);
   _currentSection = null;
@@ -5358,6 +5376,15 @@ async function showParentArea(container, api, toolId, categories) {
       <div class="ke-pick-row" style="justify-content:flex-start;"><button type="button" class="ke-pick${ContentReport.enabled() ? ' ke-sel' : ''}" id="keReportToggle" aria-pressed="${ContentReport.enabled()}">${ContentReport.enabled() ? L('Açık ✓', 'On ✓') : L('Kapalı', 'Off')}</button></div>
     </div>
     <div class="ke-week-card ke-parent-card">
+      <div class="ke-kpi-lbl">⏱️ ${L('Oturum uzunluğu', 'Session length')}</div>
+      <p class="ke-parent-p">${L('Bu kadar bölüm bitince Aktapokus "Devam mı, yarın mı?" diye sorar. Kısa ve sık çalışmak, uzun tek oturumdan daha kalıcıdır.', 'After this many episodes Aktapokus asks "Keep going or tomorrow?". Short, frequent sessions stick better than one long one.')}</p>
+      <div class="ke-pick-row" style="justify-content:flex-start;" id="keSessLen">
+        ${[1, 2, 3].map((n) => `<button type="button" class="ke-pick" data-n="${n}">${n} ${L('bölüm', n === 1 ? 'episode' : 'episodes')}</button>`).join('')}
+        <button type="button" class="ke-pick" data-n="0">${L('Sorma', 'Never ask')}</button>
+      </div>
+      <p class="ke-parent-note" id="keSessNote"></p>
+    </div>
+    <div class="ke-week-card ke-parent-card">
       <div class="ke-kpi-lbl">💾 ${L('Yedekleme', 'Backup')}</div>
       <div class="ke-pick-row" style="justify-content:flex-start;">
         <button type="button" class="ke-pick" id="keParentExport">${L('Yedek indir', 'Download backup')}</button>
@@ -5368,6 +5395,17 @@ async function showParentArea(container, api, toolId, categories) {
     </div>`;
   void today;
   host.querySelector('#keParentExport').addEventListener('click', exportBackup);
+  const sessRow = host.querySelector('#keSessLen');
+  const paintSess = () => {
+    const v = SessionLen.get();
+    sessRow.querySelectorAll('[data-n]').forEach((b) => { const on = Number(b.dataset.n) === v; b.classList.toggle('ke-sel', on); b.setAttribute('aria-pressed', String(on)); });
+    const t = SessionLen.teacher();
+    host.querySelector('#keSessNote').textContent = SessionLen.local() === null
+      ? (t !== null ? L(`Öğretmenin seçimi: ${t} bölüm.`, `Teacher's choice: ${t} episodes.`) : L('Varsayılan: 2 bölüm.', 'Default: 2 episodes.'))
+      : L('Bu cihazda sizin seçiminiz geçerli.', 'Your choice applies on this device.');
+  };
+  sessRow.querySelectorAll('[data-n]').forEach((b) => b.addEventListener('click', () => { SessionLen.setLocal(Number(b.dataset.n)); paintSess(); }));
+  paintSess();
   host.querySelector('#keClassMode').addEventListener('click', () => showClassModeSetup(container, api, toolId, categories));
   host.querySelector('#keReportToggle').addEventListener('click', (e) => {
     const on = !ContentReport.enabled(); ContentReport.setEnabled(on);
@@ -6765,6 +6803,7 @@ async function showStoryReader(container, api, toolId, categories, storyId, init
 }
 
 async function enterCategory(container, api, toolId, categories, categoryId, episodeIndex) {
+  _goHomeFn = () => showSectionMenu(container, api, toolId, categories);
   Resume.save({ screen: 'episode', sectionId: _currentSection, categoryId, episodeIndex, journey: _journeyMode });
   const host = container.querySelector('#keScreenHost');
   host.innerHTML = `<div style="padding:60px;text-align:center;color:rgba(245,247,250,.6);">${L('Yükleniyor...', 'Loading...')}</div>`;
@@ -9183,6 +9222,32 @@ function showCelebration(host, container, episode, wordList, score, onDone) {
   const hasNext = episode.episode_index + 1 < episode.episode_count;
   nextBtn.textContent = hasNext ? L('Sonraki Bölüm →', 'Next episode →') : L('Kategoriye Dön', 'Back to category');
   nextBtn.onclick = onDone;
+
+  // Kisa oturum molasi (5b)
+  overlay.querySelectorAll('.ke-break').forEach((el) => el.remove());
+  if (!episode.isReview) SessionLen.count++;
+  const lim = SessionLen.get();
+  if (lim > 0 && SessionLen.count >= lim) {
+    const box = document.createElement('div');
+    box.className = 'ke-break';
+    box.innerHTML = `<p>${L(`Bugün ${SessionLen.count} bölüm bitirdin! 🌟 Devam mı, yarın mı?`, `You finished ${SessionLen.count} episodes today! 🌟 Keep going or continue tomorrow?`)}</p>
+      <div class="ke-btn-row"><button type="button" class="ke-btn-secondary" data-b="tomorrow">🌙 ${L('Yarın devam', 'Tomorrow')}</button></div>`;
+    overlay.querySelector('.ke-btn-row').after(box);
+    nextBtn.textContent = '▶ ' + L('Devam et', 'Keep going');
+    nextBtn.onclick = () => { SessionLen.count = 0; onDone(); };
+    box.querySelector('[data-b="tomorrow"]').addEventListener('click', () => {
+      SessionLen.count = 0;
+      const nm = (Profiles.active() && Profiles.active().name) || '';
+      overlay.querySelectorAll('.ke-btn-row, .ke-score, .ke-reward-chip, #keCelebrationText').forEach((el) => { el.style.display = 'none'; });
+      box.innerHTML = `<div style="font-size:48px;">👋🌙</div><p><b>${L(`Harika çalıştın${nm ? ', ' + escapeProfileText(nm) : ''}! Yarın görüşürüz.`, `Great work${nm ? ', ' + escapeProfileText(nm) : ''}! See you tomorrow.`)}</b></p>
+        <p class="ke-break-tip">${L('Bugün öğrendiğin kelimeleri evde birine söyle! 🏠', 'Tell someone at home the words you learned today! 🏠')}</p>
+        <button type="button" class="ke-btn-primary" data-b="home">${L('Ana ekran', 'Home')}</button>`;
+      const home = () => { overlay.classList.remove('ke-show'); if (_goHomeFn) _goHomeFn(); };
+      box.querySelector('[data-b="home"]').addEventListener('click', home);
+      const m = host.querySelector('#keMascot');
+      if (m) speakWord('See you tomorrow!', m);
+    });
+  }
 
   overlay.classList.add('ke-show');
   launchConfetti(host);

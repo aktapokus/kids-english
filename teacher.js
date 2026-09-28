@@ -321,7 +321,7 @@ function taskSummaryHTML(a, students, catalog) {
     return `<li><b>${escapeHtml(catalog[id].title)}${id.endsWith('_a2') ? ' · A2' : ''}</b> <small>✓${st.done} · ▶${st.started} / ${st.total}</small></li>`;
   }).join('');
   return `<ul class="task-list">${items}${a.review ? '<li>🔁 Zorlandığı kelimeleri tekrar</li>' : ''}</ul>
-    ${a.note ? `<p class="note">📝 ${escapeHtml(a.note)}</p>` : ''}${a.due ? `<p class="note">📅 Son gün: ${escapeHtml(fmtDate(a.due))}</p>` : ''}`;
+    ${a.note ? `<p class="note">📝 ${escapeHtml(a.note)}</p>` : ''}${a.due ? `<p class="note">📅 Son gün: ${escapeHtml(fmtDate(a.due))}</p>` : ''}${a.session_len ? `<p class="note">⏱️ Oturum: ${Number(a.session_len)} bölüm</p>` : ''}`;
 }
 async function saveTask(classId, assignment) {
   const rows = await authFetch(`/rest/v1/classes?id=eq.${classId}`, {
@@ -361,6 +361,8 @@ function renderTaskEditor(box, classId, grade, students, catalog, draft) {
       <div class="chips">${ids.filter((id) => catalog[id]).map((id) => `<label class="pick"><input type="checkbox" value="${id}"${chosen.has(id) ? ' checked' : ''}> ${(id.startsWith('conv_') ? '💬 ' : '') + escapeHtml(catalog[id].title)}${id.endsWith('_a2') ? ' · A2' : ''}</label>`).join('')}</div></div>`).join('')}
     <label class="pick"><input type="checkbox" id="tReview"${cur.review ? ' checked' : ''}> 🔁 Zorlandığı kelimeleri tekrar etsin</label>
     <label for="tNote">Not (isteğe bağlı)</label><input id="tNote" maxlength="200" value="${escapeHtml(cur.note || '')}" placeholder="ör. Cuma günü sınıfta bu kelimelerle oyun oynayacağız!">
+    <label for="tSess">Oturum uzunluğu (bu kadar bölümden sonra "devam mı, yarın mı?" sorulur)</label>
+    <select id="tSess">${[['', 'Varsayılan (2 bölüm)'], ['1', '1 bölüm'], ['2', '2 bölüm'], ['3', '3 bölüm']].map(([v, l]) => `<option value="${v}"${String(cur.session_len || '') === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
     <label for="tDue">Son gün (isteğe bağlı)</label><input id="tDue" type="date" value="${escapeHtml(cur.due || '')}">
     <div class="row"><button type="button" data-act="save">Kaydet</button><button type="button" class="secondary" data-act="cancel">Vazgeç</button></div>
     <div class="msg" id="tMsg-${classId}"></div>`;
@@ -373,7 +375,7 @@ function renderTaskEditor(box, classId, grade, students, catalog, draft) {
     const items = [...chosen].slice(0, TASK_MAX_ITEMS);
     const review = box.querySelector('#tReview').checked;
     if (!items.length && !review) { setMsg(msg, 'En az bir kategori ya da tekrar seç.', 'err'); return; }
-    const assignment = { v: 1, items, review, note: box.querySelector('#tNote').value.trim().slice(0, 200), due: box.querySelector('#tDue').value || null, set_at: new Date().toISOString() };
+    const assignment = { v: 1, items, review, note: box.querySelector('#tNote').value.trim().slice(0, 200), due: box.querySelector('#tDue').value || null, session_len: Number(box.querySelector('#tSess').value) || null, set_at: new Date().toISOString() };
     setMsg(msg, 'Kaydediliyor...');
     try { await saveTask(classId, assignment); renderTask(box, classId, grade, students, catalog); }
     catch (e) { setMsg(msg, 'Kaydedilemedi: ' + e.message, 'err'); }
