@@ -2908,6 +2908,11 @@ ${FONT_FACES}
   .ke-break{ margin-top:12px; padding-top:10px; border-top:2px dashed rgba(245,240,223,.35); }
   .ke-break p{ margin:0 0 8px; font-weight:700; }
   .ke-break .ke-break-tip{ font-weight:600; opacity:.85; }
+  .ke-rec-row{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:8px; }
+  .ke-rec-row[hidden], .ke-rec-row [hidden]{ display:none !important; }
+  .ke-rec-btn{ min-height:44px; padding:8px 14px; border-radius:14px; border:2px solid rgba(245,240,223,.35); background:rgba(255,255,255,.08); color:var(--kb-chalk); font:700 15px 'Fredoka','Baloo 2',sans-serif; cursor:pointer; }
+  .ke-rec-btn.ke-rec-on{ background:#E5484D; border-color:#E5484D; color:#fff; animation: keRecPulse 1s ease-in-out infinite; }
+  @keyframes keRecPulse{ 50%{ transform:scale(1.05); } }
   .ke-story-list{ display:flex; flex-direction:column; gap:14px; max-width:560px; margin:0 auto; position:relative; z-index:1; }
   .ke-story-card{
     display:flex; align-items:center; gap:14px; text-align:left; cursor:pointer;
@@ -6924,6 +6929,11 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
             <button class="ke-btn-primary ke-speak-mic" id="keSpeakMic">🎤 ${L('Söyle', 'Say it')}</button>
             <button class="ke-btn-secondary" id="keSpeakNext" style="display:none;">${L('Devam Et', 'Next')} →</button>
           </div>
+          <div class="ke-rec-row" id="keRecRow" hidden>
+            <button type="button" class="ke-rec-btn" id="keRecBtn">🔴 ${L('Sesimi kaydet', 'Record me')}</button>
+            <button type="button" class="ke-rec-btn" id="keRecAk" hidden>🐙 ${L('Aktapokus', 'Aktapokus')}</button>
+            <button type="button" class="ke-rec-btn" id="keRecMe" hidden>🙋 ${L('Ben', 'Me')}</button>
+          </div>
         </div>
         <div class="ke-sentence" id="keSentence">
           <div class="ke-bubble ke-sentence-bubble" id="keSentenceBubble">${L('🧩 Kelimeleri sırayla diz!', '🧩 Put the words in order!')}</div>
@@ -8029,6 +8039,67 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
   const replayBtn = host.querySelector('#keSpeakReplay');
   const speakCard = speakEl.querySelector('.ke-speak-card');
 
+  // Kendi sesini kaydet ve karsilastir (ogretmen degerlendirmesi 5c).
+  // PUAN YOK; kayit yalniz bu sayfanin belleginde (blob), hicbir yere
+  // gonderilmez ve kaydedilmez; sonraki kelimede/turdan cikista silinir.
+  const recRow = host.querySelector('#keRecRow');
+  const recBtn = host.querySelector('#keRecBtn');
+  const recAk = host.querySelector('#keRecAk');
+  const recMe = host.querySelector('#keRecMe');
+  const canRecord = !!(recRow && window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+  let recUrl = null, recStream = null, recorder = null, recAudio = null, recTimer = null;
+  function recStop() {
+    if (recTimer) { clearTimeout(recTimer); recTimer = null; }
+    if (recorder && recorder.state === 'recording') { try { recorder.stop(); } catch (e) { /* yok say */ } }
+    if (recStream) { recStream.getTracks().forEach((t) => t.stop()); recStream = null; }
+  }
+  function recClear() {
+    recStop();
+    if (recAudio) { recAudio.pause(); recAudio = null; }
+    if (recUrl) { URL.revokeObjectURL(recUrl); recUrl = null; }
+    if (!recRow) return;
+    recBtn.textContent = '🔴 ' + L('Sesimi kaydet', 'Record me');
+    recBtn.classList.remove('ke-rec-on');
+    recAk.hidden = true; recMe.hidden = true;
+  }
+  if (canRecord) {
+    recRow.hidden = false;
+    recBtn.onclick = async () => {
+      if (recorder && recorder.state === 'recording') { recStop(); return; }
+      if (recognizing) return;
+      recClear();
+      try { recStream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e) {
+        feedbackEl.textContent = L('Mikrofon izni verilmedi. 🔒', 'Microphone permission was not given. 🔒');
+        return;
+      }
+      const chunks = [];
+      recorder = new MediaRecorder(recStream);
+      recorder.ondataavailable = (ev) => { if (ev.data && ev.data.size) chunks.push(ev.data); };
+      recorder.onstop = () => {
+        recBtn.classList.remove('ke-rec-on');
+        recBtn.textContent = '🔁 ' + L('Yeniden kaydet', 'Record again');
+        if (!chunks.length) return;
+        recUrl = URL.createObjectURL(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }));
+        recAk.hidden = false; recMe.hidden = false;
+        feedbackEl.textContent = L('Şimdi dinle ve karşılaştır: önce Aktapokus, sonra sen! 👂', 'Now listen and compare: Aktapokus first, then you! 👂');
+        speakWord(wordList[order[idx]].word, mascotEl, () => { if (recUrl) recMe.onclick(); });
+      };
+      recorder.start();
+      recBtn.classList.add('ke-rec-on');
+      recBtn.textContent = '⏹ ' + L('Durdur', 'Stop');
+      feedbackEl.textContent = L('Kaydediyorum... Kelimeyi söyle! 🎙️', 'Recording... say the word! 🎙️');
+      recTimer = setTimeout(recStop, 4000);
+    };
+    recAk.onclick = () => { if (recAudio) recAudio.pause(); speakWord(wordList[order[idx]].word, mascotEl); };
+    recMe.onclick = () => {
+      if (!recUrl) return;
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      if (recAudio) recAudio.pause();
+      recAudio = new Audio(recUrl);
+      recAudio.play().catch(() => { /* yok say */ });
+    };
+  }
+
   progressChip.style.display = 'none';
   mainBubbleEl.style.display = 'none';
   speakEl.classList.add('ke-show');
@@ -8054,6 +8125,8 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
   let recognizing = false;
 
   function endSpeak() {
+    recClear();
+    if (recRow) recRow.hidden = true;
     speakEl.classList.remove('ke-show');
     mascotEl.classList.remove('ke-mascot-compact');
     setMascotPose(host, 'idle');
@@ -8070,6 +8143,7 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
       return;
     }
     const obj = wordList[order[idx]];
+    recClear();
     progressEl.textContent = `${L('Kelime', 'Word')} ${idx + 1} / ${order.length}`;
     iconHost.innerHTML = renderObjectIcon(obj);
     wordEl.textContent = obj.word;
@@ -8095,6 +8169,7 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
 
   micBtn.onclick = () => {
     if (!recognition || recognizing) return;
+    recStop(); // mikrofon ayni anda iki ise verilmez
     recognizing = true;
     micBtn.classList.add('ke-listening');
     micBtn.textContent = L('🎙️ Dinliyorum...', '🎙️ Listening...');
