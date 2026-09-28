@@ -4076,6 +4076,7 @@ function showQuickMenu(container, api, toolId, categories) {
         <button type="button" class="ke-quickmenu-tile qm-parent" id="keQmParent"><span class="qm-ico">👪</span>${L('Ebeveyn', 'Parent')}</button>
       </div>
       <div id="keQmSoundInfo" style="margin-top:2px;font-size:11.5px;color:var(--kb-chalk-dim);font-weight:700;"></div>
+      <div id="keQmOffline" style="margin-top:8px;font-size:12.5px;color:#3A3326;font-weight:700;line-height:1.35;"></div>
       ${window.KE_STATIC ? `<div style="margin-top:10px;font-size:12.5px;font-weight:700;"><a href="privacy.html" style="color:var(--kb-chalk-dim);">${L('Gizlilik', 'Privacy')}</a> · <a href="${reportProblemHref()}" style="color:var(--kb-chalk-dim);">${L('Sorun bildir', 'Report a problem')}</a> · <a href="teacher.html" target="_blank" rel="noopener noreferrer" style="color:var(--kb-chalk-dim);">${L('Öğretmen Paneli', 'Teacher Portal')}</a></div>` : ''}
       <button type="button" class="ke-btn-secondary" id="keQmClose" style="margin-top:14px;">${L('Kapat', 'Close')}</button>
       <button type="button" id="keQmTestKey" style="margin-top:10px;font-size:11px !important;padding:4px 10px !important;opacity:.4;" title="test">🔑</button>
@@ -4113,6 +4114,7 @@ function showQuickMenu(container, api, toolId, categories) {
   overlay.querySelector('#keQmRank').addEventListener('click', () => { close(); showLeaderboard(container); });
   overlay.querySelector('#keQmGuide').addEventListener('click', () => { close(); showGuide(container, api, toolId, categories); });
   overlay.querySelector('#keQmClose').addEventListener('click', close);
+  mountOfflineLine(overlay.querySelector('#keQmOffline'));
   overlay.querySelector('#keQmTestKey').addEventListener('click', () => {
     const code = window.prompt(L('Test şifresi', 'Test code'));
     if (code === '181078') { GameTokens.add(1); refreshGameBadge(container); }
@@ -4344,12 +4346,32 @@ function renderWordOfDay(el, d) {
 // Internetsiz kullanim gostergesi (2026-09-28): SW onbellegindeki dosya
 // sayisi / toplam. Bitene kadar "hazirlaniyor %x", bitince "hazir".
 // Yalniz yayin (PWA) surumunde; SW yoksa hic gorunmez.
+// Hizli menudeki satir (kullanici 2026-09-28: "avatara tiklayinca internetsiz
+// kullanima hazir bilgisi yazsa daha rahat anlasilir"). Surum kisaltmasi,
+// telefonun guncel surumde olup olmadigini anlamak icin.
+function mountOfflineLine(el) {
+  if (!el) return;
+  const ver = window.KE_SW_VER ? String(window.KE_SW_VER).slice(0, 7) : '';
+  const vtxt = ver ? ` · ${L('sürüm', 'version')} ${ver}` : '';
+  const paint = async () => {
+    if (!el.isConnected) return;
+    const st = await offlineState();
+    if (!st) { el.textContent = ver ? `${L('Sürüm', 'Version')} ${ver}` : ''; return; }
+    if (st.nosw) { el.textContent = `⚠️ ${L('Bu tarayıcıda internetsiz kullanım kapalı (gizli sekme olabilir)', 'Offline use is off in this browser (maybe a private tab)')}${vtxt}`; return; }
+    if (st.complete) { el.textContent = `✅ ${L('İnternetsiz kullanıma hazır', 'Ready to use offline')}${vtxt}`; return; }
+    const pct = st.total ? Math.min(99, Math.floor((st.done / st.total) * 100)) : 0;
+    el.textContent = `⬇️ ${L('İnternetsiz kullanım için hazırlanıyor', 'Getting ready for offline use')} %${pct}${vtxt}`;
+    setTimeout(paint, 2000);
+  };
+  paint();
+}
+
 async function offlineState() {
   if (!window.KE_STATIC || !('caches' in window) || !window.KE_SW_VER || !('serviceWorker' in navigator)) return null;
   try {
     // SW kaydi hic yoksa (tarayici reddetti, gizli sekme vb.) gosterge
     // "%0"da takili kalmasin: hic gosterme.
-    if (!(await navigator.serviceWorker.getRegistration())) return null;
+    if (!(await navigator.serviceWorker.getRegistration())) return { nosw: true };
     const name = 'ke-' + window.KE_SW_VER;
     if (!(await caches.has(name))) return { done: 0, total: 0 };
     const c = await caches.open(name);
@@ -4366,7 +4388,7 @@ function mountOffline(host) {
   const paint = async () => {
     if (!host.contains(el)) return;
     const st = await offlineState();
-    if (!st) { el.hidden = true; return; }
+    if (!st || st.nosw) { el.hidden = true; return; }
     el.hidden = false;
     if (st.complete) {
       el.className = 'ke-offline ok';
