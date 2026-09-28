@@ -62,6 +62,9 @@ const CATEGORY_THEME = {
   time_machine:           { c: '#5C6BC0', dark: '#3F4FA8', tint: '#9FA8DA' },
   have_to:                { c: '#26A69A', dark: '#1C8079', tint: '#7FD4CB' },
   made_of:                { c: '#8D6E63', dark: '#6D4C41', tint: '#BCAAA4' },
+  // Takvim (2026-09-28)
+  days_week:              { c: '#29B6F6', dark: '#0288D1', tint: '#81D4FA' },
+  months_seasons:         { c: '#FF8A65', dark: '#E64A19', tint: '#FFCCBC' },
   tourist:                { c: '#8E44AD', dark: '#712E8C', tint: '#C990E0' },
   conversations:          { c: '#EF6C9C', dark: '#D14F80', tint: '#F7A9C6' },
   opposites:              { c: '#7E57C2', dark: '#6641A8', tint: '#B597E0' },
@@ -124,6 +127,7 @@ const CATEGORY_MOTIF = {
   science: '🔬', communication_internet: '💬',
   prepositions: '📦', question_words: '❓', get: '🔄', conversations: '💬', opposites: '↔️',
   irregular_verbs: '👯', time_machine: '⏳', have_to: '📋', made_of: '🏷️',
+  days_week: '📅', months_seasons: '🍂',
   math_numbers: '🔢', math_shapes: '🔷', math_operations: '➕',
   expressions: '🙋', months_time: '📅', countries: '🌍',
   conv_social_manners: '👋', conv_family_home: '🏠', conv_daily_routine: '⏰',
@@ -4364,9 +4368,9 @@ const JOURNEY_SECTORS = [
     // cocuktan gormedigi kelimelerle cevap kurmasini istiyordu. Sira MEB
     // 2. sinif unitelerine yakin (Words, Friends, In the Classroom, Numbers,
     // Colours, Body, Pets/Animals, Fruit); her conv_* kendi kelimelerinden sonra.
-    planets: ['school_education', 'expressions', 'classroom_life', 'conv_social_manners', 'conv_school', 'math_numbers', 'family_people', 'conv_family_home', 'body_health', 'animals', 'food_drinks', 'conv_food_drinks', 'home', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons'] },
+    planets: ['school_education', 'expressions', 'classroom_life', 'days_week', 'conv_social_manners', 'conv_school', 'math_numbers', 'family_people', 'conv_family_home', 'body_health', 'animals', 'food_drinks', 'conv_food_drinks', 'home', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons'] },
   { id: 'mars', emoji: '🔴', tr: 'Mars Üssü', en: 'Mars Base', grade: 3, get level() { return L('3. Sınıf', 'Grade 3') + ' · A1.2'; },
-    planets: ['daily_life', 'conv_daily_routine', 'months_time', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes'] },
+    planets: ['daily_life', 'conv_daily_routine', 'months_time', 'months_seasons', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes'] },
   { id: 'jupiter', emoji: '🟠', tr: 'Jüpiter İstasyonu', en: 'Jupiter Station', grade: 4, get level() { return L('4. Sınıf', 'Grade 4') + ' · A1.3'; },
     planets: ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'countries', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'irregular_verbs', 'time_machine', 'conv_past', 'conv_plans', 'get'] },
   { id: 'saturn', emoji: '🪐', tr: 'Satürn Halkaları', en: 'Saturn Rings', grade: 0, get level() { return L('Bonus', 'Bonus') + ' · A1+'; },

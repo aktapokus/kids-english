@@ -206,8 +206,8 @@ function studentDetail(s, catalog) {
 // ayni sira - MEB Maarif programi: 2. sinif = A1.1 ...). Iki yerde
 // tutuluyor; panel.js'te sira degisirse burasi da guncellenmeli.
 const GRADE_STEPS = [
-  ['2. Sınıf · A1.1', ['school_education', 'expressions', 'classroom_life', 'conv_social_manners', 'conv_school', 'math_numbers', 'family_people', 'conv_family_home', 'body_health', 'animals', 'food_drinks', 'conv_food_drinks', 'home', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons']],
-  ['3. Sınıf · A1.2', ['daily_life', 'conv_daily_routine', 'months_time', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes']],
+  ['2. Sınıf · A1.1', ['school_education', 'expressions', 'classroom_life', 'days_week', 'conv_social_manners', 'conv_school', 'math_numbers', 'family_people', 'conv_family_home', 'body_health', 'animals', 'food_drinks', 'conv_food_drinks', 'home', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons']],
+  ['3. Sınıf · A1.2', ['daily_life', 'conv_daily_routine', 'months_time', 'months_seasons', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes']],
   ['4. Sınıf · A1.3', ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'countries', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'irregular_verbs', 'time_machine', 'conv_past', 'conv_plans', 'get']],
   ['Bonus · A1+', ['technology_computers', 'conv_technology', 'communication_internet', 'science', 'space_astronomy', 'conv_space']],
   ['5. Sınıf · A2.1', ['daily_life', 'family_people', 'school_education', 'classroom_life', 'body_health', 'clothes_shopping', 'food_drinks', 'animals', 'nature_environment', 'city_places', 'hobbies_free_time', 'irregular_verbs', 'have_to'].map((x) => x + '_a2')],
@@ -220,16 +220,16 @@ const GRADE_STEPS = [
 // kategoriye gore YAKLASIKTIR - panelde de oyle yazar.
 const MEB_UNITS = {
   2: [
-    ['School Life', 'Okul Hayatı', ['school_education', 'expressions', 'conv_social_manners', 'conv_school']],
+    ['School Life', 'Okul Hayatı (günler)', ['school_education', 'days_week', 'expressions', 'conv_social_manners', 'conv_school']],
     ['Classroom Life', 'Sınıf Hayatı', ['classroom_life', 'math_numbers']],
-    ['Personal Life', 'Kişisel Hayat', ['body_health', 'clothes_shopping', 'weather_seasons', 'conv_weather_seasons']],
+    ['Personal Life', 'Kişisel Hayat (günler, yaş, doğum günü, hava)', ['body_health', 'clothes_shopping', 'days_week', 'weather_seasons', 'conv_weather_seasons']],
     ['Family Life', 'Aile Hayatı', ['family_people', 'conv_family_home']],
     ['Homes & Houses & Neighbourhoods', 'Evler ve Mahalle', ['home', 'animals']],
     ['Life in the City & the World', 'Şehirde ve Dünyada Hayat', ['food_drinks', 'conv_food_drinks']],
   ],
   3: [
-    ['School Life', 'Okul Hayatı', ['school_education', 'months_time', 'conv_school']],
-    ['Classroom Life', 'Sınıf Hayatı', ['classroom_life', 'question_words', 'prepositions', 'math_shapes']],
+    ['School Life', 'Okul Hayatı (aylar)', ['school_education', 'months_seasons', 'months_time', 'conv_school']],
+    ['Classroom Life', 'Sınıf Hayatı (dersler, mevsimler)', ['classroom_life', 'months_seasons', 'question_words', 'prepositions', 'math_shapes']],
     ['Personal Life', 'Kişisel Hayat', ['body_health', 'emotions_personality', 'conv_feelings_preferences', 'weather_seasons', 'clothes_shopping']],
     ['Family Life', 'Aile Hayatı', ['family_people', 'daily_life', 'conv_daily_routine', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports']],
     ['Homes & Houses & Neighbourhoods', 'Evler ve Mahalle (kır, çiftlik)', ['nature_environment', 'animals', 'conv_animals_nature']],
