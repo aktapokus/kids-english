@@ -2533,6 +2533,12 @@ ${FONT_FACES}
   .ke-cm-opts{ display:flex; flex-wrap:wrap; gap:14px; justify-content:center; }
   .ke-cm-opt{ font-size:clamp(22px,3.6vw,48px); font-weight:700; padding:.3em .8em; border-radius:18px; background:#FFFDF4; color:#12321f; min-width:4em; }
   .ke-cm-opt.ok{ background:#66BB6A; color:#fff; } .ke-cm-opt.no{ opacity:.35; }
+  .ke-cm button.ke-cm-opt{ font:700 clamp(22px,3.6vw,48px) 'Fredoka',system-ui,sans-serif; padding:.3em .8em; border-radius:18px; border:0; background:#FFFDF4; color:#12321f; cursor:pointer; display:inline-flex; align-items:center; gap:.35em; }
+  .ke-cm button.ke-cm-opt.ok{ background:#66BB6A; color:#fff; } .ke-cm button.ke-cm-opt.no{ opacity:.35; }
+  .ke-cm button.ke-cm-opt.wrong{ background:#E5484D; color:#fff; text-decoration:line-through; opacity:.8; }
+  button.ke-cm-opt:hover{ transform:translateY(-2px); }
+  .ke-cm-opt.wrong{ background:#E5484D; color:#fff; text-decoration:line-through; opacity:.8; }
+  .ke-cm-optn{ font-size:.5em; opacity:.55; }
   .ke-cm-bar{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px)); }
   .ke-cm-end{ margin:auto; text-align:center; font-size:clamp(32px,6vw,80px); font-weight:700; }
   .ke-cm-end p{ font-size:.5em; }
@@ -5357,7 +5363,7 @@ function runClassMode(container, slides, title, kind) {
       : `${sl.pic ? `<div class="ke-cm-pic small">${classModePic(sl.pic[0], sl.pic[1], false)}</div>` : ''}
          ${sl.lead ? `<div class="ke-cm-lead">💬 ${escapeProfileText(sl.lead)}</div>` : ''}
          <div class="ke-cm-q">${escapeProfileText(sl.text)}</div>
-         <div class="ke-cm-opts">${sl.options.map((o) => `<div class="ke-cm-opt" data-o="${escapeProfileText(o)}">${escapeProfileText(o)}</div>`).join('')}</div>`;
+         <div class="ke-cm-opts">${sl.options.map((o, k) => `<button type="button" class="ke-cm-opt" data-o="${escapeProfileText(o)}"><span class="ke-cm-optn">${k + 1}</span>${escapeProfileText(o)}</button>`).join('')}</div>`;
     ov.innerHTML = `
       <div class="ke-cm-top"><span>${escapeProfileText(title)}</span><span>${i + 1} / ${slides.length}</span>
         <button type="button" data-a="fs" title="${L('Tam ekran', 'Full screen')}">⛶</button><button type="button" data-a="x" title="${L('Çık', 'Exit')}">✕</button></div>
@@ -5381,6 +5387,12 @@ function runClassMode(container, slides, title, kind) {
       speak(sl.full);
     } else speak(sl.sentence || sl.word);
   }
+  function pickOpt(b) {
+    const sl = slides[i];
+    if (revealed || sl.t !== 'q' || b.classList.contains('wrong')) return;
+    if (b.dataset.o === sl.answer) reveal();
+    else { b.classList.add('wrong'); speak(b.dataset.o); }
+  }
   function finish() {
     const win = kind === 'quiz' ? (score[0] === score[1] ? L('Berabere! 🤝', "It's a draw! 🤝") : `${score[0] > score[1] ? '🔴 A' : '🔵 B'} ${L('takımı kazandı! 🏆', 'team wins! 🏆')}`) : L('Bitti! Aferin sınıf! 👏', 'Finished! Well done, class! 👏');
     ov.innerHTML = `<div class="ke-cm-end"><div>${win}</div>${kind === 'quiz' ? `<p>🔴 ${score[0]} · 🔵 ${score[1]}</p>` : ''}<button type="button" data-a="x">✕ ${L('Kapat', 'Close')}</button></div>`;
@@ -5390,6 +5402,10 @@ function runClassMode(container, slides, title, kind) {
   ov.addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return;
     const a = b.dataset.a;
+    // Secenege tiklama (fare/dokunmatik tahta, klavyede 1-4): yanlissa
+    // yalniz o secenek kirmizi olur, diger takim deneyebilir; dogruysa cevap
+    // gosterilir ve okunur.
+    if (b.classList.contains('ke-cm-opt')) { pickOpt(b); return; }
     if (b.dataset.t) { score[+b.dataset.t] = Math.max(0, score[+b.dataset.t] + (+b.dataset.d)); ov.querySelector(`.ke-cm-team.t${b.dataset.t} span`).textContent = score[+b.dataset.t]; return; }
     if (a === 'x') close();
     else if (a === 'fs') { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); else ov.requestFullscreen && ov.requestFullscreen().catch(() => {}); }
@@ -5403,6 +5419,7 @@ function runClassMode(container, slides, title, kind) {
     else if (e.key === 'ArrowLeft') go(-1);
     else if (e.key === ' ') { e.preventDefault(); reveal(); }
     else if (e.key === 's' || e.key === 'S') ov.querySelector('[data-a="say"]')?.click();
+    else if (/^[1-4]$/.test(e.key)) { const o = ov.querySelectorAll('.ke-cm-opt')[+e.key - 1]; if (o) pickOpt(o); }
     else if (e.key === 'Escape') close();
   }
   document.addEventListener('keydown', onKey);
