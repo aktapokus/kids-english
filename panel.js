@@ -1796,7 +1796,7 @@ ${FONT_FACES}
   .ke-tile, .ke-slot{ touch-action:none; user-select:none; -webkit-user-select:none; }
   .ke-letter-slot{ min-width:34px; width:34px; }
   .ke-slot-gap{ min-width:14px; width:14px; border-bottom:none; }
-  .ke-letter-slot.ke-fixed, .ke-letter-slot.ke-hint{ color:var(--kb-discover); border-bottom-style:solid; }
+  .ke-letter-slot.ke-fixed, .ke-letter-slot.ke-lhint{ color:var(--kb-discover); border-bottom-style:solid; }
   .ke-letter-tile{ min-width:44px; padding:10px 14px !important; font-size:20px !important; }
   .ke-drag-ghost{ position:fixed !important; z-index:99999; transform:translate(-50%,-60%); pointer-events:none; opacity:.92; box-shadow:none; }
   .ke-slot.ke-shake{ border-bottom-color:var(--kb-wrong); animation:ke-shake-x .35s ease; }
@@ -2745,6 +2745,8 @@ ${FONT_FACES}
   .ke-shell .ke-scene.ke-scene-narrow .ke-quiz-cards{ max-width:min(400px, 44vh); gap:12px; }
   .ke-shell .ke-scene.ke-scene-narrow .ke-quiz-card{ padding:6px; border-width:3px; border-radius:16px; }
   .ke-shell .ke-scene.ke-scene-narrow .ke-quiz-word{ font-size:22px; }
+  .ke-shell .ke-quiz-word.ke-quiz-sentence{ font-size:21px; line-height:1.3; font-weight:600; text-align:center; }
+  .ke-quiz-hl{ color:#FFD75A; font-weight:800; }
   .ke-shell .ke-scene.ke-scene-narrow .ke-speak-card{ padding:10px 20px; }
   .ke-shell .ke-scene.ke-scene-narrow .ke-speak-card .ke-icon-hex{ width:min(120px, 16vh); height:min(120px, 16vh); }
   .ke-shell .ke-scene.ke-scene-narrow .ke-sentence-icon .ke-icon-hex{ width:70px; height:70px; }
@@ -2777,6 +2779,9 @@ ${FONT_FACES}
     .ke-shell .ke-scene.ke-scene-narrow .ke-sentence-bank{ gap:12px; }
     .ke-shell .ke-scene.ke-scene-narrow .ke-tile{ font-size:24px; padding:16px 20px; }
     .ke-shell .ke-scene.ke-scene-narrow .ke-slot{ height:56px; font-size:24px; min-width:52px; }
+    .ke-shell .ke-scene .ke-letter-row .ke-letter-slot{ min-width:0; width:auto; flex:0 1 44px; padding:0 2px; }
+    .ke-shell .ke-scene .ke-letter-row .ke-slot-gap{ flex:0 1 16px; }
+    .ke-shell .ke-scene .ke-sentence-slots.ke-letter-row{ flex-wrap:nowrap; gap:6px; width:100%; }
     .ke-shell .ke-scene.ke-scene-narrow .ke-speak-card .ke-icon-hex{ width:min(60vw,30vh,240px); height:min(60vw,30vh,240px); }
   }
   .ke-shell .ke-scene.ke-scene-narrow .ke-bubble{ font-size:13px; max-width:56%; }
@@ -2863,6 +2868,29 @@ ${FONT_FACES}
      sayfa sayfa resim+metin. Kart görselleri kaynakta düşük çözünürlük
      (~190x190px) geldiği için büyük gösterilmiyor, kart içinde küçük
      kapak/önizleme olarak kullanılıyor. */
+  /* Sarki ve Hareket (5a) */
+  .ke-sm-icon{ width:56px; height:56px; flex-shrink:0; border-radius:14px; background:rgba(255,255,255,.92); display:flex; align-items:center; justify-content:center; font-size:32px; }
+  .ke-story-card.ke-sm-card{ background:linear-gradient(135deg,#E07A2F,#B35E1F); }
+  .ke-sm-stage{ display:flex; flex-direction:column; align-items:center; gap:10px; max-width:520px; margin:0 auto; position:relative; z-index:1; text-align:center; }
+  .ke-sm-mascot .ke-sm-av{ width:72px; height:72px; }
+  .ke-sm-mascot.ke-talking{ animation: keSmTalk .5s ease-in-out infinite alternate; }
+  @keyframes keSmTalk{ from{ transform:scale(1); } to{ transform:scale(1.07); } }
+  .ke-sm-move{ font-size:64px; line-height:1.1; min-height:72px; }
+  .ke-sm-move.pop{ animation: keSmPop .35s ease-out; }
+  @keyframes keSmPop{ from{ transform:scale(.6); } to{ transform:scale(1); } }
+  .ke-sm-cue{ font-weight:800; font-size:17px; color:var(--kb-chalk); min-height:24px; line-height:1.35; }
+  .ke-sm-cue.turn{ color:#FFD75A; font-size:22px; }
+  .ke-sm-cue.good{ color:#8BE38B; } .ke-sm-cue.bad{ color:#FFD75A; }
+  .ke-sm-cmd{ font-family:'Fredoka','Baloo 2',sans-serif; font-size:24px; font-weight:700; color:var(--kb-chalk); min-height:32px; }
+  .ke-sm-lines{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; width:100%; }
+  .ke-sm-lines button{ width:100%; min-height:44px; text-align:left; font:600 17px 'Fredoka','Baloo 2',sans-serif; color:var(--kb-chalk); background:rgba(255,255,255,.07); border:2px solid rgba(255,255,255,.18); border-radius:14px; padding:8px 12px; cursor:pointer; }
+  .ke-sm-lines button.on{ background:#FFD75A; color:#1A2233; border-color:#FFD75A; transform:scale(1.02); }
+  .ke-sm-btns{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+  .ke-sm-btns[hidden], .ke-sm-btns [hidden]{ display:none !important; }
+  .ke-sm-btns .ke-btn-primary{ background:#FFD75A; color:#1A2233; border:0; font:700 17px "Fredoka","Baloo 2",sans-serif; min-height:48px; padding:10px 18px; border-radius:16px; cursor:pointer; }
+  .ke-sm-btns .ke-btn-primary.ke-sm-alt{ background:#3B4A63; color:#fff; }
+  .ke-sm-tip{ font-size:13px; color:rgba(245,247,250,.75); margin:0; }
+  .ke-sm-score{ font-weight:800; color:var(--kb-chalk); }
   .ke-story-list{ display:flex; flex-direction:column; gap:14px; max-width:560px; margin:0 auto; position:relative; z-index:1; }
   .ke-story-card{
     display:flex; align-items:center; gap:14px; text-align:left; cursor:pointer;
@@ -3778,6 +3806,13 @@ const SECTIONS = [
     theme: { c: '#8D6E63', dark: '#715650', tint: '#C7A998' },
     special: 'stories',
     pick: () => false },
+  // Ogretmen degerlendirmesi 5a (2026-09-28): Maarif 2-4. sinif ritim/muzik/
+  // hareket. Jetonla acilan oyun degil, ucretsiz ogrenme etkinligi; veri
+  // ui/chants/chants.json (ozgun tekerlemeler, telifli sarki yok).
+  { id: 'singmove', title: 'Sing & Move', sub: 'Chants and Aktapokus Says', subTr: 'Tekerlemeler ve Aktapokus Says', titleTr: 'Şarkı ve Hareket', motif: '🎵',
+    theme: { c: '#E07A2F', dark: '#B35E1F', tint: '#F4C08F' },
+    special: 'singmove',
+    pick: () => false },
 ];
 let _currentSection = null;
 
@@ -3815,6 +3850,7 @@ function resumeLastScreen(container, api, toolId, categories) {
     return;
   }
   if (s && s.screen === 'stories') { showStoryList(container, api, toolId, categories); return; }
+  if (s && s.screen === 'singmove') { showSingMove(container, api, toolId, categories); return; }
   if (s && s.screen === 'story' && s.storyId) { showStoryReader(container, api, toolId, categories, s.storyId, s.page); return; }
   showSectionMenu(container, api, toolId, categories);
 }
@@ -4266,6 +4302,8 @@ function showSectionMenu(container, api, toolId, categories) {
       ? L('Yakında 🔒', 'Coming soon 🔒')
       : sec.special === 'stories'
         ? L('Sesli okuma hikayesi', 'A read-along story')
+        : sec.special === 'singmove'
+          ? L('Söyle, tekrarla, hareket et', 'Chant, echo, move')
         : L(`${cats.length} kategori · ${words} kelime`, `${cats.length} ${cats.length === 1 ? "category" : "categories"} · ${words} words`);
     if (sec.locked) { card.disabled = true; card.style.opacity = '.6'; card.style.cursor = 'not-allowed'; }
     card.innerHTML = `
@@ -4279,6 +4317,7 @@ function showSectionMenu(container, api, toolId, categories) {
     if (!sec.locked) {
       card.addEventListener('click', () => {
         if (sec.special === 'stories') showStoryList(container, api, toolId, categories);
+        else if (sec.special === 'singmove') showSingMove(container, api, toolId, categories);
         else showCategoryGrid(container, api, toolId, categories, sec.id);
       });
     }
@@ -6178,6 +6217,234 @@ function showCategoryGrid(container, api, toolId, categories, sectionId) {
 // yok, sadece sayfa sayfa resim + metin + sesli okuma, sonda küçük bir
 // sözlük. Tamamlanınca Progress'e 'story_<id>' sahte-kategorisi olarak
 // tek bir yıldız işleniyor (rozet/seri sistemiyle tutarlı kalsın diye).
+// ---- Sarki ve Hareket (ogretmen degerlendirmesi 5a) ----
+// Tekerleme: satir satir "dinle - senin siran" (yanki) ya da hep birlikte.
+// Aktapokus Says: "Aktapokus says ..." duyarsan yap, duymazsan kipirdama.
+// Puan yalniz yildiz sayisi; ceza/jeton yok. Dinleme odakli: komut
+// cevaplanana kadar yazida "Aktapokus says" kismi gosterilmez.
+let _chantsCache = null;
+async function loadChants() {
+  if (_chantsCache) return _chantsCache;
+  const r = await fetch(new URL('chants/chants.json', ASSET_BASE_URL).href);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  _chantsCache = await r.json();
+  return _chantsCache;
+}
+function stopSinging() {
+  _singToken++;
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+let _singToken = 0;
+
+async function showSingMove(container, api, toolId, categories) {
+  stopSinging();
+  _journeyMode = false;
+  Resume.save({ screen: 'singmove' });
+  const host = container.querySelector('#keScreenHost');
+  const back = () => showSectionMenu(container, api, toolId, categories);
+  host.innerHTML = `
+    <button class="ke-back-btn" id="keSectionsBack">${ICON_BACK} ${L('Bölümler', 'Sections')}</button>
+    <div class="ke-landing-header">
+      <h1 class="ke-title">${bubbleTitleHTML(L('Şarkı ve Hareket', 'Sing & Move'))}</h1>
+      <p class="ke-subtitle">${L('Dinle, tekrarla, hareket et!', 'Listen, repeat, move!')}</p>
+    </div>
+    <div class="ke-story-list" id="keSmList"><div style="padding:40px;text-align:center;color:rgba(245,247,250,.6);">${L('Yükleniyor...', 'Loading...')}</div></div>
+  `;
+  host.querySelector('#keSectionsBack').addEventListener('click', back);
+  let data;
+  try { data = await loadChants(); } catch (e) {
+    host.querySelector('#keSmList').innerHTML = `<div style="padding:40px;text-align:center;color:#FF4D4D;">${L('Yüklenemedi', 'Could not load')}: ${e.message}</div>`;
+    return;
+  }
+  const listEl = host.querySelector('#keSmList');
+  listEl.innerHTML = '';
+  const addCard = (icon, eyebrow, title, meta, onClick) => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'ke-story-card ke-sm-card';
+    card.innerHTML = `<span class="ke-sm-icon">${icon}</span>
+      <div class="ke-story-info"><div class="ke-story-eyebrow">${eyebrow}</div>
+      <div class="ke-story-title">${escapeProfileText(title)}</div>
+      <div class="ke-story-meta">${meta}</div></div>`;
+    card.addEventListener('click', onClick);
+    listEl.appendChild(card);
+  };
+  addCard('🐙', L('Hareket oyunu', 'Movement game'), 'Aktapokus Says',
+    L('"Aktapokus says" duyarsan yap, duymazsan kıpırdama!', 'Hear "Aktapokus says"? Do it! If not, freeze!'),
+    () => runSays(container, api, toolId, categories, data.says));
+  data.chants.forEach((c) => addCard(c.icon, L('Tekerleme', 'Chant') + ` · ${c.station === 'mars' ? L('3. sınıf', 'Grade 3') : L('2. sınıf', 'Grade 2')}`,
+    _lang === 'tr' ? c.title_tr : c.title, `${c.lines.length} ${L('satır', 'lines')}`,
+    () => runChant(container, api, toolId, categories, c)));
+  pushBackState(back);
+}
+
+function singMascotHTML() {
+  return `<div class="ke-sm-mascot" id="keSmMascot">${avatarCircleHTML(Profiles.active(), 'ke-sm-av')}</div>`;
+}
+
+function runChant(container, api, toolId, categories, chant) {
+  stopSinging();
+  const host = container.querySelector('#keScreenHost');
+  const back = () => { stopSinging(); showSingMove(container, api, toolId, categories); };
+  host.innerHTML = `
+    <button class="ke-back-btn" id="keSmBack">${ICON_BACK} ${L('Şarkı ve Hareket', 'Sing & Move')}</button>
+    <div class="ke-sm-stage">
+      ${singMascotHTML()}
+      <h2 class="ke-story-card-title">${chant.icon} ${escapeProfileText(chant.title)}</h2>
+      <div class="ke-sm-move" id="keSmMove" aria-hidden="true">${chant.icon}</div>
+      <div class="ke-sm-cue" id="keSmCue" aria-live="polite">&nbsp;</div>
+      <ol class="ke-sm-lines">${chant.lines.map((ln, i) => `<li><button type="button" data-i="${i}">${escapeProfileText(ln.text)}</button></li>`).join('')}</ol>
+      <div class="ke-sm-btns">
+        <button type="button" class="ke-btn-primary" id="keSmEcho">🗣️ ${L('Dinle ve tekrarla', 'Listen & repeat')}</button>
+        <button type="button" class="ke-btn-primary ke-sm-alt" id="keSmAll">🎵 ${L('Hep birlikte', 'All together')}</button>
+        <button type="button" class="ke-btn-primary ke-sm-alt" id="keSmStop" hidden>⏹ ${L('Dur', 'Stop')}</button>
+      </div>
+      <p class="ke-sm-tip">${L('İpucu: Her satırdaki hareketi yaparak söyleyin. Satıra dokununca tek başına okunur.', 'Tip: do the move while you say each line. Tap a line to hear it alone.')}</p>
+    </div>`;
+  host.querySelector('#keSmBack').addEventListener('click', back);
+  const mascot = host.querySelector('#keSmMascot');
+  const moveEl = host.querySelector('#keSmMove');
+  const cue = host.querySelector('#keSmCue');
+  const lineBtns = [...host.querySelectorAll('.ke-sm-lines button')];
+  const stopBtn = host.querySelector('#keSmStop');
+  const mark = (i) => {
+    lineBtns.forEach((b, k) => b.classList.toggle('on', k === i));
+    moveEl.textContent = i >= 0 ? chant.lines[i].move : chant.icon;
+    moveEl.classList.remove('pop'); void moveEl.offsetWidth; moveEl.classList.add('pop');
+  };
+  const done = () => { mark(-1); cue.innerHTML = '&nbsp;'; stopBtn.hidden = true; };
+  // Yanki bekleme suresi satir uzunluguna gore: cocugun tekrar etmesine yeter.
+  const echoMs = (t) => 1400 + t.split(/\s+/).length * 650;
+  function play(echo) {
+    stopSinging();
+    const tok = _singToken;
+    stopBtn.hidden = false;
+    let i = 0;
+    const next = () => {
+      if (tok !== _singToken) return;
+      if (i >= chant.lines.length) {
+        done();
+        cue.textContent = L('Harika! 🎉 Bir daha?', 'Great! 🎉 Once more?');
+        return;
+      }
+      const ln = chant.lines[i];
+      mark(i);
+      cue.textContent = echo ? L('🐙 Dinle...', '🐙 Listen...') : L('🎵 Birlikte söyle!', '🎵 Say it together!');
+      speakThen(ln.text, mascot, 900, () => {
+        if (tok !== _singToken) return;
+        i++;
+        if (!echo) { next(); return; }
+        cue.textContent = L('🙋 Senin sıran!', '🙋 Your turn!');
+        cue.classList.add('turn');
+        setTimeout(() => { cue.classList.remove('turn'); next(); }, echoMs(ln.text));
+      });
+    };
+    next();
+  }
+  host.querySelector('#keSmEcho').addEventListener('click', () => play(true));
+  host.querySelector('#keSmAll').addEventListener('click', () => play(false));
+  stopBtn.addEventListener('click', () => { stopSinging(); done(); });
+  lineBtns.forEach((b) => b.addEventListener('click', () => {
+    stopSinging();
+    const i = Number(b.dataset.i);
+    mark(i);
+    speakWord(chant.lines[i].text, mascot);
+  }));
+  pushBackState(back);
+}
+
+function runSays(container, api, toolId, categories, commands) {
+  stopSinging();
+  const host = container.querySelector('#keScreenHost');
+  const back = () => { stopSinging(); showSingMove(container, api, toolId, categories); };
+  const ROUNDS = 10;
+  // 10 turun 6-7'si "Aktapokus says" ile; ardisik ayni komut yok.
+  const pool = shuffle(commands.slice());
+  const rounds = Array.from({ length: ROUNDS }, (_, k) => ({ cmd: pool[k % pool.length], says: Math.random() < 0.65 }));
+  if (rounds.every((r) => r.says)) rounds[3 + Math.floor(Math.random() * 6)].says = false;
+  if (!rounds.some((r) => r.says)) rounds[0].says = true;
+  let n = 0;
+  let stars = 0;
+  host.innerHTML = `
+    <button class="ke-back-btn" id="keSmBack">${ICON_BACK} ${L('Şarkı ve Hareket', 'Sing & Move')}</button>
+    <div class="ke-sm-stage">
+      ${singMascotHTML()}
+      <h2 class="ke-story-card-title">🐙 Aktapokus Says</h2>
+      <div class="ke-sm-cue" id="keSmCue">${L('"Aktapokus says" duyarsan hareketi yap ve 🙋 bas. Duymazsan kıpırdama ve ✋ bas!', 'If you hear "Aktapokus says", do it and tap 🙋. If not, freeze and tap ✋!')}</div>
+      <div class="ke-sm-move" id="keSmMove" aria-hidden="true">🐙</div>
+      <div class="ke-sm-cmd" id="keSmCmd">&nbsp;</div>
+      <div class="ke-sm-btns" id="keSmAns" hidden>
+        <button type="button" class="ke-btn-primary" data-did="1">🙋 ${L('Yaptım!', 'I did it!')}</button>
+        <button type="button" class="ke-btn-primary ke-sm-alt" data-did="0">✋ ${L('Kıpırdamadım', "I didn't move")}</button>
+      </div>
+      <div class="ke-sm-btns">
+        <button type="button" class="ke-btn-primary" id="keSmGo">▶ ${L('Başla', 'Start')}</button>
+        <button type="button" class="ke-btn-primary ke-sm-alt" id="keSmAgain" hidden>🔁 ${L('Tekrar dinle', 'Listen again')}</button>
+      </div>
+      <div class="ke-sm-score" id="keSmScore"></div>
+    </div>`;
+  host.querySelector('#keSmBack').addEventListener('click', back);
+  const mascot = host.querySelector('#keSmMascot');
+  const q = (sel) => host.querySelector(sel);
+  const sayText = (r) => (r.says ? 'Aktapokus says, ' + r.cmd.text.charAt(0).toLowerCase() + r.cmd.text.slice(1) : r.cmd.text) + '!';
+  const score = () => { q('#keSmScore').textContent = `${n + 1} / ${ROUNDS} · ⭐ ${stars}`; };
+  let answered = false;
+  function ask() {
+    const r = rounds[n];
+    answered = false;
+    score();
+    q('#keSmGo').hidden = true;
+    q('#keSmAgain').hidden = false;
+    q('#keSmAns').hidden = false;
+    q('#keSmMove').textContent = '👂';
+    q('#keSmCmd').textContent = '…';
+    q('#keSmCue').textContent = L('Dikkatle dinle!', 'Listen carefully!');
+    q('#keSmCue').className = 'ke-sm-cue';
+    speakWord(sayText(r), mascot, () => {
+      if (answered) return;
+      // Resim hareketi gosterir ama "says" kismini gostermez: karar kulaktan.
+      q('#keSmMove').textContent = r.cmd.icon;
+      q('#keSmCmd').textContent = '… ' + r.cmd.text;
+    });
+  }
+  function answer(did) {
+    if (answered || q('#keSmAns').hidden) return;
+    answered = true;
+    stopSinging();
+    const r = rounds[n];
+    const ok = did === r.says;
+    if (ok) stars++;
+    mascotReact(mascot, ok);
+    q('#keSmMove').textContent = r.cmd.icon;
+    q('#keSmCmd').innerHTML = r.says ? `<b>Aktapokus says</b>, ${escapeProfileText(r.cmd.text.charAt(0).toLowerCase() + r.cmd.text.slice(1))}!` : `${escapeProfileText(r.cmd.text)}!`;
+    const cue = q('#keSmCue');
+    cue.className = 'ke-sm-cue ' + (ok ? 'good' : 'bad');
+    cue.textContent = r.says
+      ? (ok ? L('Doğru! "Aktapokus says" dedi, yaptın. ⭐', 'Right! It said "Aktapokus says" and you did it. ⭐') : L('"Aktapokus says" dedi, yapmalıydın! 🙂', 'It said "Aktapokus says", so do it! 🙂'))
+      : (ok ? L('Doğru! "Aktapokus says" demedi, kıpırdamadın. ⭐', 'Right! No "Aktapokus says", and you froze. ⭐') : L('Dikkat! "Aktapokus says" demedi, kıpırdama! 🙂', 'Careful! No "Aktapokus says", so freeze! 🙂'));
+    q('#keSmAns').hidden = true;
+    q('#keSmAgain').hidden = true;
+    setTimeout(() => {
+      if (!host.contains(cue)) return;
+      n++;
+      if (n < ROUNDS) { ask(); return; }
+      q('#keSmScore').textContent = '';
+      q('#keSmMove').textContent = stars >= 8 ? '🏆' : '🌟';
+      q('#keSmCmd').textContent = `⭐ ${stars} / ${ROUNDS}`;
+      cue.className = 'ke-sm-cue';
+      cue.textContent = L('Bitti! Bir kez daha oynayalım mı?', 'Finished! Play again?');
+      const go = q('#keSmGo');
+      go.hidden = false;
+      go.textContent = '🔁 ' + L('Yeniden oyna', 'Play again');
+      go.onclick = () => runSays(container, api, toolId, categories, commands);
+    }, 2600);
+  }
+  q('#keSmGo').onclick = ask;
+  q('#keSmAgain').addEventListener('click', () => { if (!answered) speakWord(sayText(rounds[n]), mascot); });
+  host.querySelectorAll('[data-did]').forEach((b) => b.addEventListener('click', () => answer(b.dataset.did === '1')));
+  pushBackState(back);
+}
+
 async function showStoryList(container, api, toolId, categories) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   _journeyMode = false;
@@ -7606,6 +7873,19 @@ function startQuiz(host, container, episode, wordList, mascotEl, restartEpisode,
     // "sesle birlikte yazılar da olsun" geri bildirimi (hem dinleme hem
     // okuma pekiştirmesi, sesin çalışmadığı durumlarda da yedek).
     quizWordEl.textContent = currentCorrectWord;
+    // Yapilar (fiil ikizleri, have to...): "Came" gibi bir fiil hali tek
+    // basina resmedilemez; resim kartin CUMLESINI anlatir. Bu konularda soru
+    // cumleyle sorulur, hedef ifade vurgulanir (2026-09-28 geri bildirimi:
+    // "kelime ile resimler eslesmiyor").
+    const sentenceMode = STRUCT_CATEGORY_IDS.includes(episode.category_id) && !correctObj._review && correctObj.sentence;
+    if (sentenceMode) {
+      const sent = correctObj.sentence;
+      const at = sent.toLowerCase().indexOf(String(correctObj.word).toLowerCase());
+      const len = String(correctObj.word).length;
+      quizWordEl.innerHTML = at < 0 ? escapeProfileText(sent)
+        : `${escapeProfileText(sent.slice(0, at))}<b class="ke-quiz-hl">${escapeProfileText(sent.slice(at, at + len))}</b>${escapeProfileText(sent.slice(at + len))}`;
+    }
+    quizWordEl.classList.toggle('ke-quiz-sentence', !!sentenceMode);
 
     // Yanlış seçenekler tüm bölüm havuzundan gelebilir (çocuk sahnede
     // onları da gördü) — ama "doğru cevap" olarak sadece keşfettiği
@@ -7624,7 +7904,7 @@ function startQuiz(host, container, episode, wordList, mascotEl, restartEpisode,
       cardsHost.appendChild(card);
     });
 
-    speakWord(correctObj.word, mascotEl);
+    speakWord(sentenceMode ? correctObj.sentence : correctObj.word, mascotEl);
   }
 
   function onAnswer(card, opt) {
@@ -7684,7 +7964,9 @@ function startQuiz(host, container, episode, wordList, mascotEl, restartEpisode,
   }
 
   replayBtn.onclick = () => {
-    if (currentCorrectWord) speakWord(currentCorrectWord, mascotEl);
+    if (!currentCorrectWord) return;
+    const sm = quizWordEl.classList.contains('ke-quiz-sentence') && currentCorrectObj && currentCorrectObj.sentence;
+    speakWord(sm ? currentCorrectObj.sentence : currentCorrectWord, mascotEl);
   };
 
   renderQuestion();
@@ -7948,6 +8230,7 @@ function startLetterRound(host, container, episode, wordList, mascotEl, score, o
   let idx = 0;
 
   function endLetterRound() {
+    slotsEl.classList.remove('ke-letter-row');
     sEl.classList.remove('ke-show');
     mascotEl.classList.remove('ke-mascot-compact');
     setMascotPose(host, 'idle');
@@ -7979,6 +8262,9 @@ function startLetterRound(host, container, episode, wordList, mascotEl, score, o
     speakWord(target, mascotEl);
 
     slotsEl.innerHTML = '';
+    // Harf kutulari tek satirda kalir, uzun kelimede daralir (2026-09-28:
+    // "Every day" iki satira tasip harf havuzunun ustune biniyordu).
+    slotsEl.classList.add('ke-letter-row');
     plan.forEach((p) => {
       const slot = document.createElement('div');
       slot.className = 'ke-slot ke-letter-slot';
@@ -7987,7 +8273,7 @@ function startLetterRound(host, container, episode, wordList, mascotEl, score, o
       } else if (p.fixed) {
         slot.textContent = p.c; slot.classList.add('ke-filled', 'ke-fixed');
       } else if (p.hint) {
-        slot.textContent = p.c.toUpperCase(); slot.classList.add('ke-filled', 'ke-hint');
+        slot.textContent = p.c.toUpperCase(); slot.classList.add('ke-filled', 'ke-lhint');
       }
       slotsEl.appendChild(slot);
     });
@@ -8018,7 +8304,7 @@ function startLetterRound(host, container, episode, wordList, mascotEl, score, o
     }
     function resetSlots() { filled.forEach((_, bi) => freeAt(bi)); renderSlots(); }
 
-    slotsEl.querySelectorAll('.ke-letter-slot:not(.ke-fixed):not(.ke-hint)').forEach((slot, bi) => {
+    slotsEl.querySelectorAll('.ke-letter-slot:not(.ke-fixed):not(.ke-lhint)').forEach((slot, bi) => {
       slot.addEventListener('click', () => { freeAt(bi); renderSlots(); });
     });
 

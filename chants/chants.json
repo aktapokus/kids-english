@@ -1,0 +1,80 @@
+{
+  "_doc": "Ozgun tekerlemeler (2026-09-28, ogretmen degerlendirmesi 5a: Maarif 2-4. sinif ritim, muzik, hareket). Telifli sarki sozu yok. Istasyon kurallari: genis zaman, emir, kisa satir. 'move': satirla yapilacak hareketin emojisi.",
+  "chants": [
+    {
+      "id": "days", "station": "moon", "title": "Days of the Week", "title_tr": "Haftanın Günleri", "icon": "📅",
+      "lines": [
+        {"text": "Monday, Tuesday, clap, clap, clap!", "move": "👏"},
+        {"text": "Wednesday, Thursday, tap, tap, tap!", "move": "👆"},
+        {"text": "Friday, Saturday, jump up high!", "move": "🦘"},
+        {"text": "Sunday, Sunday, wave goodbye!", "move": "👋"},
+        {"text": "Seven days in every week!", "move": "7️⃣"}
+      ]
+    },
+    {
+      "id": "numbers", "station": "moon", "title": "Aktapokus Counts", "title_tr": "Aktapokus Sayıyor", "icon": "🐙",
+      "lines": [
+        {"text": "One, two, three, four, five, six,", "move": "🖐️"},
+        {"text": "Aktapokus has got six arms!", "move": "🐙"},
+        {"text": "Seven, eight, nine and ten,", "move": "✋"},
+        {"text": "Let's count again, my friend!", "move": "🔁"}
+      ]
+    },
+    {
+      "id": "body", "station": "moon", "title": "Touch and Clap", "title_tr": "Dokun ve Alkışla", "icon": "🙆",
+      "lines": [
+        {"text": "Touch your head, touch your nose,", "move": "👃"},
+        {"text": "Touch your knees, touch your toes,", "move": "🦶"},
+        {"text": "Clap your hands, one, two, three,", "move": "👏"},
+        {"text": "Stamp your feet and look at me!", "move": "🦶"}
+      ]
+    },
+    {
+      "id": "colours", "station": "moon", "title": "Colours Are Fun", "title_tr": "Renkler Eğlenceli", "icon": "🎨",
+      "lines": [
+        {"text": "Red like an apple, yellow like the sun,", "move": "🍎"},
+        {"text": "Green like a leaf, colours are fun!", "move": "🍃"},
+        {"text": "Blue like the sky, white like the snow,", "move": "☁️"},
+        {"text": "Orange like a carrot, let's go, go, go!", "move": "🥕"}
+      ]
+    },
+    {
+      "id": "months", "station": "mars", "title": "Twelve Months", "title_tr": "On İki Ay", "icon": "🗓️",
+      "lines": [
+        {"text": "January, February, March, hello!", "move": "👋"},
+        {"text": "April, May and June, off we go!", "move": "🚶"},
+        {"text": "July, August, September, too,", "move": "☀️"},
+        {"text": "October, November, December, woo-hoo!", "move": "🙌"},
+        {"text": "Twelve months in a year, hooray!", "move": "🎉"}
+      ]
+    },
+    {
+      "id": "seasons", "station": "mars", "title": "Four Seasons", "title_tr": "Dört Mevsim", "icon": "🍂",
+      "lines": [
+        {"text": "Spring, spring, the flowers grow,", "move": "🌷"},
+        {"text": "Summer, summer, hot sun glows,", "move": "☀️"},
+        {"text": "Autumn, autumn, leaves fall down,", "move": "🍂"},
+        {"text": "Winter, winter, snow on the ground,", "move": "❄️"},
+        {"text": "Four seasons in a year, around and around!", "move": "🔄"}
+      ]
+    }
+  ],
+  "says": [
+    {"text": "Touch your nose", "icon": "👃"},
+    {"text": "Touch your head", "icon": "🙆"},
+    {"text": "Touch your ears", "icon": "👂"},
+    {"text": "Touch your knees", "icon": "🦵"},
+    {"text": "Touch your toes", "icon": "🦶"},
+    {"text": "Clap your hands", "icon": "👏"},
+    {"text": "Stand up", "icon": "🧍"},
+    {"text": "Sit down", "icon": "🪑"},
+    {"text": "Jump", "icon": "🦘"},
+    {"text": "Turn around", "icon": "🔄"},
+    {"text": "Wave your hand", "icon": "👋"},
+    {"text": "Raise your hand", "icon": "🙋"},
+    {"text": "Stamp your feet", "icon": "🦶"},
+    {"text": "Close your eyes", "icon": "🙈"},
+    {"text": "Open your mouth", "icon": "😮"},
+    {"text": "Shake your arms", "icon": "🐙"}
+  ]
+}
