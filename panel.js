@@ -65,6 +65,7 @@ const CATEGORY_THEME = {
   // Takvim (2026-09-28)
   days_week:              { c: '#29B6F6', dark: '#0288D1', tint: '#81D4FA' },
   months_seasons:         { c: '#FF8A65', dark: '#E64A19', tint: '#FFCCBC' },
+  telling_time:           { c: '#5C6BC0', dark: '#3949AB', tint: '#C5CAE9' },
   tourist:                { c: '#8E44AD', dark: '#712E8C', tint: '#C990E0' },
   conversations:          { c: '#EF6C9C', dark: '#D14F80', tint: '#F7A9C6' },
   opposites:              { c: '#7E57C2', dark: '#6641A8', tint: '#B597E0' },
@@ -127,7 +128,7 @@ const CATEGORY_MOTIF = {
   science: '🔬', communication_internet: '💬',
   prepositions: '📦', question_words: '❓', get: '🔄', conversations: '💬', opposites: '↔️',
   irregular_verbs: '👯', time_machine: '⏳', have_to: '📋', made_of: '🏷️',
-  days_week: '📅', months_seasons: '🍂',
+  days_week: '📅', months_seasons: '🍂', telling_time: '🕒',
   math_numbers: '🔢', math_shapes: '🔷', math_operations: '➕',
   expressions: '🙋', months_time: '📅', countries: '🌍',
   conv_social_manners: '👋', conv_family_home: '🏠', conv_daily_routine: '⏰',
@@ -3862,10 +3863,14 @@ const A2_CATEGORY_SUFFIX = '_a2';
 const B1_CATEGORY_SUFFIX = '_b1';
 // İngilizce ilkokul matematiği pilotu (bkz. scripts/build_math_pilot.py)
 const MATH_CATEGORY_PREFIX = 'math_';
+const TIME_CATEGORY_IDS = ['days_week', 'months_time', 'months_seasons', 'telling_time'];
 const SECTIONS = [
   { id: 'words', title: 'Words', sub: 'Themed word categories', subTr: 'Temalı kelime kategorileri', titleTr: 'Kelimeler', motif: '📚',
     theme: { c: '#FFA000', dark: '#DB8A00', tint: '#FFCF66' },
-    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !CONVERSATION_CATEGORY_IDS.includes(c.id) && !OPPOSITE_CATEGORY_IDS.includes(c.id) && !STRUCT_CATEGORY_IDS.includes(c.id) && !c.id.endsWith(A2_CATEGORY_SUFFIX) && !c.id.endsWith(B1_CATEGORY_SUFFIX) && !c.id.startsWith(MATH_CATEGORY_PREFIX) },
+    pick: (c) => !GRAMMAR_CATEGORY_IDS.includes(c.id) && !QA_CATEGORY_IDS.includes(c.id) && !GET_CATEGORY_IDS.includes(c.id) && !CONVERSATION_CATEGORY_IDS.includes(c.id) && !OPPOSITE_CATEGORY_IDS.includes(c.id) && !STRUCT_CATEGORY_IDS.includes(c.id) && !TIME_CATEGORY_IDS.includes(c.id) && !c.id.endsWith(A2_CATEGORY_SUFFIX) && !c.id.endsWith(B1_CATEGORY_SUFFIX) && !c.id.startsWith(MATH_CATEGORY_PREFIX) },
+  { id: 'time', title: 'Time & Calendar', sub: 'Days, months, seasons, telling the time', subTr: 'Günler, aylar, mevsimler, saat', titleTr: 'Zaman ve Takvim', motif: '🕒',
+    theme: { c: '#5C6BC0', dark: '#3949AB', tint: '#C5CAE9' },
+    pick: (c) => TIME_CATEGORY_IDS.includes(c.id) },
   { id: 'grammar', title: 'Grammar', sub: 'Prepositions: in, on, at, under…', subTr: 'Edatlar: in, on, at, under…', titleTr: 'Gramer', motif: '🧩',
     theme: { c: '#00ACC1', dark: '#008BA0', tint: '#5DD6E6' },
     pick: (c) => GRAMMAR_CATEGORY_IDS.includes(c.id) },
@@ -4597,7 +4602,7 @@ const JOURNEY_SECTORS = [
   { id: 'mars', emoji: '🔴', tr: 'Mars Üssü', en: 'Mars Base', grade: 3, get level() { return L('3. Sınıf', 'Grade 3') + ' · A1.2'; },
     planets: ['daily_life', 'conv_daily_routine', 'months_time', 'months_seasons', 'emotions_personality', 'conv_feelings_preferences', 'hobbies_free_time', 'sports_exercise', 'conv_hobbies_sports', 'nature_environment', 'conv_animals_nature', 'question_words', 'prepositions', 'math_shapes'] },
   { id: 'jupiter', emoji: '🟠', tr: 'Jüpiter İstasyonu', en: 'Jupiter Station', grade: 4, get level() { return L('4. Sınıf', 'Grade 4') + ' · A1.3'; },
-    planets: ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'countries', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'irregular_verbs', 'time_machine', 'conv_past', 'conv_plans', 'get'] },
+    planets: ['jobs_professions', 'conv_jobs_safety', 'city_places', 'conv_city_transport', 'travel_transportation', 'countries', 'conv_travel', 'conv_shopping_clothes', 'conv_health', 'opposites', 'math_operations', 'conv_celebrations', 'telling_time', 'irregular_verbs', 'time_machine', 'conv_past', 'conv_plans', 'get'] },
   { id: 'saturn', emoji: '🪐', tr: 'Satürn Halkaları', en: 'Saturn Rings', grade: 0, get level() { return L('Bonus', 'Bonus') + ' · A1+'; },
     planets: ['technology_computers', 'conv_technology', 'communication_internet', 'science', 'space_astronomy', 'conv_space'] },
   { id: 'neptune', emoji: '🔵', tr: 'Neptün Kapısı', en: 'Neptune Gate', grade: 5, get level() { return L('5. Sınıf', 'Grade 5') + ' · A2.1'; }, planets: A2_JOURNEY_IDS.y5 },
