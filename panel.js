@@ -9567,6 +9567,94 @@ function sentenceBlanks(tokens, word, stage) {
   return s;
 }
 
+// ---- Cumle kurma kutulari: yerlestirme, araya ekleme, surukle-birak ----
+// Once startSentenceRound ve startConversationRound'da iki ayri kopya vardi;
+// her duzeltme iki kez yazilmak zorundaydi (2026-09-30 refactor).
+// slotItems: kutu basina null | {tile, tok} | {fixed:true, tok}; slotEls: () => kutu elemanlari.
+function makeSlotBoard(slotItems, slotEls0, renderSlots) {
+  function freeItem(i) {
+    const it = slotItems[i];
+    if (it && !it.fixed) { it.tile.classList.remove('ke-used'); slotItems[i] = null; }
+  }
+  function placeTile(tile, tok, i) {
+    if (slotItems[i] && slotItems[i].fixed) return;
+    freeItem(i);
+    slotItems[i] = { tile, tok };
+    tile.classList.add('ke-used');
+  }
+  // Surukle-birak ARAYA EKLER (2026-09-30 geri bildirimi: "kelimelerin
+  // arasina girebilmeliyim, simdi silip dogru yere koymam gerekiyor").
+  // Birakilan kutudaki kelime ve sonrakiler bir bos kutuya dogru kayar;
+  // sagda bos yoksa sola kayar; hic yer yoksa en sondaki tas bankaya doner.
+  function insertAt(entry, j, fromI) {
+    const pos = slotItems.map((it, i) => (it && it.fixed ? -1 : i)).filter((i) => i >= 0);
+    const seq = pos.map((i) => slotItems[i]);
+    if (fromI != null) seq[pos.indexOf(fromI)] = null;
+    let k = pos.indexOf(j);
+    if (k < 0) return;
+    if (seq[k]) {
+      let r = k + 1; while (r < seq.length && seq[r]) r++;
+      if (r < seq.length) { for (let t = r; t > k; t--) seq[t] = seq[t - 1]; }
+      else {
+        let l = k - 1; while (l >= 0 && seq[l]) l--;
+        if (l >= 0) { for (let t = l; t < k - 1; t++) seq[t] = seq[t + 1]; k -= 1; }
+        else { const out = seq[seq.length - 1]; if (out && out.tile) out.tile.classList.remove('ke-used'); for (let t = seq.length - 1; t > k; t--) seq[t] = seq[t - 1]; }
+      }
+    }
+    seq[k] = entry;
+    if (entry.tile) entry.tile.classList.add('ke-used');
+    pos.forEach((i, t) => { slotItems[i] = seq[t]; });
+  }
+  // Surukle-birak (dokunmatik + fare): kelime karti ya da dolu kutu
+  // baska bir kutuya birakilabilir; tiklama/dokunma da calisir.
+  function slotIndexAt(x, y) {
+    const el = document.elementFromPoint(x, y);
+    const slot = el && el.closest ? el.closest('.ke-slot') : null;
+    return slot ? slotEls0().indexOf(slot) : -1;
+  }
+  function startDrag(ev, label, onDrop, onTap) {
+    if (ev.button !== undefined && ev.button > 0) return;
+    const sx = ev.clientX, sy = ev.clientY;
+    let ghost = null, moved = false;
+    const move = (e) => {
+      if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) > 8) {
+        moved = true;
+        ghost = document.createElement('div');
+        ghost.className = 'ke-tile ke-drag-ghost';
+        ghost.textContent = label;
+        document.body.appendChild(ghost);
+      }
+      if (ghost) { ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px'; e.preventDefault(); }
+    };
+    const up = (e) => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+      document.removeEventListener('pointercancel', up);
+      if (ghost) ghost.remove();
+      if (moved) onDrop(slotIndexAt(e.clientX, e.clientY)); else onTap();
+    };
+    document.addEventListener('pointermove', move, { passive: false });
+    document.addEventListener('pointerup', up);
+    document.addEventListener('pointercancel', up);
+  }
+
+  slotEls0().forEach((slot, i) => {
+    slot.addEventListener('pointerdown', (ev) => {
+      if (!slotItems[i] || slotItems[i].fixed) return;
+      ev.preventDefault();
+      startDrag(ev, slotItems[i].tok.text,
+        (j) => {
+          if (j >= 0 && j !== i && !(slotItems[j] && slotItems[j].fixed)) insertAt(slotItems[i], j, i);
+          else if (j < 0) freeItem(i);
+          renderSlots();
+        },
+        () => { freeItem(i); renderSlots(); });
+    });
+  });
+
+  return { freeItem, placeTile, insertAt, startDrag };
+}
+
 function startSentenceRound(host, container, episode, wordList, mascotEl, score, onDone) {
   setEpisodePhase(host, 'sentence');
   const sEl = host.querySelector('#keSentence');
@@ -10002,90 +10090,12 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
       // kart icinde asagida kaliyordu, cocuk "takildi" saniyordu (2026-09-30).
       if (full) requestAnimationFrame(() => { try { actionsEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) { /* yok say */ } });
     }
-    function freeItem(i) {
-      const it = slotItems[i];
-      if (it && !it.fixed) { it.tile.classList.remove('ke-used'); slotItems[i] = null; }
-    }
-    function placeTile(tile, tok, i) {
-      if (slotItems[i] && slotItems[i].fixed) return;
-      freeItem(i);
-      slotItems[i] = { tile, tok };
-      tile.classList.add('ke-used');
-    }
-    // Surukle-birak ARAYA EKLER (2026-09-30 geri bildirimi: "kelimelerin
-    // arasina girebilmeliyim, simdi silip dogru yere koymam gerekiyor").
-    // Birakilan kutudaki kelime ve sonrakiler bir bos kutuya dogru kayar;
-    // sagda bos yoksa sola kayar; hic yer yoksa en sondaki tas bankaya doner.
-    function insertAt(entry, j, fromI) {
-      const pos = slotItems.map((it, i) => (it && it.fixed ? -1 : i)).filter((i) => i >= 0);
-      const seq = pos.map((i) => slotItems[i]);
-      if (fromI != null) seq[pos.indexOf(fromI)] = null;
-      let k = pos.indexOf(j);
-      if (k < 0) return;
-      if (seq[k]) {
-        let r = k + 1; while (r < seq.length && seq[r]) r++;
-        if (r < seq.length) { for (let t = r; t > k; t--) seq[t] = seq[t - 1]; }
-        else {
-          let l = k - 1; while (l >= 0 && seq[l]) l--;
-          if (l >= 0) { for (let t = l; t < k - 1; t++) seq[t] = seq[t + 1]; k -= 1; }
-          else { const out = seq[seq.length - 1]; if (out && out.tile) out.tile.classList.remove('ke-used'); for (let t = seq.length - 1; t > k; t--) seq[t] = seq[t - 1]; }
-        }
-      }
-      seq[k] = entry;
-      if (entry.tile) entry.tile.classList.add('ke-used');
-      pos.forEach((i, t) => { slotItems[i] = seq[t]; });
-    }
+    // Kutu/tas mantigi ortak: makeSlotBoard (cumle ve konusma turu ayni kodu kullanir).
+    const { freeItem, placeTile, insertAt, startDrag } = makeSlotBoard(slotItems, slotEls0, () => renderSlots());
     function resetSlots() {
       slotItems.forEach((_, i) => freeItem(i));
       renderSlots();
     }
-
-    // Surukle-birak (dokunmatik + fare): kelime karti ya da dolu kutu
-    // baska bir kutuya birakilabilir; tiklama/dokunma da calisir.
-    function slotIndexAt(x, y) {
-      const el = document.elementFromPoint(x, y);
-      const slot = el && el.closest ? el.closest('.ke-slot') : null;
-      return slot ? slotEls0().indexOf(slot) : -1;
-    }
-    function startDrag(ev, label, onDrop, onTap) {
-      if (ev.button !== undefined && ev.button > 0) return;
-      const sx = ev.clientX, sy = ev.clientY;
-      let ghost = null, moved = false;
-      const move = (e) => {
-        if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) > 8) {
-          moved = true;
-          ghost = document.createElement('div');
-          ghost.className = 'ke-tile ke-drag-ghost';
-          ghost.textContent = label;
-          document.body.appendChild(ghost);
-        }
-        if (ghost) { ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px'; e.preventDefault(); }
-      };
-      const up = (e) => {
-        document.removeEventListener('pointermove', move);
-        document.removeEventListener('pointerup', up);
-        document.removeEventListener('pointercancel', up);
-        if (ghost) ghost.remove();
-        if (moved) onDrop(slotIndexAt(e.clientX, e.clientY)); else onTap();
-      };
-      document.addEventListener('pointermove', move, { passive: false });
-      document.addEventListener('pointerup', up);
-      document.addEventListener('pointercancel', up);
-    }
-
-    slotEls0().forEach((slot, i) => {
-      slot.addEventListener('pointerdown', (ev) => {
-        if (!slotItems[i] || slotItems[i].fixed) return;
-        ev.preventDefault();
-        startDrag(ev, slotItems[i].tok.text,
-          (j) => {
-            if (j >= 0 && j !== i && !(slotItems[j] && slotItems[j].fixed)) insertAt(slotItems[i], j, i);
-            else if (j < 0) freeItem(i);
-            renderSlots();
-          },
-          () => { freeItem(i); renderSlots(); });
-      });
-    });
 
     const bankItems = tokens.map((text, origIndex) => ({ text, origIndex })).filter((t) => blanks.has(t.origIndex));
     const distractorWord = pickDistractorWord(tokens, wordList, obj.word);
@@ -10274,87 +10284,12 @@ function startConversationRound(host, container, episode, mascotEl, onFinished) 
       // kart icinde asagida kaliyordu, cocuk "takildi" saniyordu (2026-09-30).
       if (full) requestAnimationFrame(() => { try { actionsEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) { /* yok say */ } });
     }
-    function freeItem(i) {
-      const it = slotItems[i];
-      if (it) { it.tile.classList.remove('ke-used'); slotItems[i] = null; }
-    }
-    function placeTile(tile, tok, i) {
-      freeItem(i);
-      slotItems[i] = { tile, tok };
-      tile.classList.add('ke-used');
-    }
-    // Surukle-birak ARAYA EKLER (2026-09-30 geri bildirimi: "kelimelerin
-    // arasina girebilmeliyim, simdi silip dogru yere koymam gerekiyor").
-    // Birakilan kutudaki kelime ve sonrakiler bir bos kutuya dogru kayar;
-    // sagda bos yoksa sola kayar; hic yer yoksa en sondaki tas bankaya doner.
-    function insertAt(entry, j, fromI) {
-      const pos = slotItems.map((it, i) => (it && it.fixed ? -1 : i)).filter((i) => i >= 0);
-      const seq = pos.map((i) => slotItems[i]);
-      if (fromI != null) seq[pos.indexOf(fromI)] = null;
-      let k = pos.indexOf(j);
-      if (k < 0) return;
-      if (seq[k]) {
-        let r = k + 1; while (r < seq.length && seq[r]) r++;
-        if (r < seq.length) { for (let t = r; t > k; t--) seq[t] = seq[t - 1]; }
-        else {
-          let l = k - 1; while (l >= 0 && seq[l]) l--;
-          if (l >= 0) { for (let t = l; t < k - 1; t++) seq[t] = seq[t + 1]; k -= 1; }
-          else { const out = seq[seq.length - 1]; if (out && out.tile) out.tile.classList.remove('ke-used'); for (let t = seq.length - 1; t > k; t--) seq[t] = seq[t - 1]; }
-        }
-      }
-      seq[k] = entry;
-      if (entry.tile) entry.tile.classList.add('ke-used');
-      pos.forEach((i, t) => { slotItems[i] = seq[t]; });
-    }
+    // Kutu/tas mantigi ortak: makeSlotBoard (cumle ve konusma turu ayni kodu kullanir).
+    const { freeItem, placeTile, insertAt, startDrag } = makeSlotBoard(slotItems, slotEls0, () => renderSlots());
     function resetSlots() {
       slotItems.forEach((_, i) => freeItem(i));
       renderSlots();
     }
-
-    function slotIndexAt(x, y) {
-      const el = document.elementFromPoint(x, y);
-      const slot = el && el.closest ? el.closest('.ke-slot') : null;
-      return slot ? slotEls0().indexOf(slot) : -1;
-    }
-    function startDrag(ev, label, onDrop, onTap) {
-      if (ev.button !== undefined && ev.button > 0) return;
-      const sx = ev.clientX, sy = ev.clientY;
-      let ghost = null, moved = false;
-      const move = (e) => {
-        if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) > 8) {
-          moved = true;
-          ghost = document.createElement('div');
-          ghost.className = 'ke-tile ke-drag-ghost';
-          ghost.textContent = label;
-          document.body.appendChild(ghost);
-        }
-        if (ghost) { ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px'; e.preventDefault(); }
-      };
-      const up = (e) => {
-        document.removeEventListener('pointermove', move);
-        document.removeEventListener('pointerup', up);
-        document.removeEventListener('pointercancel', up);
-        if (ghost) ghost.remove();
-        if (moved) onDrop(slotIndexAt(e.clientX, e.clientY)); else onTap();
-      };
-      document.addEventListener('pointermove', move, { passive: false });
-      document.addEventListener('pointerup', up);
-      document.addEventListener('pointercancel', up);
-    }
-
-    slotEls0().forEach((slot, i) => {
-      slot.addEventListener('pointerdown', (ev) => {
-        if (!slotItems[i]) return;
-        ev.preventDefault();
-        startDrag(ev, slotItems[i].tok.text,
-          (j) => {
-            if (j >= 0 && j !== i) insertAt(slotItems[i], j, i);
-            else if (j < 0) freeItem(i);
-            renderSlots();
-          },
-          () => { freeItem(i); renderSlots(); });
-      });
-    });
 
     const bankItems = tokens.map((text, origIndex) => ({ text, origIndex }));
     const otherAnswers = turns.filter((_, i) => i !== idx).map((t) => ({ word: t.a }));
