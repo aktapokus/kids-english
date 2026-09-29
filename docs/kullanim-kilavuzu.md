@@ -28,7 +28,7 @@ Aktapokus Kids English, ilkokul ve ortaokulun ilk yılları (2.–6. sınıf, 7.
 - **İçerik temeli:** MEB İngilizce Öğretim Programı (Maarif Modeli, 2.–6. sınıf) ve Cambridge YLE kelime listeleri. İngiliz İngilizcesi (British English) kullanılır: *colour, autumn, rubbish* gibi.
 - **Yöntem:** Her kelime resim, sesli okuma ve örnek cümleyle öğretilir. Kelimeler farklı ama benzer cümlelerle defalarca tekrar edilir. İlkokul düzeyinde dil bilgisi kuralı ve terim ezberletilmez; yapılar örneklerle, bağlam içinde öğrenilir (Maarif yaklaşımı).
 - **Hesap gerekmez.** Reklam ve izleyici yoktur. İlerleme çocuğun kendi cihazında tutulur.
-- **Kim yapıyor?** Uygulamayı bir şirket değil, gönüllü olarak tek başıma geliştiriyorum; ücretsizdir ve satılan bir şey yoktur.
+- **Kim yapıyor?** Uygulamayı bir şirket değil, gönüllü olarak tek başıma geliştiriyorum; ücretsizdir ve satılan bir şey yoktur. Amacım fırsat eşitliği: iyi bir eğitim aracına ulaşmak ailenin bütçesine bağlı olmamalı. İngilizce ilk adım; ileride aynı anlayışla ilkokul fen, matematik ve kodlama için de ücretsiz araçlar geliştirip bir eğitim ekosistemi kurmak istiyorum.
 - **Rehber karakter:** Aktapokus, altı kollu bir ahtapot. Gözlüğünün camı duruma göre renk değiştirir: düşünürken, doğru cevapta ya da emin olmadığında.
 
 > **Seviye etiketleri hakkında:** Uygulamadaki "A1 · 1", "2. Sınıf" gibi etiketler uygulama içi duraklardır. Resmi bir CEFR sınav sonucu ya da seviye tespiti değildir.
@@ -384,7 +384,7 @@ Ebeveyn Alanı'nda İçerik denetimini açın ve **⚑ Sorun bildir**'i kullanı
 - **Haftanın görevi** ve **sorun bildirimi**, sunucu tarafında bir kerelik kurulum gerektirir. Kurulum tamamlanana kadar panel "veritabanı güncellemesi gerekiyor" uyarısı gösterir; sorun bildirimleri de cihazda bekler.
 - **Günlük hatırlatma bildirimi** telefon uygulaması (APK) sürümüyle gelecek. Veli, Ebeveyn Alanı'ndan saat seçebilecek.
 - Seviye etiketleri uygulama içi duraklardır; resmi seviye tespiti değildir.
-- İçerik henüz bağımsız bir öğretmen incelemesinden geçmedi. Kaynak listelere göre kontrol ettim; gözünüze çarpan her hatayı düzeltirim.
+- Uygulama neredeyse yayına ve kullanıma hazır. İçeriği kaynak listelere göre kontrol ettim; ancak bağımsız bir öğretmen ya da alanında uzman biri görmeden yaygınlaştırmak istemiyorum. Gözünüze çarpan her hatayı düzeltirim.
 
 ---
 

@@ -4,6 +4,8 @@
 
 **Kim yapıyor?** Bir şirket ya da kurum değil; uygulamayı gönüllü olarak, boş zamanlarımda geliştiriyorum. Satılan bir şey yok.
 
+**Neden?** Amacım fırsat eşitliği: iyi bir eğitim aracına ulaşmak ailenin bütçesine bağlı olmamalı. İngilizce ilk adım; ileride aynı anlayışla ilkokul fen, matematik ve kodlama için de ücretsiz araçlar geliştirip bir eğitim ekosistemi kurmak istiyorum.
+
 - **Uygulama:** https://aktapokus.github.io/kids-english/
 - **Öğretmen paneli:** https://aktapokus.github.io/kids-english/teacher.html
 - **Ayrıntılı kılavuz:** https://aktapokus.github.io/kids-english/kilavuz.html
@@ -81,7 +83,7 @@ Uygulama içindeki **Ebeveyn Alanı**'nda:
 - **İnterneti zayıf yerler için:** Tabletleri bir kez Wi-Fi'da açıp birkaç dakika bekletin; sonra sınıfta internetsiz kullanılabilir.
 - **Gönüllü dostu:** Sınıf modu ve basılı materyal (kartlar, tombala, çalışma kâğıdı), İngilizce öğretmeni olmayan bir gönüllünün de hazır etkinlik yürütebilmesi için tasarlandı. Doğru telaffuz her ekranda sesli olarak verilir.
 - **Evde devam:** Çocuk evde de kaldığı yerden sürdürür; aileye haftalık özet ve evde söylenecek cümleler sunulur.
-- **Durum:** Uygulama **erken test sürümünde**. İçeriği kaynak listelere göre tek tek kontrol ettim ama henüz bağımsız bir öğretmen incelemesinden geçmedi; gelen her geri bildirimle düzeltiyorum. Küçük bir pilot kullanım ya da sadece göz atıp yorum yapmak bile çok işime yarar.
+- **Durum:** Uygulama **neredeyse yayına ve kullanıma hazır**. İçeriği kaynak listelere göre tek tek kontrol ettim; ancak bağımsız bir öğretmen ya da alanında uzman biri görmeden yaygınlaştırmak istemiyorum. Bu yüzden küçük bir pilot kullanım ya da sadece göz atıp yorum yapmak bile çok işime yarar; gelen her geri bildirimle düzeltiyorum.
 
 ## 5 dakikada deneyin
 
