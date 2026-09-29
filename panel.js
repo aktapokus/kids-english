@@ -2866,6 +2866,8 @@ ${FONT_FACES}
   }
   .ke-pick-row{ display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:6px 0 10px; }
   .ke-pick{ min-width:52px; min-height:44px; padding:6px 10px !important; border-radius:14px !important; font-size:13px !important; position:relative; }
+  .ke-lesson #keLessonGo{ background:#2F6F4F !important; color:#fff !important; opacity:1 !important; border-color:#2F6F4F !important; }
+  a.ke-pick{ display:inline-flex; align-items:center; text-decoration:none; color:#1A2233; background:#F5F0DF; font-weight:700; font-family:inherit; }
   .ke-pick.ke-sel{ outline:3px solid #FFD84D; outline-offset:2px; }
   .ke-pick.ke-lock{ opacity:.55; }
   .ke-pick .ke-sw{ display:inline-block; width:22px; height:22px; border-radius:50%; border:2px solid rgba(255,255,255,.8); vertical-align:middle; }
