@@ -151,21 +151,26 @@ function mountBoard(data) {
   function post() { if (bc) bc.postMessage({ type: 'state', state: S, stepName: steps[S.step] && steps[S.step].name }); }
   function dots() { return steps.map((s, i) => `<span class="dot${i === S.step ? ' on' : i < S.step ? ' past' : ''}" title="${esc(s.name)}"></span>`).join(''); }
   function frame(inner, label) {
-    app.innerHTML = `<header><div class="t">${esc(lesson.title)}</div><div class="dots">${dots()}</div><div class="timer" id="bTimer"></div></header>
+    app.innerHTML = `<header><div class="t">${esc(lesson.title)}</div><div class="dots">${dots()}</div><div class="timer" id="bTimer"></div><button id="bFs" class="fsbtn" title="Tam ekran">⛶</button></header>
       <main>${label ? `<div class="lbl">${esc(label)}</div>` : ''}${inner}</main>
       <footer><button id="bPrev" aria-label="Geri">◀</button><button id="bPause" aria-label="Duraklat">${S.paused ? '▶' : '⏸'}</button><button id="bNext" aria-label="Devam">▶▶</button></footer>`;
+    $('#bFs').onclick = toggleFs;
     $('#bPrev').onclick = () => go(S.step - 1); $('#bNext').onclick = () => go(S.step + 1); $('#bPause').onclick = togglePause;
     renderTimer();
   }
   function renderTimer() { const t = $('#bTimer'); if (t) t.textContent = S.timerLeft > 0 ? `${Math.floor(S.timerLeft / 60)}:${String(S.timerLeft % 60).padStart(2, '0')}` : ''; }
   function teamsHtml() { return `<span class="${S.turn === 'A' ? 'on' : ''}">🔴 A: ${S.scores.A}</span><span class="${S.turn === 'B' ? 'on' : ''}">🔵 B: ${S.scores.B}</span>`; }
   function refreshTeams() { const t = document.querySelector('.teams'); if (t) t.innerHTML = teamsHtml(); const l = document.querySelector('.lbl'); if (l && steps[S.step] && steps[S.step].kind === 'quiz') l.textContent = 'Team ' + S.turn; }
-  function mascot(name = 'mascot_wave') { return `<img class="masc" src="mascot/${name}.png" alt="">`; }
+  // Poz dosyalarinda (point/wave/celebrate) gozluk cami yeri bos birakilmis
+  // (uygulama cami ustune renkli katman ciziyor) ve ayak golgesi var; tahtada
+  // katman olmadigindan delikli gorunuyordu. Tahtada temiz tam resim.
+  function mascot() { return `<div class="mascwrap"><img class="masc" src="mascot/mascot_idle.png" alt=""></div>`; }
   function pic(c) {
     if (c.phrase) return `<div class="bigpic phrase">${mascot('mascot_point')}</div>`;
     if (c.icon_type === 'emoji') return `<div class="bigpic emo">${esc(c.icon)}</div>`;
     return `<div class="bigpic"><img src="${esc(c.icon)}" alt=""></div>`;
   }
+  function toggleFs() { const d = document.documentElement; if (document.fullscreenElement) document.exitFullscreen(); else if (d.requestFullscreen) d.requestFullscreen().catch(() => {}); }
   async function waitWhilePaused(my) { while (S.paused && my === token) await sleep(200); }
   async function hold(ms, my) { const end = Date.now() + ms; while (Date.now() < end && my === token) { await waitWhilePaused(my); await sleep(100); } }
 
@@ -173,8 +178,10 @@ function mountBoard(data) {
     S.step = -1; post();
     app.innerHTML = `<div class="start">${mascot('mascot_wave')}<h1>${esc(lesson.title)}</h1>
       <p>Tema ${lesson.theme} · Ders ${lesson.n} / 11</p><button id="bStart" class="go">▶ Start</button>
+      <button id="bFs0" class="fsbtn big">⛶ Tam ekran</button>
       <p class="hint">Boşluk: duraklat · → sonraki · ← önceki · S: tekrar söyle</p></div>`;
     $('#bStart').onclick = () => go(0);
+    $('#bFs0').onclick = toggleFs;
   }
 
   async function go(i) {
@@ -196,18 +203,23 @@ function mountBoard(data) {
 
   async function runSays(my) {
     const cmds = shuffle(data.says).slice(0, 8);
-    frame(`<div class="says">${mascot('mascot_point')}<div class="saytxt" id="sTxt">Aktapokus says…</div><div class="emo big" id="sEmo"></div></div>`, 'Aktapokus Says');
+    frame(`<div class="says">${mascot('mascot_point')}<div class="saytxt" id="sTxt">Listen and do!</div><div class="emo big" id="sEmo"></div><div class="sayres" id="sRes"></div></div>`, 'Aktapokus Says');
     await speak("Let's play Aktapokus Says! Listen and do!"); await hold(800, my);
     for (let k = 0; k < cmds.length && my === token; k++) {
       await waitWhilePaused(my);
       const [cmd, emo] = cmds[k]; const says = k === 0 || Math.random() < 0.7;
       S.item = k; S.answer = { says, cmd }; post();
-      $('#sEmo').textContent = ''; $('#sTxt').textContent = '…';
-      await speak((says ? 'Aktapokus says: ' : '') + cmd + '!');
+      const txt = $('#sTxt'), em = $('#sEmo'), res = $('#sRes');
+      if (!txt) return;
+      // Komut hemen yazili gorunur; "Aktapokus says" dedi mi, sonra acilir.
+      // Telefonda ses gec bitse/hic cikmasa da beklemez (2026-09-30).
+      txt.textContent = cmd.charAt(0).toUpperCase() + cmd.slice(1) + '!'; em.textContent = emo;
+      res.textContent = '👂 Did you hear "Aktapokus says"?'; res.className = 'sayres';
+      await Promise.race([speak((says ? 'Aktapokus says: ' : '') + cmd + '!'), sleep(4000)]);
       await hold(2500, my); if (my !== token) return;
-      $('#sEmo').textContent = says ? emo : '🙅';
-      $('#sTxt').textContent = says ? 'Aktapokus says: ' + cmd + '!' : cmd + '! (No "Aktapokus says" — don\'t move!)';
-      await hold(2200, my);
+      res.textContent = says ? '✅ Aktapokus says: ' + cmd + '! Do it!' : '🙅 No "Aktapokus says": don\'t move!';
+      res.className = 'sayres ' + (says ? 'ok' : 'no');
+      await hold(2400, my);
     }
     await speak('Well done! Sit down, please.');
   }
@@ -317,6 +329,7 @@ function mountBoard(data) {
 }
 
 // ======================= OGRETMEN =======================
+const SINGLE_SCREEN_NOTE = '<div class="link warn">🖥️ Bu bilgisayarda tek ekran görünüyor. Projektör ekranı <b>yansıtıyorsa</b> bu sayfa da tahtaya yansır ve Türkçe notları çocuklar görür. Öneri: <b>Tahtayı aç</b>, tahta penceresinde <b>⛶ Tam ekran</b> deyin ve dersi tahtanın kendi düğmeleriyle (ya da klavyeyle) yönetin; notlar için <b>Ders kartı</b>nı yazdırın ya da telefonda açın. İki ayrı ekran için Windows\'ta <b>Win + P → Genişlet</b>.</div>';
 function mountTeacher(data) {
   let lesson = lessonById(data, query('id') || nextLesson(data).id);
   const bc = 'BroadcastChannel' in window ? new BroadcastChannel(CH) : null;
@@ -345,8 +358,9 @@ function mountTeacher(data) {
           <div class="target"><b>Hedef dil:</b> ${esc(lesson.target)} · <i>${esc(lesson.chunk)}</i></div></div>
           <div class="acts"><button id="tOpen" class="pri">🖥️ Tahtayı aç</button><a class="btn" href="ders-kart.html?id=${lesson.id}" target="_blank" rel="noopener">🖨️ Ders kartı</a></div></div>
         ${classBarHtml()}
-        <div class="link ${linked ? 'ok' : ''}">${linked ? '🟢 Tahta bağlı' : '⚪ Tahta bağlı değil. "Tahtayı aç"a basın ve açılan pencereyi akıllı tahtaya (ikinci ekrana) sürükleyin. Tek ekranınız varsa tahta kendi başına ilerler; notları basılı ders kartından takip edin.'}</div>
-        <div class="ctrl"><button data-c="prev">◀ Geri</button><button data-c="start" class="pri">▶ Başlat / Devam</button><button data-c="pause">⏸ Duraklat</button><button data-c="next">Sonraki adım ▶▶</button><button data-c="repeat">🔊 Tekrar söylet</button></div>
+        <div class="link ${linked ? 'ok' : ''}">${linked ? '🟢 Tahta bağlı: dersi aşağıdaki düğmelerle yönetebilirsiniz.' : '⚪ Tahta bağlı değil. <b>Tahtayı aç</b>\'a basın. Aşağıdaki düğmeler yalnızca tahta <b>bu bilgisayarda</b> açıkken çalışır (telefondan kumanda henüz yok).'}</div>
+        ${!linked && window.screen && window.screen.isExtended === false ? SINGLE_SCREEN_NOTE : ''}
+        <div class="ctrl${linked ? '' : ' off'}"><button data-c="prev">◀ Geri</button><button data-c="start" class="pri">▶ Başlat / Devam</button><button data-c="pause">⏸ Duraklat</button><button data-c="next">Sonraki adım ▶▶</button><button data-c="repeat">🔊 Tekrar söylet</button></div>
         ${ans ? `<div class="answer">${ans.word ? `Tahtadaki: <b>${esc(ans.word)}</b>${ans.tr ? ' = ' + esc(ans.tr) : ''}` : ''}${ans.cmd ? `Komut: <b>${esc(ans.cmd)}</b> · ${ans.says ? '✅ "Aktapokus says" dedi: hareket yapılır' : '🙅 "Aktapokus says" demedi: kıpırdamak yok'}` : ''}</div>` : ''}
         ${st && st.lessonId === lesson.id && st.step >= 0 ? `<div class="score">🔴 Takım A: <b>${st.scores.A}</b> <button data-s="A:1">+1</button><button data-s="A:-1">−1</button> &nbsp; 🔵 Takım B: <b>${st.scores.B}</b> <button data-s="B:1">+1</button><button data-s="B:-1">−1</button>${st.timerLeft > 0 ? ` &nbsp; ⏱️ ${Math.floor(st.timerLeft / 60)}:${String(st.timerLeft % 60).padStart(2, '0')}` : ''}</div>` : ''}
         <ol class="steps">${steps.map((s, i) => `<li class="${i === cur ? 'now' : i < cur ? 'past' : ''}"><div class="sh"><b>${i + 1}. ${esc(s.name)}</b> <span>${s.min} dk</span> <button data-g="${i}">buraya git</button></div><p>${esc(teacherNote(s, lesson))}</p>
@@ -354,10 +368,21 @@ function mountTeacher(data) {
         <div class="done"><button id="tDone" class="pri">✅ İşlendi</button> <span>Ders bittiğinde basın. Öğrencilerin uygulamasında aynı ders "Bugünün dersi" olarak açılacak.</span></div>
       </section>`;
     app.querySelectorAll('.li').forEach((b) => { b.onclick = () => { lesson = lessonById(data, b.dataset.id); history.replaceState(null, '', '?id=' + lesson.id); render(); }; });
-    app.querySelectorAll('[data-c]').forEach((b) => { b.onclick = () => send(b.dataset.c); });
+    app.querySelectorAll('[data-c]').forEach((b) => { b.disabled = !linked; b.onclick = () => send(b.dataset.c); });
     app.querySelectorAll('[data-g]').forEach((b) => { b.onclick = () => send('goto', { step: Number(b.dataset.g) }); });
     app.querySelectorAll('[data-s]').forEach((b) => { b.onclick = () => { const [team, d] = b.dataset.s.split(':'); send('score', { team, delta: Number(d) }); }; });
-    $('#tOpen').onclick = () => { window.open('ders-tahta.html?id=' + lesson.id, 'ke-tahta', 'popup,width=1280,height=800'); };
+    $('#tOpen').onclick = async () => {
+      const url = 'ders-tahta.html?id=' + lesson.id;
+      // Ikinci ekran varsa (Chrome/Edge; bir kez izin sorar) tahta dogrudan orada acilir.
+      try {
+        if (window.screen.isExtended && 'getScreenDetails' in window) {
+          const sd = await window.getScreenDetails();
+          const other = sd.screens.find((x) => x !== sd.currentScreen);
+          if (other) { window.open(url, 'ke-tahta', `popup,left=${other.availLeft},top=${other.availTop},width=${other.availWidth},height=${other.availHeight}`); return; }
+        }
+      } catch (e) { /* izin verilmedi: normal pencere */ }
+      window.open(url, 'ke-tahta', 'popup,width=1280,height=800');
+    };
   };
   function classBarHtml() {
     const pend = lsGet(PENDING_KEY, []).length;
@@ -365,6 +390,7 @@ function mountTeacher(data) {
     if (ClassSync.error === 'schema') return `<div class="link">🏫 Sınıf eşitlemesi için veritabanı güncellemesi gerekiyor (lessons_schema.sql bir kez çalıştırılmalı). Şimdilik "İşlendi" yalnızca bu cihaza kaydediliyor.</div>`;
     if (!ClassSync.classes) return `<div class="link">🏫 ${ClassSync.error === 'offline' ? 'İnternet yok: sınıf listesi alınamadı. "İşlendi" bu cihazda bekletilir, internet gelince sınıfa gönderilir.' : ClassSync.error ? 'Sınıf listesi alınamadı; giriş süresi dolmuş olabilir. Öğretmen paneline yeniden giriş yapın. Şimdilik "İşlendi" bu cihaza kaydediliyor.' : 'Sınıflar yükleniyor…'}${pend ? ` · ⏳ Bekleyen ${pend} kayıt` : ''}</div>`;
     const sel = ClassSync.selected();
+    if (sel == null) return `<div class="link warn">⚠️ <b>Sınıf seçilmedi:</b> "İşlendi" yalnızca bu bilgisayara kaydedilir, öğrencilere gitmez. Sınıfınızı seçin: <select id="tClass"><option value="" selected>— sınıf seçin —</option>${ClassSync.classes.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select>${pend ? ` · ⏳ Bekleyen ${pend} kayıt` : ''}</div>`;
     return `<div class="link ok">🏫 Bu dersi işlediğim sınıf: <select id="tClass"><option value="">— yalnızca bu cihaz —</option>${ClassSync.classes.map((c) => `<option value="${c.id}"${String(c.id) === String(sel) ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select>${pend ? ` · ⏳ Bekleyen ${pend} kayıt (internet gelince gönderilir)` : ''}</div>`;
   }
   const _render = render;

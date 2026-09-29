@@ -18,21 +18,26 @@ body[data-mode=board]{background:#17301f;color:#f3f7f2;font-family:'Fredoka','Ba
 .lbl{font-size:clamp(18px,2.4vw,30px);color:#ffd75a;margin-bottom:8px;font-weight:600}
 #board footer{display:flex;justify-content:center;gap:10px;padding:8px;opacity:.35;transition:opacity .2s}
 #board footer:hover{opacity:1}
-#board footer button{background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:10px;padding:8px 18px;font-size:18px}
+@media (hover:none){#board footer{opacity:.9}}
+#board footer button{background:rgba(255,255,255,.16);color:#fff;border:0;border-radius:12px;padding:10px 24px;font-size:20px;min-width:64px;min-height:48px}
+.fsbtn{background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:10px;padding:6px 12px;font-size:18px}.fsbtn.big{font-size:16px;padding:8px 16px;margin-top:4px}
+@media (max-width:640px){.active{flex-direction:column;gap:12px}.inst{max-width:92vw;text-align:center;font-size:clamp(24px,5vh,40px)}.opt{min-width:0;padding:10px 16px}}
 .card{display:flex;flex-direction:column;align-items:center;gap:8px;max-height:100%}
 .bigpic{width:min(46vh,46vw);aspect-ratio:1;background:#fff;border-radius:22px;display:grid;place-items:center;overflow:hidden;border:6px solid #6b4b2a}
 .bigpic img{width:100%;height:100%;object-fit:cover}
 .bigpic.emo{font-size:min(28vh,28vw);line-height:1}
-.bigpic.phrase{background:#244a33;border-color:#ffd75a}.bigpic.phrase .masc{height:88%}
+.bigpic.phrase{background:#244a33;border-color:#ffd75a}.bigpic.phrase .mascwrap{height:88%}
 .word{font-size:clamp(34px,7vh,86px);font-weight:700;line-height:1.05;text-align:center}
 .sent{font-size:clamp(20px,3.6vh,40px);color:#dfeee3;text-align:center;max-width:90vw}
 .cnt{font-size:16px;opacity:.6}
-.masc{height:min(40vh,380px)}
+.mascwrap{height:min(40vh,380px);display:flex;justify-content:center;flex:none;max-width:100%}
+.masc{height:100%;width:auto;max-width:100%;object-fit:contain;display:block;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
 .start{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;justify-content:center;height:100%;padding:20px}
 .start h1{font-size:clamp(30px,6vh,64px);margin:0}.start p{font-size:clamp(16px,2.4vh,24px);margin:0;opacity:.85}
 .start .hint{font-size:14px;opacity:.5}
 .go{background:#ffd75a;color:#1a2a20;border:0;border-radius:18px;padding:14px 40px;font-size:clamp(22px,4vh,36px);font-weight:700;margin-top:10px}
-.says{display:flex;flex-direction:column;align-items:center;gap:6px}.says .masc{height:min(34vh,320px)}
+.says{display:flex;flex-direction:column;align-items:center;gap:6px}.says .mascwrap{height:min(28vh,260px)}
+.sayres{font-size:clamp(18px,3.2vh,32px);min-height:1.4em;text-align:center;padding:4px 14px;border-radius:12px;max-width:92vw}.sayres.ok{background:rgba(124,197,156,.28)}.sayres.no{background:rgba(224,119,106,.32)}
 .saytxt{font-size:clamp(26px,5vh,58px);font-weight:700;text-align:center}
 .emo.big{font-size:min(18vh,160px);line-height:1;min-height:1em}
 .quiz{display:flex;flex-direction:column;align-items:center;gap:10px}.quiz .bigpic{width:min(38vh,38vw)}
@@ -40,7 +45,7 @@ body[data-mode=board]{background:#17301f;color:#f3f7f2;font-family:'Fredoka','Ba
 .opts{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
 .opt{background:#fff;color:#17301f;border:0;border-radius:16px;padding:12px 26px;font-size:clamp(22px,4vh,44px);font-weight:700;min-width:180px}
 .opt b{font-size:.6em;opacity:.45;margin-right:6px}.opt.ok{background:#7cc59c;color:#0e2415}.opt.bad{background:#e0776a;color:#fff;opacity:.7}
-.active{display:flex;align-items:center;gap:30px;max-width:95vw}.active .masc{height:min(44vh,400px)}
+.active{display:flex;align-items:center;gap:30px;max-width:95vw}.active .mascwrap{height:min(40vh,380px)}
 .inst{font-size:clamp(30px,6.5vh,76px);font-weight:700;line-height:1.15;max-width:60vw}
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:min(92vw,110vh)}
 .mini{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:clamp(18px,3vh,32px)}.mini .bigpic{width:min(22vh,22vw);border-width:4px}.mini .bigpic.emo{font-size:min(13vh,13vw)}
@@ -58,7 +63,8 @@ body[data-mode=teacher]{background:#f3f5f1;color:#1c2320;font:15px/1.5 system-ui
 .acts{display:flex;gap:8px;flex-wrap:wrap}
 .pri,.acts .btn,.ctrl button,.score button,.steps button{border:1px solid #c9d3cb;background:#fff;border-radius:10px;padding:7px 14px;color:#1c2320;text-decoration:none}
 .pri{background:#2f6f4f !important;color:#fff !important;border-color:#2f6f4f !important;font-weight:700}
-.link{margin:14px 0 8px;padding:8px 12px;border-radius:10px;background:#fdf1e3;font-size:14px}.link.ok{background:#e1f2e6}
+.link{margin:14px 0 8px;padding:8px 12px;border-radius:10px;background:#fdf1e3;font-size:14px}.link.ok{background:#e1f2e6}.link.warn{background:#fde2dc;border:1px solid #f0b3a6}
+.ctrl.off button{opacity:.45;cursor:not-allowed}
 .ctrl{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
 .answer{background:#fff8d6;border:1px solid #f0dc8a;border-radius:10px;padding:8px 12px;margin:8px 0;font-size:16px}
 .score{margin:8px 0;font-size:16px}.score button{padding:2px 10px}

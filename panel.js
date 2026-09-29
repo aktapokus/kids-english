@@ -2866,6 +2866,15 @@ ${FONT_FACES}
   }
   .ke-pick-row{ display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:6px 0 10px; }
   .ke-pick{ min-width:52px; min-height:44px; padding:6px 10px !important; border-radius:14px !important; font-size:13px !important; position:relative; }
+  .ke-home-hidden{ display:none !important; }
+  .ke-simple-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; max-width:560px; margin:0 auto 14px; position:relative; z-index:1; }
+  .ke-simple-btn{ flex:1 1 140px; border:2px solid rgba(245,240,223,.35); background:rgba(255,255,255,.08); color:#F5F0DF; border-radius:16px; padding:10px 14px; font:700 16px 'Fredoka','Baloo 2',sans-serif; cursor:pointer; min-height:48px; }
+  .ke-today{ display:flex; flex-direction:column; align-items:center; gap:4px; width:100%; max-width:560px; margin:0 auto 14px; padding:14px 16px 16px; border:none; border-radius:22px; background:#FFD84D; color:#3a2a00; box-shadow:0 6px 0 #C99A12; cursor:pointer; font-family:'Fredoka','Baloo 2',sans-serif; text-align:center; position:relative; z-index:1; }
+  .ke-today[hidden]{ display:none; }
+  .ke-today:active{ transform:translateY(3px); box-shadow:0 3px 0 #C99A12; }
+  .ke-today-k{ font-size:14px; font-weight:700; letter-spacing:.02em; opacity:.8; }
+  .ke-today-t{ font-size:19px; font-weight:600; line-height:1.25; }
+  .ke-today-go{ margin-top:6px; background:#2F6F4F; color:#fff; border-radius:14px; padding:8px 26px; font-size:20px; font-weight:800; }
   .ke-lesson #keLessonGo{ background:#2F6F4F !important; color:#fff !important; opacity:1 !important; border-color:#2F6F4F !important; }
   a.ke-pick{ display:inline-flex; align-items:center; text-decoration:none; color:#1A2233; background:#F5F0DF; font-weight:700; font-family:inherit; }
   .ke-pick.ke-sel{ outline:3px solid #FFD84D; outline-offset:2px; }
@@ -3370,6 +3379,10 @@ function setLang(l) {
   _lang = l === 'tr' ? 'tr' : 'en';
   try { window.localStorage.setItem(LANG_KEY, _lang); } catch (e) { /* yok say */ }
   document.querySelectorAll('.ke-shell').forEach((el) => el.setAttribute('lang', _lang));
+  const fl = document.getElementById('keFullscreenLabel');
+  if (fl && !document.fullscreenElement) fl.textContent = L('Tam Ekran', 'Full screen');
+  const fb = document.getElementById('keFullscreenBtn');
+  if (fb) { fb.title = L('Tam ekran', 'Full screen'); fb.setAttribute('aria-label', L('Tam ekran', 'Full screen')); }
 }
 function catLabel(c) {
   const parts = c.title.split('–');
@@ -4427,6 +4440,54 @@ async function mountLesson(host, container, api, toolId, categories) {
   if (go) go.addEventListener('click', () => startLesson(container, api, toolId, categories, nx));
 }
 
+// ---- "Bugun ne yapacagim?" (kullanilabilirlik, 2026-09-30) ----
+// Ana ekranda cok kart var (devam, ders, gorev, gunun kelimesi, tekrar);
+// 7 yasindaki cocuk hangisine basacagini bilemiyordu. Tek buyuk dugme
+// sirayla secer: ogretmenin bitmemis gorevi > bugunun dersi > macera.
+async function todayPlan(container, api, toolId, categories) {
+  const byId = new Map(categories.map((c) => [c.id, c]));
+  const cls = Classroom.get();
+  const a = cls.code ? cls.assignment : null;
+  if (a && Array.isArray(a.items)) {
+    for (const id of a.items) {
+      const c = byId.get(id); if (!c) continue;
+      const done = Progress.getCategory(c.id).completed.filter((i) => i < c.episode_count).length;
+      if (done < c.episode_count) {
+        return { icon: '🏫', label: L('Öğretmenin görevi', "Your teacher's task"), sub: catLabel(c),
+          run: () => { _journeyMode = false; _currentSection = null; enterCategory(container, api, toolId, categories, c.id, Progress.nextIncompleteEpisode(c.id, c.episode_count)); } };
+      }
+    }
+  }
+  const st = Journey.state(categories); const cur = st.list[st.current];
+  if (cur && cur.sector.id === 'moon' && LessonPlan.todayCount() < LESSON_DAILY_MAX) {
+    const data = await LessonPlan.load();
+    if (data) {
+      const classDone = (cls.code && cls.lessonsDone) || {};
+      const mine = LessonPlan.prog().done;
+      const nx = data.lessons.find((l) => classDone[l.id] && !mine[l.id]) || LessonPlan.next(data);
+      if (nx) return { icon: '📘', label: L('Bugünün dersi', "Today's lesson"), sub: nx.title, run: () => startLesson(container, api, toolId, categories, nx) };
+    }
+  }
+  if (cur) {
+    return { icon: '🚀', label: L('Uzay Macerası', 'Space Adventure'), sub: planetName(cur),
+      run: () => playJourneyEpisode(container, api, toolId, categories, cur, Progress.nextIncompleteEpisode(cur.id, cur.cat.episode_count)) };
+  }
+  return null;
+}
+async function mountToday(host, container, api, toolId, categories) {
+  const el = host.querySelector('#keToday');
+  if (!el) return;
+  const pid = Profiles.active().id;
+  let plan = null;
+  try { plan = await todayPlan(container, api, toolId, categories); } catch (e) { /* yok say */ }
+  if (!plan || !el.isConnected || Profiles.active().id !== pid) return;
+  el.innerHTML = `<span class="ke-today-k">⭐ ${L('Bugün ne yapacağım?', 'What do I do today?')}</span>
+    <span class="ke-today-t">${plan.icon} ${escapeProfileText(plan.label)}: <b>${escapeProfileText(plan.sub)}</b></span>
+    <span class="ke-today-go">▶ ${L('Başla', 'Start')}</span>`;
+  el.hidden = false;
+  el.onclick = plan.run;
+}
+
 async function mountTask(host, container, api, toolId, categories) {
   const el = host.querySelector('#keTask');
   if (!el || !Classroom.get().code) return;
@@ -4652,12 +4713,15 @@ function showSectionMenu(container, api, toolId, categories) {
       </button>
       <button type="button" class="ke-who-chip" id="keWhoChip" aria-label="${L('Çocuk değiştir', 'Switch child')}">👤 ${escapeProfileText(Profiles.active().name || L('Ben', 'Me'))} <span aria-hidden="true">⇄</span></button>
     </div>
-    ${journeyHomeCardHTML(categories)}
-    <div class="ke-task ke-lesson" id="keLesson" hidden></div>
-    <div class="ke-task" id="keTask" hidden></div>
+    <button type="button" class="ke-today" id="keToday" hidden></button>
+    <div class="ke-simple-row">
+      <button type="button" class="ke-simple-btn" id="keGoLib">📚 ${L('Kütüphane', 'Library')}</button>
+      ${dueTotal ? `<button type="button" class="ke-simple-btn" id="keDueChip">🔁 ${L(`Tekrar (${dueTotal})`, `Review (${dueTotal})`)}</button>` : ''}
+    </div>
+    <div class="ke-task ke-lesson ke-home-hidden" id="keLesson" hidden></div>
+    <div class="ke-task ke-home-hidden" id="keTask" hidden></div>
     <div class="ke-wotd" id="keWotd" hidden></div>
     <div class="ke-offline" id="keOffline" hidden></div>
-    ${dueTotal ? `<button type="button" class="ke-due-chip" id="keDueChip">🔁 ${L(`Bugün ${dueTotal} kelime tekrar`, `${dueTotal} words to review today`)} <span>→</span></button>` : ''}
     </div><div class="ke-home-right">
     <h2 class="ke-lib-head">📚 ${L('Kütüphane', 'Library')} <span>${L('serbest çalışma — istediğin konuyu seç', 'free practice — pick any topic')}</span></h2>
     <div class="ke-category-grid ke-lib-grid" id="keSectionGrid"></div>
@@ -4666,8 +4730,10 @@ function showSectionMenu(container, api, toolId, categories) {
   `;
   wireBottomNav(host, container, api, toolId, categories);
   wireJourneyHomeCard(host, container, api, toolId, categories);
-  mountLesson(host, container, api, toolId, categories);
-  mountTask(host, container, api, toolId, categories);
+  mountToday(host, container, api, toolId, categories);
+  mountTask(host, container, api, toolId, categories).then(() => mountToday(host, container, api, toolId, categories));
+  const goLib = host.querySelector('#keGoLib');
+  if (goLib) goLib.addEventListener('click', () => { const g = host.querySelector('.ke-lib-head'); if (g) g.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
   mountWordOfDay(host, api, toolId, categories);
   mountOffline(host);
   setTimeout(() => { maybeVoiceNotice(container); }, 1500);
