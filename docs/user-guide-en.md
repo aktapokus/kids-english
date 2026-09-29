@@ -3,7 +3,7 @@
 # Aktapokus Kids English: User Guide
 
 **For:** Teachers, parents and children (together with a parent)
-**Version:** 29 September 2026
+**Version:** 30 September 2026
 **App:** https://aktapokus.github.io/kids-english/
 **Teacher panel:** https://aktapokus.github.io/kids-english/teacher.html
 
@@ -80,8 +80,8 @@ After it has been opened once with internet, the app **works offline**. To make 
 
 | Item | What it does |
 |---|---|
-| **▶ Continue** | Carries on from where the child left off. |
-| **🚀 Adventure** | A space journey. Topics open in order by grade (see 3.2). |
+| **⭐ What do I do today? → Start** | The first place to look. Opens, in order: the teacher's task, today's lesson (grade 2, following the national curriculum; at most 2 lessons a day) or the next step in the Adventure. |
+| **🚀 Space Adventure → Continue** | The main path, by grade. Topics open in order (see 3.2). Words finished in daily lessons also count in the Adventure. |
 | **⭐ Word of the Day** | One word a day, with its picture, meaning and sentence. Tap to hear it; mark it with "I learned it ✓". |
 | **🎯 Weekly task** | Appears when the teacher has set a task (see 5.5). |
 | **🔁 Review** | Words the child got wrong come back here on later days. |
@@ -314,6 +314,19 @@ I read every report and fix it. Reports like "this picture doesn't match this wo
 - You only see the students in your own classes.
 - The panel shows the name the student wrote in their profile and progress numbers. No email, phone number, location, photo or voice recording is collected.
 - If a student presses **Leave Class**, their device stops sending data; the last state stays in the list.
+
+### 5.10 Daily lesson plan and the smart board
+
+Day-by-day lessons following the Maarif curriculum (currently grade 2: 66 lessons, 2 a week). Designed so that a teacher **who is not an English specialist** can run the lesson: the board runs the lesson itself, Aktapokus says everything in English, and the teacher gets step-by-step notes in Turkish.
+
+- **Where to open it:** in the teacher panel, **📘 Günlük ders planı → Ders planını aç**, or the same card in the Parent Area on a device not linked to a class. No sign-in; works offline.
+- **Open the board:** If the smart board is connected as a second screen, the window opens there directly; otherwise drag it onto the board. If the projector **mirrors** the screen, the teacher page is projected too: press **⛶ Full screen** on the board, run the lesson with the board's own buttons, and print the **lesson card** for your notes. For two separate screens on Windows: **Win + P → Extend**.
+- **Lesson flow (about 30 minutes, plus 10 flexible):** warm-up (Aktapokus Says) → sound of the day (the theme's letter and 3 picture words) → remember (previous lesson) → new words → game (changes every lesson: team quiz, What's missing?, mystery picture, listen and touch, odd one out) → active learning (pair/group task with a timer) → goodbye and homework.
+- **Teacher screen:** Turkish notes for each step, the Turkish meaning of the word on the board (only for you), team scores and Back / Start / Pause / Next / Repeat buttons. The buttons work when the board is open **on the same computer**.
+- **Board shortcuts:** space = pause, → = next step, ← = previous, S = say it again.
+- **Done:** press it at the end. If you are signed in to the teacher panel on the same computer, choose your class; the lesson is saved to the class and shows up first as "Today's lesson" in your students' app. Without a class, it is saved only on that computer.
+- **Printed lesson card:** A4 with the Turkish notes, words and meanings.
+- Illustrated step-by-step guide (Turkish): https://aktapokus.github.io/kids-english/rehber.html
 
 ---
 

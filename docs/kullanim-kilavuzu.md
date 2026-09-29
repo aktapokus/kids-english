@@ -3,7 +3,7 @@
 # Aktapokus Kids English: Kullanım Kılavuzu
 
 **Kimler için:** Öğretmenler, veliler ve (velisiyle birlikte) çocuklar
-**Sürüm:** 28 Eylül 2026
+**Sürüm:** 30 Eylül 2026
 **Uygulama:** https://aktapokus.github.io/kids-english/
 **Öğretmen paneli:** https://aktapokus.github.io/kids-english/teacher.html
 **Resimli rehber (nereye, nasıl tıklanır):** https://aktapokus.github.io/kids-english/rehber.html
@@ -80,8 +80,8 @@ Uygulama internetle bir kez açıldıktan sonra **internetsiz çalışır**. Bun
 
 | Öğe | Ne işe yarar? |
 |---|---|
-| **▶ Devam** | Kaldığı yerden devam eder. |
-| **🚀 Macera** | Uzay yolculuğu. Konular sınıf düzeyine göre sırayla açılır (bkz. 3.2). |
+| **⭐ Bugün ne yapacağım? → Başla** | Çocuğun ilk bakacağı yer. Sırayla öğretmenin görevini, bugünün dersini (2. sınıf, Maarif programına göre; günde en fazla 2 ders) ya da Macera'da kaldığı yeri açar. |
+| **🚀 Uzay Macerası → Devam et** | Sınıf düzeyine göre ilerleyen ana yol. Konular sırayla açılır (bkz. 3.2). Günlük derste bitirilen kelimeler Macera'da da sayılır. |
 | **⭐ Günün Kelimesi** | Her gün bir kelime: resmi, anlamı ve cümlesiyle. Dokununca okunur. "Öğrendim ✓" ile işaretlenir. |
 | **🎯 Haftanın görevi** | Öğretmen görev verdiyse görünür (bkz. 5.5). |
 | **🔁 Tekrar** | Yanlış yaptığı kelimeler sonraki günlerde burada hatırlatılır. |
@@ -314,6 +314,30 @@ Bildirimleri tek tek okuyup düzeltiyorum. Özellikle "bu resim bu kelimeyle eş
 - Yalnızca kendi sınıflarınızdaki öğrencileri görürsünüz.
 - Panelde öğrencinin profilde yazdığı ad ve ilerleme sayıları bulunur. E-posta, telefon, konum, fotoğraf ya da ses kaydı toplanmaz.
 - Öğrenci **Sınıftan Ayrıl** derse cihazı veri göndermeyi bırakır; listede son hâli kalır.
+
+### 5.10 Günlük ders planı ve akıllı tahta
+
+Maarif programına göre gün gün hazırlanmış dersler (şu an 2. sınıf, 66 ders, haftada 2). **İngilizce öğretmeni olmayan** bir öğretmen de dersi yürütebilsin diye tasarlandı: tahta dersi kendisi yürütür, İngilizce olan her şeyi Aktapokus söyler, öğretmene Türkçe yönerge düşer.
+
+- **Nereden açılır?** Öğretmen panelinde **📘 Günlük ders planı → Ders planını aç**, ya da sınıfa bağlı olmayan cihazda Ebeveyn Alanı'ndaki aynı kart. Giriş gerekmez, internetsiz de açılır.
+- **Tahtayı aç:** Tahta görünümü açılır. Akıllı tahta bilgisayara ikinci ekran olarak bağlıysa pencere doğrudan orada açılır; değilse pencereyi tahtaya sürükleyin. Projektör ekranı **yansıtıyorsa** öğretmen sayfası da tahtaya yansır; o durumda tahtada **⛶ Tam ekran** deyip dersi tahtanın kendi düğmeleriyle yönetin ve notlar için **Ders kartı**nı yazdırın. İki ayrı ekran için Windows'ta **Win + P → Genişlet**.
+- **Bir dersin akışı (yaklaşık 30 dakika, 10 dakika esnek):**
+
+| Adım | Tahtada ne olur? |
+|---|---|
+| Isınma | Aktapokus Says (ayakta, dinle ve yap) |
+| Günün sesi | Temanın harfi ve o sesle başlayan 3 resimli kelime |
+| Hatırla | Önceki dersin kelimeleri |
+| Yeni | Resim, kelime ve cümle; Aktapokus söyler, sınıf tekrar eder |
+| Oyun | Her derste değişir: Takım oyunu, Ne eksik?, Gizli resim, Dinle ve dokun, Farklı olanı bul |
+| Etkin öğrenme | Eşli/grup etkinliği, sayaçlı; yönergeyi Aktapokus söyler |
+| Kapanış | Bugünün kelimeleri; ev görevi |
+
+- **Öğretmen ekranı:** Her adımın Türkçe yönergesi, tahtadaki kelimenin Türkçesi (yalnızca sizde), takım puanı ve Geri / Başlat / Duraklat / Sonraki adım / Tekrar söylet düğmeleri. Düğmeler tahta **aynı bilgisayarda** açıkken çalışır.
+- **Tahtanın kendi kısayolları:** boşluk = duraklat, → = sonraki adım, ← = önceki, S = tekrar söylet.
+- **İşlendi:** Ders bitince basın. Öğretmen paneline aynı bilgisayarda giriş yaptıysanız sınıfınızı seçin; ders sınıfa kaydedilir ve öğrencilerin uygulamasında aynı ders "Bugünün dersi" olarak öne gelir (derse gelemeyen çocuk evde yakalar). Sınıf seçilmezse kayıt yalnızca o bilgisayarda kalır.
+- **Basılı ders kartı:** Her adımın Türkçe yönergesi, kelimeler ve Türkçeleri; A4.
+- Resimli, adım adım anlatım: https://aktapokus.github.io/kids-english/rehber.html
 
 ---
 
