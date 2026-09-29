@@ -3073,6 +3073,7 @@ ${FONT_FACES}
   .ke-tr-note{ min-height:44px; font-size:15px; font-weight:600; color:var(--kb-chalk); line-height:1.4; }
   .ke-tr-line{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; min-height:54px; padding:8px; border:2px dashed rgba(245,240,223,.35); border-radius:14px; width:100%; }
   .ke-tr-bank{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+  .ke-tr-dim{ opacity:.55; }
   .ke-tr-hint{ display:block; margin:6px auto 0; font:700 14px 'Fredoka','Baloo 2',sans-serif; color:#1A2233; background:#FFE9A8; border:2px solid #FFD75A; border-radius:12px; padding:6px 12px; cursor:pointer; max-width:92%; }
   .ke-tr-hint[hidden]{ display:none; }
   .ke-tr-hint:disabled{ cursor:default; opacity:1; background:#FFF6D6; }
@@ -6848,28 +6849,38 @@ async function runTrPractice(container, api, toolId, categories) {
       <div class="ke-tr-line" id="keTrLine"></div>
       <div class="ke-tr-bank" id="keTrBank"></div>
       <div class="ke-sm-btns"><button type="button" class="ke-btn-primary ke-sm-alt" id="keTrReset">↺ ${L('Baştan', 'Reset')}</button>
-      <button type="button" class="ke-btn-primary" id="keTrCheck" disabled>✓ ${L('Kontrol Et', 'Check')}</button></div>
+      <button type="button" class="ke-btn-primary" id="keTrCheck">✓ ${L('Kontrol Et', 'Check')}</button></div>
       <div class="ke-tr-note" id="keTrNote"></div>`;
     const line = body.querySelector('#keTrLine'), bank = body.querySelector('#keTrBank'), check = body.querySelector('#keTrCheck');
     const paint = () => {
       line.innerHTML = placed.length ? placed.map((t, j) => `<button type="button" class="ke-tile ke-tr-placed" data-j="${j}">${escapeProfileText(t.w)}</button>`).join('') : `<span class="ke-sm-tip">${L('Kelimelere dokun…', 'Tap the words…')}</span>`;
       bank.innerHTML = tiles.map((t, j) => `<button type="button" class="ke-tile" data-t="${j}"${placed.includes(t) ? ' disabled style="opacity:.3"' : ''}>${escapeProfileText(t.w)}</button>`).join('');
-      check.disabled = placed.length !== words.length;
+      // Kontrol dugmesi hep basilabilir; eksikse ne yapilacagini soyler
+      // (kullanici geri bildirimi 2026-09-29: soluk dugme "bozuk" sanildi).
+      check.classList.toggle('ke-tr-dim', placed.length < words.length);
       line.querySelectorAll('[data-j]').forEach((b) => b.onclick = () => { placed.splice(Number(b.dataset.j), 1); paint(); });
       bank.querySelectorAll('[data-t]').forEach((b) => b.onclick = () => { const t = tiles[Number(b.dataset.t)]; if (!placed.includes(t)) { placed.push(t); paint(); } });
     };
     body.querySelector('#keTrReset').onclick = () => { placed.length = 0; paint(); };
+    let done = false;
     check.onclick = () => {
-      const ok = placed.map((t) => t.w).join(' ') === it.sentence;
+      if (done) return;
       const note = body.querySelector('#keTrNote');
+      if (placed.length < words.length) {
+        const left = words.length - placed.length;
+        note.textContent = L(`Cümlede ${words.length} kelime var; ${left} kelime daha ekle.`, `The sentence has ${words.length} words; add ${left} more.`)
+          + (extra ? L(' Bir kelime fazla, onu kullanma! 🙂', ' One word is extra, do not use it! 🙂') : '');
+        return;
+      }
+      const ok = placed.map((t) => t.w).join(' ') === it.sentence;
       if (ok) {
         if (!tries) stars++;
         note.innerHTML = `✅ <b>${escapeProfileText(it.sentence)}</b>`;
-        check.disabled = true;
+        done = true; check.disabled = true;
         speakThen(it.sentence, m, 1200, () => { i++; next(); });
       } else if (++tries >= 2) {
         note.innerHTML = `💡 ${L('Doğrusu', 'Correct')}: <b>${escapeProfileText(it.sentence)}</b>`;
-        check.disabled = true;
+        done = true; check.disabled = true;
         speakThen(it.sentence, m, 2600, () => { i++; next(); });
       } else {
         note.textContent = L('Sıra biraz farklı, tekrar dene! 🔄', 'The order is a bit different, try again! 🔄');
