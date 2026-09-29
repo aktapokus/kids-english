@@ -4556,9 +4556,22 @@ const WordOfDay = {
     return { day: dayStr(Date.now()), cat: p.id, done: false,
       obj: { word: o.word, tr: o.tr, icon_type: o.icon_type, icon: o.icon, sentence: o.sentence || '' } };
   },
+  // Kayitli kelime veriden kaldirildiysa (icerik duzeltmesi) yenisi secilir;
+  // yoksa gun boyu eski kart gorunmeye devam ediyordu (2026-09-30).
+  async _exists(api, toolId, categories, d) {
+    const c = categories.find((x) => x.id === d.cat);
+    if (!c) return false;
+    for (let i = 0; i < c.episode_count; i++) {
+      try {
+        const r = await api.apiFetch(`/api/tools/${toolId}/categories/${c.id}/episodes/${i}`);
+        if (r.ok && ((await r.json()).objects || []).some((o) => o.word === d.obj.word && o.icon === d.obj.icon)) return true;
+      } catch (e) { return true; }
+    }
+    return false;
+  },
   async get(api, toolId, categories) {
     const cached = this._today();
-    if (cached) return cached;
+    if (cached && await this._exists(api, toolId, categories, cached)) return cached;
     const d = await this._pick(api, toolId, categories);
     if (d) this._save(d);
     return d;
