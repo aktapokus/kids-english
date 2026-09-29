@@ -1,5 +1,6 @@
-const SUPABASE_URL = 'https://wtrkfzmmhabcpoipaccf.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_87EZgr1ftB1SnIY5FoDaKA_xmxlD7kU';
+// Sunucu adresi tek yerde: server-config.js
+const SUPABASE_URL = (window.KE_SERVER && window.KE_SERVER.url) || 'https://wtrkfzmmhabcpoipaccf.supabase.co';
+const SUPABASE_KEY = (window.KE_SERVER && window.KE_SERVER.key) || 'sb_publishable_87EZgr1ftB1SnIY5FoDaKA_xmxlD7kU';
 const SESSION_KEY = 'ke_teacher_session_v1';
 
 function saveSession(s) { try { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); } catch (e) {} }

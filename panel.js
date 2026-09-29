@@ -481,8 +481,9 @@ const RiverHighScore = {
 // Hiçbir veri OTOMATİK gönderilmiyor - sadece kullanıcı "Skor Gönder"e
 // dokunursa, ve sadece profildeki takma isim + skor gidiyor (gerçek isim,
 // cihaz bilgisi vb. yok).
-const SUPABASE_URL = 'https://wtrkfzmmhabcpoipaccf.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_87EZgr1ftB1SnIY5FoDaKA_xmxlD7kU';
+// Sunucu adresi tek yerde: ui/server-config.js (yoksa varsayilan).
+const SUPABASE_URL = (window.KE_SERVER && window.KE_SERVER.url) || 'https://wtrkfzmmhabcpoipaccf.supabase.co';
+const SUPABASE_KEY = (window.KE_SERVER && window.KE_SERVER.key) || 'sb_publishable_87EZgr1ftB1SnIY5FoDaKA_xmxlD7kU';
 // Kaba, en-iyi-çaba bir uygunsuz-kelime filtresi - sunucu tarafında
 // gerçek bir denetim yok (RLS bunu yapamaz), bu sadece ilk savunma
 // katmanı, kesin degil.

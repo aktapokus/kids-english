@@ -35,8 +35,8 @@ function nextLesson(data) {
 // Ogretmen paneline bu cihazda giris yapilmissa "Islendi" secili sinifa da
 // yazilir (classes.lessons_done). Internet yoksa bekletilir, baglanti gelince
 // gonderilir. Giris yoksa yalniz bu cihaza kaydedilir (tek ekran / internetsiz).
-const SB_URL = 'https://wtrkfzmmhabcpoipaccf.supabase.co';
-const SB_KEY = 'sb_publishable_87EZgr1ftB1SnIY5FoDaKA_xmxlD7kU';
+const SB_URL = (window.KE_SERVER && window.KE_SERVER.url) || 'https://wtrkfzmmhabcpoipaccf.supabase.co';
+const SB_KEY = (window.KE_SERVER && window.KE_SERVER.key) || 'sb_publishable_87EZgr1ftB1SnIY5FoDaKA_xmxlD7kU';
 const T_SESSION = 'ke_teacher_session_v1';
 const PENDING_KEY = 'ke_lessons_pending_v1';
 const CLASS_KEY = 'ke_ders_class_v1';
