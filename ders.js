@@ -503,6 +503,7 @@ function mountTeacher(data) {
         ${st && st.lessonId === lesson.id && st.step >= 0 ? `<div class="score">🔴 Takım A: <b>${st.scores.A}</b> <button data-s="A:1">+1</button><button data-s="A:-1">−1</button> &nbsp; 🔵 Takım B: <b>${st.scores.B}</b> <button data-s="B:1">+1</button><button data-s="B:-1">−1</button>${st.timerLeft > 0 ? ` &nbsp; ⏱️ ${Math.floor(st.timerLeft / 60)}:${String(st.timerLeft % 60).padStart(2, '0')}` : ''}</div>` : ''}
         <ol class="steps">${steps.map((s, i) => `<li class="${i === cur ? 'now' : i < cur ? 'past' : ''}"><div class="sh"><b>${i + 1}. ${esc(s.name)}</b> <span>${s.min} dk</span> <button data-g="${i}">buraya git</button></div><p>${esc(teacherNote(s, lesson))}</p>
           ${s.kind === 'new' ? `<table>${s.items.map((c) => `<tr><td>${esc(c.word)}</td><td>${esc(c.tr)}</td></tr>`).join('')}</table>` : ''}</li>`).join('')}</ol>
+        ${lesson.diff ? `<div class="diffbox"><b>🧩 Farklılaştırma</b><p><b>Destek:</b> ${esc(lesson.diff.support)}</p><p><b>Hızlı bitirenler:</b> ${esc(lesson.diff.extend)}</p></div>` : ''}
         <div class="done"><button id="tDone" class="pri">✅ İşlendi</button> <span>Ders bittiğinde basın. Öğrencilerin uygulamasında aynı ders "Bugünün dersi" olarak açılacak.</span></div>
       </section>`;
     app.querySelectorAll('.li').forEach((b) => { b.onclick = () => { lesson = lessonById(data, b.dataset.id); history.replaceState(null, '', '?id=' + lesson.id); render(); }; });
@@ -581,6 +582,7 @@ function mountCard(data) {
       <ol>${steps.map((s, i) => `<li><b>Adım ${i + 1}/${steps.length}: ${esc(s.name)} (${s.min} dk).</b> ${esc(teacherNote(s, lesson, true))}</li>`).join('')}</ol>
       ${lesson.cards.length && !lesson.review_only ? `<table><tr><th>Kelime</th><th>Türkçesi</th><th>Örnek cümle</th></tr>${lesson.cards.map((c) => `<tr><td>${esc(c.word)}</td><td>${esc(c.tr)}</td><td>${esc(c.sentence)}</td></tr>`).join('')}</table>` : ''}
       ${lesson.phrases.length ? `<p><b>Kalıplar:</b> ${lesson.phrases.map((p) => `${esc(p.en)} (${esc(p.tr)})`).join(' · ')}</p>` : ''}
+      ${lesson.diff ? `<p><b>Destek:</b> ${esc(lesson.diff.support)}<br><b>Hızlı bitirenler:</b> ${esc(lesson.diff.extend)}</p>` : ''}
       ${worksheetHtml(lesson)}${checklistHtml(lesson)}
       <p class="small">Tahta her adımı kendisi yürütür; adım numaraları tahtadaki noktalarla aynıdır. Boşluk tuşu: duraklat · →: sonraki adım · S: tekrar söylet.</p></article>`;
   }).join('');
