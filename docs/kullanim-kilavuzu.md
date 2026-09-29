@@ -1,3 +1,5 @@
+🇹🇷 **Türkçe** · 🇬🇧 [English](guide.html)
+
 # Aktapokus Kids English: Kullanım Kılavuzu
 
 **Kimler için:** Öğretmenler, veliler ve (velisiyle birlikte) çocuklar

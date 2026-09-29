@@ -5769,7 +5769,7 @@ async function showParentArea(container, api, toolId, categories) {
     ${window.KE_STATIC ? `<div class="ke-week-card ke-parent-card">
       <div class="ke-kpi-lbl">📖 ${L('Kullanım kılavuzu', 'User guide')}</div>
       <p class="ke-parent-p">${L('Veli ve öğretmen için ayrıntılı rehber: neyi nereden takip edersiniz, evde nasıl destek olursunuz, sınıf modu ve basılı materyal.', 'Detailed guide for parents and teachers (in Turkish): what to follow, how to help at home, classroom mode and printables.')}</p>
-      <div class="ke-pick-row" style="justify-content:flex-start;"><a class="ke-pick" href="kilavuz.html" target="_blank" rel="noopener">📖 ${L('Kılavuzu aç', 'Open guide')}</a></div>
+      <div class="ke-pick-row" style="justify-content:flex-start;"><a class="ke-pick" href="${L('kilavuz.html', 'guide.html')}" target="_blank" rel="noopener">📖 ${L('Kılavuzu aç', 'Open guide')}</a></div>
     </div>` : ''}
     <div class="ke-week-card ke-parent-card">
       <div class="ke-kpi-lbl">📅 ${L('Haftalık özet', 'Weekly summary')}</div>

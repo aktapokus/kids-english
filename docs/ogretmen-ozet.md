@@ -1,3 +1,5 @@
+🇹🇷 **Türkçe** · 🇬🇧 [English](intro.html)
+
 # Aktapokus Kids English: 2 dakikada tanıtım
 
 **Ne?** 2.–6. sınıf öğrencileri için **ücretsiz** bir İngilizce kelime, dinleme ve konuşma uygulaması. Telefonda, tablette ve akıllı tahtada tarayıcıdan açılır; kurulum gerekmez.
