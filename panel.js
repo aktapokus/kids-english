@@ -4714,6 +4714,7 @@ function showSectionMenu(container, api, toolId, categories) {
       <button type="button" class="ke-who-chip" id="keWhoChip" aria-label="${L('Çocuk değiştir', 'Switch child')}">👤 ${escapeProfileText(Profiles.active().name || L('Ben', 'Me'))} <span aria-hidden="true">⇄</span></button>
     </div>
     <button type="button" class="ke-today" id="keToday" hidden></button>
+    ${journeyHomeCardHTML(categories)}
     <div class="ke-simple-row">
       <button type="button" class="ke-simple-btn" id="keGoLib">📚 ${L('Kütüphane', 'Library')}</button>
       ${dueTotal ? `<button type="button" class="ke-simple-btn" id="keDueChip">🔁 ${L(`Tekrar (${dueTotal})`, `Review (${dueTotal})`)}</button>` : ''}
