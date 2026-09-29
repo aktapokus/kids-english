@@ -2941,6 +2941,12 @@ ${FONT_FACES}
   .ke-shell.ke-fs .ke-screen-host:has(.ke-scene-narrow){ display:flex; flex-direction:column; flex:1 1 auto; min-height:0; }
   .ke-shell.ke-fs .ke-scene-wrap:has(.ke-scene-narrow){ flex:1 1 auto; display:flex; flex-direction:column; min-height:0; }
   .ke-shell.ke-fs .ke-scene.ke-scene-narrow{ flex:1 1 auto; }
+  /* Tam ekranda sahne ekran yuksekligine sabit; uzun tur (cumle + ipucu +
+     tas + Kontrol Et) kesiliyordu - kucuk iPhone'da Kontrol Et hic
+     gorunmuyordu (2026-09-30). Kart kendi icinde kayar. */
+  .ke-shell.ke-fs .ke-scene.ke-scene-narrow .ke-sentence,
+  .ke-shell.ke-fs .ke-scene.ke-scene-narrow .ke-quiz,
+  .ke-shell.ke-fs .ke-scene.ke-scene-narrow .ke-speak{ overflow-y:auto; min-height:0; -webkit-overflow-scrolling:touch; }
   .ke-shell .ke-scene.ke-scene-narrow #keObjects{ align-content:space-evenly; }
   @media (max-width:640px) and (orientation:portrait){
     .ke-shell .ke-scene.ke-scene-narrow #keObjects{ grid-template-columns:repeat(2, minmax(0,1fr)); padding:70px 6px 56px; gap:10px 6px; }
@@ -3112,7 +3118,7 @@ ${FONT_FACES}
   .ke-tr-line{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; min-height:54px; padding:8px; border:2px dashed rgba(245,240,223,.35); border-radius:14px; width:100%; }
   .ke-tr-bank{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
   .ke-tr-dim{ opacity:.55; }
-  .ke-tr-hint{ display:block; margin:6px auto 0; font:700 14px 'Fredoka','Baloo 2',sans-serif; color:#1A2233; background:#FFE9A8; border:2px solid #FFD75A; border-radius:12px; padding:6px 12px; cursor:pointer; max-width:92%; }
+  .ke-tr-hint{ display:block; margin:0 auto; font:700 13px 'Fredoka','Baloo 2',sans-serif; color:#1A2233; background:#FFE9A8; border:2px solid #FFD75A; border-radius:10px; padding:3px 10px; cursor:pointer; max-width:92%; }
   .ke-tr-hint[hidden]{ display:none; }
   .ke-tr-hint:disabled{ cursor:default; opacity:1; background:#FFF6D6; }
   .ke-story-list{ display:flex; flex-direction:column; gap:14px; max-width:560px; margin:0 auto; position:relative; z-index:1; }
@@ -9367,6 +9373,9 @@ function startLetterRound(host, container, episode, wordList, mascotEl, score, o
       actionsEl.style.display = cnt ? 'flex' : 'none';
       checkBtn.disabled = !full;
       checkBtn.style.display = full ? '' : 'none';
+      // Kutular dolunca Kontrol Et gorunur alana gelsin: kucuk telefonda
+      // kart icinde asagida kaliyordu, cocuk "takildi" saniyordu (2026-09-30).
+      if (full) requestAnimationFrame(() => { try { actionsEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) { /* yok say */ } });
     }
     function freeAt(bi) {
       const it = filled[bi];
@@ -9900,6 +9909,9 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
       actionsEl.style.display = cnt ? 'flex' : 'none';
       checkBtn.disabled = !full;
       checkBtn.style.display = full ? '' : 'none';
+      // Kutular dolunca Kontrol Et gorunur alana gelsin: kucuk telefonda
+      // kart icinde asagida kaliyordu, cocuk "takildi" saniyordu (2026-09-30).
+      if (full) requestAnimationFrame(() => { try { actionsEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) { /* yok say */ } });
     }
     function freeItem(i) {
       const it = slotItems[i];
@@ -10146,6 +10158,9 @@ function startConversationRound(host, container, episode, mascotEl, onFinished) 
       actionsEl.style.display = cnt ? 'flex' : 'none';
       checkBtn.disabled = !full;
       checkBtn.style.display = full ? '' : 'none';
+      // Kutular dolunca Kontrol Et gorunur alana gelsin: kucuk telefonda
+      // kart icinde asagida kaliyordu, cocuk "takildi" saniyordu (2026-09-30).
+      if (full) requestAnimationFrame(() => { try { actionsEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) { /* yok say */ } });
     }
     function freeItem(i) {
       const it = slotItems[i];
