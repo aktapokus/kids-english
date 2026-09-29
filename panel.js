@@ -1749,6 +1749,8 @@ ${FONT_FACES}
     border-top:11px solid var(--ke-yellow);
   }
   .ke-word-popup.ke-show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+  .ke-word-popup .ke-what-btn{ display:block; margin:6px auto 0; pointer-events:auto; font:700 15px 'Fredoka','Baloo 2',sans-serif; color:#1A2233; background:#FFF6D6; border:2px solid #1A2233; border-radius:12px; padding:4px 12px; cursor:pointer; }
+  .ke-word-popup .ke-what-btn.ke-what-open{ max-width:min(78vw,420px); font-size:15px; line-height:1.3; cursor:default; text-align:left; }
   /* Alt satırdaki ikonlarda balon ikonun ALTINDA açılıyor - işaretçi
      üçgeni yukarı bakmalı (JS ke-below sınıfını ekliyor). */
   .ke-word-popup.ke-below::before{ bottom:auto; top:-14px; border-top:none; border-bottom:14px solid var(--ke-yellow-dark); }
@@ -8033,6 +8035,20 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
       wordPopup.classList.add('ke-show');
       EyeLens.setDomain(obj.domain || eyeSceneDomain); // kelime seviyesi domain varsa o
       if (reportBtn) { reportTarget = obj; reportBtn.hidden = false; reportBtn.textContent = `⚑ ${L('Sorun bildir', 'Report')}: ${obj.word}`; }
+      // "📖 Bu ne?": tanimi olan kartta anlami Ingilizce aciklar (yazili + sesli)
+      // Dugme dokunulan kartin kelime kutusunun icinde (balonun altinda kalmasin).
+      if (obj.definition) {
+        const whatBtn = document.createElement('button');
+        whatBtn.type = 'button'; whatBtn.id = 'keWhatBtn'; whatBtn.className = 'ke-what-btn';
+        whatBtn.textContent = L('📖 Bu ne?', '📖 What is it?');
+        whatBtn.onclick = (ev) => {
+          ev.stopPropagation();
+          whatBtn.textContent = `📖 ${obj.definition}`; whatBtn.disabled = true; whatBtn.classList.add('ke-what-open');
+          requestAnimationFrame(() => positionWordPopup());
+          speakWord(obj.definition, mascotEl);
+        };
+        wordPopup.appendChild(whatBtn);
+      }
       // Konum artık SABİT değil, TIKLANAN NESNEYE göre hesaplanıyor —
       // eskiden sabit bir köşedeydi ve dar ekranda başka bir resmin
       // üzerine biniyordu ("resim üzerinde çıkıyor yazı" geri bildirimi).
@@ -8446,6 +8462,9 @@ function phaseBarHTML() {
   return `<div class="ke-phasebar" id="kePhaseBar" data-max="0" role="navigation" aria-label="${L('Bölüm aşamaları', 'Episode steps')}">${EPISODE_PHASES.map(([id, ic, lb], i) => `<button type="button" class="ke-phase${i === 0 ? ' cur' : ''}" data-phase="${id}" data-i="${i}" ${i === 0 ? '' : 'disabled'}><span>${ic}</span>${lb()}</button>`).join('')}</div>`;
 }
 function setEpisodePhase(host, id) {
+  // Kesif disindaki adimlarda kesif kelime kutusu kapanir (sabit konumlu ve en
+  // ustte; soru/konus kartinin ustune biniyordu, 2026-09-30).
+  if (id !== 'discover') document.querySelectorAll('.ke-word-popup.ke-show').forEach((el) => el.classList.remove('ke-show'));
   const bar = host && host.querySelector('#kePhaseBar');
   if (!bar) return;
   const i = EPISODE_PHASES.findIndex((x) => x[0] === id);
@@ -9050,6 +9069,78 @@ function startMeaningRound(host, container, episode, wordList, mascotEl, onDone)
   render();
 }
 
+// "Tanimdan Bul" (2026-09-30; kullanici: "cocuklar en cok 'bu ne?' diye
+// sorar, anlam ister"). Tanimi olan kartlarda (A2 genisletme) tanim yazili ve
+// sesli gelir, cocuk 3 resimden dogrusunu secer. Ingilizce tanimdan anlami
+// cikarmak = hedef dilde dusunme; Turkce ceviriye dayanmaz.
+function startDefinitionRound(host, container, episode, wordList, mascotEl, onDone) {
+  const withDef = wordList.filter((o) => o.definition && o.word);
+  if (withDef.length < 1 || wordList.length < 3) { onDone(); return; }
+  const items = shuffle(withDef).slice(0, 4);
+  setEpisodePhase(host, 'speak');
+  const quizEl = host.querySelector('#keQuiz');
+  const progressChip = host.querySelector('#keProgress');
+  const mainBubbleEl = host.querySelector('#keBubble');
+  const bubbleEl = host.querySelector('#keQuizBubble');
+  const progEl = host.querySelector('#keQuizProgress');
+  const wordEl = host.querySelector('#keQuizWord');
+  const cardsHost = host.querySelector('#keQuizCards');
+  const replayBtn = host.querySelector('#keQuizReplay');
+  progressChip.style.display = 'none';
+  mainBubbleEl.style.display = 'none';
+  quizEl.classList.add('ke-show');
+  mascotEl.classList.add('ke-mascot-compact');
+  setMascotPose(host, 'think');
+  let i = 0, attempts = 0;
+  const end = () => {
+    quizEl.classList.remove('ke-show');
+    wordEl.classList.remove('ke-quiz-sentence');
+    mascotEl.classList.remove('ke-mascot-compact');
+    setMascotPose(host, 'idle');
+    progressChip.style.display = '';
+    mainBubbleEl.style.display = '';
+    onDone();
+  };
+  function render() {
+    if (i >= items.length) { end(); return; }
+    const it = items[i]; attempts = 0;
+    bubbleEl.textContent = L('📖 Tanımı dinle: hangisi bu? Resmi seç.', '📖 Listen to the meaning: which one is it? Pick the picture.');
+    progEl.textContent = `${L('Tanımdan Bul', 'Find it')} ${i + 1} / ${items.length}`;
+    wordEl.classList.add('ke-quiz-sentence');
+    wordEl.textContent = it.definition;
+    const opts = shuffle([it, ...shuffle(wordList.filter((o) => o !== it && o.word !== it.word)).slice(0, 2)]);
+    cardsHost.innerHTML = '';
+    opts.forEach((o) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'ke-quiz-card';
+      b.innerHTML = renderObjectIcon(o);
+      b.setAttribute('aria-label', o.word);
+      b.addEventListener('click', () => pick(b, o, it));
+      cardsHost.appendChild(b);
+    });
+    speakWord(it.definition, mascotEl);
+  }
+  function pick(b, o, it) {
+    if (b.disabled) return;
+    attempts++;
+    if (o === it) {
+      b.classList.add('ke-correct');
+      cardsHost.querySelectorAll('.ke-quiz-card').forEach((x) => { x.disabled = true; });
+      celebrateBounce(mascotEl);
+      bubbleEl.textContent = `✅ ${it.word}!`;
+      speakWord(it.word, mascotEl);
+      setTimeout(() => { i++; render(); }, 1400);
+      return;
+    }
+    b.classList.add('ke-wrong'); b.disabled = true;
+    if (attempts === 1) Progress.recordMistake(episode.category_id, it);
+    mascotReact(mascotEl, false);
+    bubbleEl.textContent = L('Olmadı, tanımı bir daha dinle! 🔊', 'Not quite. Listen to the meaning again! 🔊');
+  }
+  replayBtn.onclick = () => { if (items[i]) speakWord(items[i].definition, mascotEl); };
+  render();
+}
+
 // Telaffuz eslestirme (2026-09-28, kullanici: "saatler aktivitesinde dogru
 // soyledigim halde tekrar dene diyor"). Tarayici tanimasi sayilari rakamla
 // yaziyor ("seven o'clock" -> "7:00" / "7 o'clock"), noktalama koymuyor
@@ -9220,7 +9311,7 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
   function renderItem() {
     if (idx >= order.length) {
       endSpeak();
-      startMeaningRound(host, container, episode, wordList, mascotEl, () => startSentenceRound(host, container, episode, wordList, mascotEl, score, onDone));
+      startMeaningRound(host, container, episode, wordList, mascotEl, () => startDefinitionRound(host, container, episode, wordList, mascotEl, () => startSentenceRound(host, container, episode, wordList, mascotEl, score, onDone)));
       return;
     }
     const obj = wordList[order[idx]];
