@@ -6,6 +6,7 @@
 **Sürüm:** 28 Eylül 2026
 **Uygulama:** https://aktapokus.github.io/kids-english/
 **Öğretmen paneli:** https://aktapokus.github.io/kids-english/teacher.html
+**Resimli rehber (nereye, nasıl tıklanır):** https://aktapokus.github.io/kids-english/rehber.html
 
 ---
 

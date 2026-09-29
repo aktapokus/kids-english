@@ -11,6 +11,7 @@
 - **Uygulama:** https://aktapokus.github.io/kids-english/
 - **Öğretmen paneli:** https://aktapokus.github.io/kids-english/teacher.html
 - **Ayrıntılı kılavuz:** https://aktapokus.github.io/kids-english/kilavuz.html
+- **Resimli rehber:** https://aktapokus.github.io/kids-english/rehber.html
 
 ---
 
