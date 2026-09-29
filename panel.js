@@ -574,6 +574,7 @@ function mountWhyButton(host, container, episode) {
 // kaydina guvenilmez). Sinifa katilmis ogrenci cihazinda Ebeveyn Alani'nda bu
 // araclar hic gorunmez; sinifa bagli olmayan (bireysel) cihazda veli acabilir.
 const TEACHER_SESSION_KEY = 'ke_teacher_session_v1';
+const TEACHER_OK_KEY = 'ke_teacher_ok_v1';
 const TeacherGate = {
   _load() { try { return JSON.parse(window.localStorage.getItem(TEACHER_SESSION_KEY)); } catch (e) { return null; } },
   // -> { email } | { error: 'none'|'offline'|'expired' }
@@ -594,8 +595,17 @@ const TeacherGate = {
       }
       if (!r.ok) return { error: 'expired' };
       const u = await r.json();
+      // Internetsiz okullar (2026-09-29): dogrulanan giris 30 gun bu cihazda
+      // gecerli sayilir; baglanti yokken sinif modu yine acilir.
+      try { window.localStorage.setItem(TEACHER_OK_KEY, JSON.stringify({ email: u.email || '', until: Date.now() + 30 * 864e5 })); } catch (e) { /* yok say */ }
       return { email: u.email || '' };
-    } catch (e) { return { error: 'offline' }; }
+    } catch (e) {
+      try {
+        const ok = JSON.parse(window.localStorage.getItem(TEACHER_OK_KEY));
+        if (ok && ok.until > Date.now()) return { email: ok.email, offline: true };
+      } catch (e2) { /* yok say */ }
+      return { error: 'offline' };
+    }
   },
 };
 async function openTeacherMode(container, api, toolId, categories) {
@@ -4316,6 +4326,66 @@ function applyTeacherStart(a, categories) {
   try { window.localStorage.setItem(key, sec); } catch (e) { /* yok say */ }
 }
 
+// ---- Bugunun dersi (gunluk ders plani pilotu, 2026-09-29) ----
+// Ogretmenin tahtada isledigi dersin cocuk tarafi: ayni dersin kartlari,
+// alisilmis bolum akisiyla (kesif, soru, konus, cumle, harf). Pilot: 2. sinif
+// (Macera'da Ay istasyonundaki cocuk). Gunde en fazla 2 ders (kullanici karari);
+// kacirilan ders kaybolmaz, sirada bekler. Ilerleme profil basina.
+const LESSON_DAILY_MAX = 2;
+const LessonPlan = {
+  _data: null,
+  async load() {
+    if (this._data) return this._data;
+    try {
+      const r = await fetch(new URL('data/lessons.json', ASSET_BASE_URL).href);
+      if (r.ok) this._data = await r.json();
+    } catch (e) { /* ders verisi yoksa kart gorunmez */ }
+    return this._data;
+  },
+  _key() { return 'ke_lesson_prog_v1_' + Profiles.active().id; },
+  prog() { try { const d = JSON.parse(window.localStorage.getItem(this._key())); return d && d.done ? d : { done: {} }; } catch (e) { return { done: {} }; } },
+  markDone(id) {
+    const d = this.prog(); d.done[id] = dayStr(Date.now());
+    try { window.localStorage.setItem(this._key(), JSON.stringify(d)); } catch (e) { /* yok say */ }
+    idbPut(this._key(), d);
+  },
+  todayCount() { const t = dayStr(Date.now()); return Object.values(this.prog().done).filter((x) => x === t).length; },
+  next(data) { const d = this.prog().done; return data.lessons.find((l) => !d[l.id]) || null; },
+};
+function startLesson(container, api, toolId, categories, lesson) {
+  const objects = lesson.cards.map(({ cat, ...o }) => ({ ...o, concept: 'concept:' + o.word.toLowerCase().replace(/[^a-z0-9]+/g, '_') }));
+  const ep = {
+    category_id: lesson.cards[0].cat, category_title: lesson.title, episode_index: 0, episode_count: 1,
+    objects, reward_label: L('Ders Yıldızı', 'Lesson Star'), isLesson: lesson.id,
+  };
+  _journeyMode = false; _currentSection = null;
+  _goHomeFn = () => showSectionMenu(container, api, toolId, categories);
+  renderEpisodeScene(container, api, toolId, categories, ep);
+  const sub = container.querySelector('#keSubtitle');
+  if (sub) sub.textContent = L(`Bugünün dersi · Ders ${lesson.index}`, `Today's lesson · Lesson ${lesson.index}`);
+}
+async function mountLesson(host, container, api, toolId, categories) {
+  const el = host.querySelector('#keLesson');
+  if (!el) return;
+  const st = Journey.state(categories); const cur = st.list[st.current];
+  if (!cur || cur.sector.id !== 'moon') return;
+  const pid = Profiles.active().id;
+  const data = await LessonPlan.load();
+  if (!data || !el.isConnected || Profiles.active().id !== pid) return;
+  const nx = LessonPlan.next(data);
+  const th = nx && data.themes[nx.theme];
+  const full = LessonPlan.todayCount() >= LESSON_DAILY_MAX;
+  el.innerHTML = !nx
+    ? `<div class="ke-task-head">📘 ${L('Ders programı', 'Lesson plan')}</div><p class="ke-task-note">🎉 ${L('Bu yılın bütün derslerini bitirdin!', 'You finished all the lessons this year!')}</p>`
+    : `<div class="ke-task-head">📘 ${L('Bugünün dersi', "Today's lesson")} <span>· ${L(`Ders ${nx.index} / ${data.lessons.length}`, `Lesson ${nx.index} / ${data.lessons.length}`)}</span></div>
+      <p class="ke-task-note"><b>${escapeProfileText(nx.title)}</b> · ${escapeProfileText(th ? th.name : '')}</p>
+      ${full ? `<p class="ke-task-note">🌙 ${L(`Bugün ${LESSON_DAILY_MAX} ders bitirdin! Sıradaki ders yarın.`, `You finished ${LESSON_DAILY_MAX} lessons today! The next one is tomorrow.`)}</p>`
+        : `<div class="ke-btn-row" style="justify-content:flex-start;"><button type="button" class="ke-btn-primary" id="keLessonGo">▶ ${L('Derse başla', 'Start the lesson')}</button></div>`}`;
+  el.hidden = false;
+  const go = el.querySelector('#keLessonGo');
+  if (go) go.addEventListener('click', () => startLesson(container, api, toolId, categories, nx));
+}
+
 async function mountTask(host, container, api, toolId, categories) {
   const el = host.querySelector('#keTask');
   if (!el || !Classroom.get().code) return;
@@ -4542,6 +4612,7 @@ function showSectionMenu(container, api, toolId, categories) {
       <button type="button" class="ke-who-chip" id="keWhoChip" aria-label="${L('Çocuk değiştir', 'Switch child')}">👤 ${escapeProfileText(Profiles.active().name || L('Ben', 'Me'))} <span aria-hidden="true">⇄</span></button>
     </div>
     ${journeyHomeCardHTML(categories)}
+    <div class="ke-task ke-lesson" id="keLesson" hidden></div>
     <div class="ke-task" id="keTask" hidden></div>
     <div class="ke-wotd" id="keWotd" hidden></div>
     <div class="ke-offline" id="keOffline" hidden></div>
@@ -4554,6 +4625,7 @@ function showSectionMenu(container, api, toolId, categories) {
   `;
   wireBottomNav(host, container, api, toolId, categories);
   wireJourneyHomeCard(host, container, api, toolId, categories);
+  mountLesson(host, container, api, toolId, categories);
   mountTask(host, container, api, toolId, categories);
   mountWordOfDay(host, api, toolId, categories);
   mountOffline(host);
@@ -5760,6 +5832,11 @@ async function showParentArea(container, api, toolId, categories) {
       <div class="ke-kpi-lbl">🧑‍🏫 ${L('Sınıf modu (akıllı tahta)', 'Classroom mode (smart board)')}</div>
       <p class="ke-parent-p">${L('Bir bölümü tahtaya yansıtın: büyük resimler, siz yönetirsiniz, iki takımla soru oyunu.', 'Project an episode on the board: big pictures, you control the pace, a two-team quiz.')}</p>
       <div class="ke-pick-row" style="justify-content:flex-start;"><button type="button" class="ke-pick" id="keClassMode">▶ ${L('Sınıf modunu aç', 'Open classroom mode')}</button></div>
+    </div>
+    <div class="ke-week-card ke-parent-card">
+      <div class="ke-kpi-lbl">📘 ${L('Günlük ders planı (2. sınıf, pilot)', 'Daily lesson plan (Grade 2, pilot)')}</div>
+      <p class="ke-parent-p">${L('Maarif programına göre gün gün hazır dersler. Tahta dersi kendisi yürütür, İngilizceyi Aktapokus söyler; size Türkçe yönerge düşer. Giriş gerekmez, internetsiz de açılır.', 'Ready day-by-day lessons following the national curriculum. The board runs the lesson and Aktapokus speaks the English; you get step-by-step notes in Turkish. No sign-in, works offline.')}</p>
+      <div class="ke-pick-row" style="justify-content:flex-start;"><a class="ke-pick" href="ders-ogretmen.html" target="_blank" rel="noopener">▶ ${L('Ders planını aç', 'Open the lesson plan')}</a></div>
     </div>
     <div class="ke-week-card ke-parent-card">
       <div class="ke-kpi-lbl">🧑‍🏫 ${L('İçerik denetimi (öğretmen)', 'Content review (teacher)')}</div>
@@ -10161,13 +10238,17 @@ function startConversationRound(host, container, episode, mascotEl, onFinished) 
 function showCelebration(host, container, episode, wordList, score, onDone) {
   if (episode.isReview) {
     Progress.clearMistakes(episode.category_id, wordList.map((o) => o.word));
+  } else if (episode.isLesson) {
+    LessonPlan.markDone(episode.isLesson);
   } else {
     Progress.markComplete(episode.category_id, episode.episode_index);
     try { Recall.add(episode.category_id, wordList); } catch (e) { /* yok say */ }
   }
   try { DailyGoal.add(wordList.length); } catch (e) { /* yok say */ }
   const overlay = host.querySelector('#keCelebration');
-  host.querySelector('#keCelebrationText').textContent = episode.isReview
+  host.querySelector('#keCelebrationText').textContent = episode.isLesson
+    ? L(`Bugünün dersini bitirdin! ${wordList.length} kelimeyi çalıştın. 📘`, `You finished today's lesson! You practised ${wordList.length} words. 📘`)
+    : episode.isReview
     ? L(`${wordList.length} kelimeyi tekrar ettin — artık daha iyi biliyorsun! 💪`, `You reviewed ${wordList.length} words — you know them better now! 💪`)
     : L(`${wordList.length} yeni İngilizce kelime öğrendin.`, `You learned ${wordList.length} new English words.`)
       + (episode.episode_index + 1 < episode.episode_count
@@ -10186,12 +10267,16 @@ function showCelebration(host, container, episode, wordList, score, onDone) {
   const hasNext = episode.episode_index + 1 < episode.episode_count;
   nextBtn.textContent = hasNext ? L('Sonraki Bölüm →', 'Next episode →') : L('Kategoriye Dön', 'Back to category');
   nextBtn.onclick = onDone;
+  if (episode.isLesson) {
+    nextBtn.textContent = L('Ana ekran', 'Home');
+    nextBtn.onclick = () => { host.querySelector('#keCelebration').classList.remove('ke-show'); if (_goHomeFn) _goHomeFn(); };
+  }
 
   // Kisa oturum molasi (5b)
   overlay.querySelectorAll('.ke-break').forEach((el) => el.remove());
-  if (!episode.isReview) SessionLen.count++;
+  if (!episode.isReview && !episode.isLesson) SessionLen.count++;
   const lim = SessionLen.get();
-  if (lim > 0 && SessionLen.count >= lim) {
+  if (!episode.isLesson && lim > 0 && SessionLen.count >= lim) {
     const box = document.createElement('div');
     box.className = 'ke-break';
     box.innerHTML = `<p>${L(`Bugün ${SessionLen.count} bölüm bitirdin! 🌟 Devam mı, yarın mı?`, `You finished ${SessionLen.count} episodes today! 🌟 Keep going or continue tomorrow?`)}</p>
