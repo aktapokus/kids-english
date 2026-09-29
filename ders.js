@@ -132,6 +132,7 @@ function buildSteps(data, lesson) {
     steps.push(st);
   }
   steps.push({ kind: 'active', min: lesson.active.minutes, name: 'Etkin öğrenme' });
+  if (lesson.cando) steps.push({ kind: 'cando', min: 3, name: 'Ne öğrendim?' });
   steps.push({ kind: 'exit', min: 2, name: 'Kapanış', items: lesson.cards.slice(0, 6) });
   return steps;
 }
@@ -147,6 +148,7 @@ function teacherNote(step, lesson, paper) {
     case 'reveal': return 'Gizli resim. Resim önce çok bulanık gelir, yavaş yavaş netleşir. Takımlar erken tahmin etmeye çalışır; sırası gelen takım bir seçenek seçer. Puanı tahta verir.';
     case 'listen': return 'Dinle ve dokun. Tahtada yazısız resimler var. Aktapokus bir kelime söyler; sırası gelen takımdan bir çocuk tahtaya gelip doğru resme dokunur. Puanı tahta verir.';
     case 'odd': return 'Farklı olanı bul. Dört resimden biri bu dersin konusuna uymuyor. Sırası gelen takım farklı olanı seçer. Doğru cevaptan sonra "neden?" diye Türkçe sorabilirsiniz.';
+    case 'cando': return 'Tema sonu öz değerlendirme. Aktapokus "I can…" cümlelerini tek tek söyler; çocuklar yapabiliyorsa başparmağını yukarı, emin değilse yana kaldırır. Siz sınıfa bakıp basılı kontrol listesine not alın (Ders kartı sayfasının sonunda). Cümleler: ' + lesson.cando.map((c) => c.tr).join(' · ');
     case 'review': return 'Dünkü dersin kelimeleri. Aktapokus söyler, sınıf tekrar eder. Resmi parmağınızla gösterin; sessiz kalan çocuğu gülümseyerek koroya katın.';
     case 'new': return 'Yeni kelimeler. Aktapokus her kelimeyi söyleyip sınıfa tekrar ettirecek, sonra örnek cümleyi okuyacak. Sizin İngilizce konuşmanız gerekmez.' + (paper ? ' Türkçeleri aşağıdaki tabloda.' : ' Türkçesi aşağıda yalnızca sizin için.');
     case 'quiz': return 'Takım yarışması. Sınıfı ikiye bölün. Sırası gelen takımdan bir çocuk cevabı söyler ya da tahtada dokunur. Tahta doğruyu gösterir ve puanı kendisi verir' + (paper ? '.' : '; gerekirse buradan düzeltin.');
@@ -213,6 +215,7 @@ function mountBoard(data) {
       else if (st.kind === 'new') await runChorus(my, st.items, 'New words', true);
       else if (st.kind === 'quiz') await runQuiz(my, st.items);
       else if (st.kind === 'sound') await runSound(my);
+      else if (st.kind === 'cando') await runCando(my);
       else if (st.kind === 'missing') await runMissing(my, st.items);
       else if (st.kind === 'reveal') await runReveal(my, st.items);
       else if (st.kind === 'listen') await runListen(my, st.items);
@@ -335,6 +338,16 @@ function mountBoard(data) {
   }
   function thumb(c) { return c.icon_type === 'emoji' ? `<span class="thumbemo">${esc(c.icon)}</span>` : `<img class="thumb" src="${esc(c.icon)}" alt="">`; }
 
+  async function runCando(my) {
+    await speak('What can you do now? Show me your thumbs!');
+    for (const c of lesson.cando) {
+      if (my !== token) return; await waitWhilePaused(my);
+      S.answer = { word: c.en, tr: c.tr }; post();
+      frame(`<div class="start">${mascot()}<h1>${esc(c.en)}</h1><p class="thumbs">👍 Yes! &nbsp;&nbsp; 👉 A little</p></div>`, 'Can you do it?');
+      await speak(c.en); await hold(4500, my);
+    }
+    await speak('Well done! You learned a lot!');
+  }
   async function runSound(my) {
     const snd = lesson.sound; const L = snd.letter;
     frame(`<div class="sound"><div class="bigletter">${esc(L.toUpperCase())}${esc(L)}</div><div class="grid" id="sndGrid"></div></div>`, 'Sound of the day');
@@ -542,6 +555,23 @@ function mountTeacher(data) {
 }
 
 // ======================= BASILI DERS KARTI =======================
+// Okuma-yazma (Maarif R/W): resim + kopyalama satiri + kelime havuzu.
+function worksheetHtml(lesson) {
+  // 2. sinifta yazma = kopyalama: tek kelimelik kartlar once (uzun ifadeler zor)
+  const src = (lesson.review_only ? lesson.game_cards || lesson.cards : lesson.cards).filter((c) => c.icon);
+  const cs = [...src.filter((c) => !/\s/.test(c.word)), ...src.filter((c) => /\s/.test(c.word))].slice(0, 6);
+  if (!cs.length) return '';
+  const img = (c) => c.icon_type === 'emoji' ? `<span class="wsemo">${esc(c.icon)}</span>` : `<img src="${esc(c.icon)}" alt="">`;
+  return `<section class="ws"><h2>Çalışma kâğıdı · Worksheet</h2><p>Name: ____________________ &nbsp; Date: __________</p>
+    <p><b>Read and write.</b> Word bank: ${shuffle(cs).map((c) => `<span class="bank">${esc(c.word)}</span>`).join(' ')}</p>
+    <div class="wsgrid">${cs.map((c) => `<div class="wscell">${img(c)}<div class="wline"></div></div>`).join('')}</div></section>`;
+}
+// Tema sonu kontrol listesi (ogretmen gozlemi).
+function checklistHtml(lesson) {
+  if (!lesson.cando) return '';
+  return `<section class="ws"><h2>Tema ${lesson.theme} kontrol listesi</h2><p class="small">✓ yapabiliyor · ~ kısmen · – henüz değil</p>
+    <table class="chk"><tr><th>Öğrenci</th>${lesson.cando.map((c) => `<th>${esc(c.tr)}</th>`).join('')}</tr>${'<tr><td>&nbsp;</td>' + lesson.cando.map(() => '<td></td>').join('') + '</tr>'.repeat(1)}${Array.from({ length: 24 }, () => '<tr><td>&nbsp;</td>' + lesson.cando.map(() => '<td></td>').join('') + '</tr>').join('')}</table></section>`;
+}
 function mountCard(data) {
   const list = query('all') ? data.lessons : [lessonById(data, query('id') || nextLesson(data).id)];
   $('#card').innerHTML = list.map((lesson) => {
@@ -551,6 +581,7 @@ function mountCard(data) {
       <ol>${steps.map((s, i) => `<li><b>Adım ${i + 1}/${steps.length}: ${esc(s.name)} (${s.min} dk).</b> ${esc(teacherNote(s, lesson, true))}</li>`).join('')}</ol>
       ${lesson.cards.length && !lesson.review_only ? `<table><tr><th>Kelime</th><th>Türkçesi</th><th>Örnek cümle</th></tr>${lesson.cards.map((c) => `<tr><td>${esc(c.word)}</td><td>${esc(c.tr)}</td><td>${esc(c.sentence)}</td></tr>`).join('')}</table>` : ''}
       ${lesson.phrases.length ? `<p><b>Kalıplar:</b> ${lesson.phrases.map((p) => `${esc(p.en)} (${esc(p.tr)})`).join(' · ')}</p>` : ''}
+      ${worksheetHtml(lesson)}${checklistHtml(lesson)}
       <p class="small">Tahta her adımı kendisi yürütür; adım numaraları tahtadaki noktalarla aynıdır. Boşluk tuşu: duraklat · →: sonraki adım · S: tekrar söylet.</p></article>`;
   }).join('');
   $('#pPrint').onclick = () => window.print();

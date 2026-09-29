@@ -98,3 +98,13 @@ body[data-mode=card]{background:#fff;color:#111;font:14px/1.45 system-ui,'Segoe 
 .thumbemo{font-size:min(14vh,14vw);line-height:1.2}
 .opt .cap{font-size:.6em;color:#17301f}
 .rvemo{font-size:min(26vh,26vw);line-height:1;display:block}
+
+.thumbs{font-size:clamp(20px,4vh,40px)!important}
+.ws{page-break-before:always;margin-top:18px}
+.ws h2{font-size:18px;margin:6px 0}
+.bank{display:inline-block;border:1px solid #999;border-radius:6px;padding:2px 8px;margin:2px}
+.wsgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:10px}
+.wscell{border:1px solid #ccc;border-radius:8px;padding:8px;text-align:center}
+.wscell img{width:100%;aspect-ratio:1;object-fit:contain}.wsemo{font-size:70px;display:block}
+.wline{border-bottom:2px dashed #888;height:34px;margin:6px 4px 0}
+table.chk th{font-size:11px;font-weight:600;vertical-align:bottom}table.chk td{height:22px}
