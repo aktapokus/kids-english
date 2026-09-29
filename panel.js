@@ -4399,7 +4399,33 @@ const LessonPlan = {
   todayCount() { const t = dayStr(Date.now()); return Object.values(this.prog().done).filter((x) => x === t).length; },
   next(data) { const d = this.prog().done; return data.lessons.find((l) => !d[l.id]) || null; },
 };
+// Ders bitince Macera'ya da islenir (kullanici karari 2026-09-29): bitirilen
+// derslerin kelimeleri bir bolumun TUM kelimelerini kapsiyorsa o bolum
+// tamamlanmis sayilir; kelimeler aralikli tekrara girer.
+let _lessonApi = null;
+async function creditLessonToJourney(lessonId) {
+  const data = LessonPlan._data; if (!data || !_lessonApi) return;
+  const lesson = data.lessons.find((l) => l.id === lessonId); if (!lesson) return;
+  const byCat = {};
+  lesson.cards.forEach((c) => { (byCat[c.cat] = byCat[c.cat] || []).push({ word: c.word, tr: c.tr, icon_type: c.icon_type, icon: c.icon, sentence: c.sentence }); });
+  Object.keys(byCat).forEach((cat) => { try { Recall.add(cat, byCat[cat]); } catch (e) { /* yok say */ } });
+  const done = LessonPlan.prog().done; const known = {};
+  data.lessons.filter((l) => done[l.id]).forEach((l) => l.cards.forEach((c) => { (known[c.cat] = known[c.cat] || new Set()).add(c.word); }));
+  const { api, toolId, categories } = _lessonApi;
+  for (const cat of Object.keys(byCat)) {
+    const c = categories.find((x) => x.id === cat); if (!c) continue;
+    for (let i = 0; i < c.episode_count; i++) {
+      try {
+        const r = await api.apiFetch(`/api/tools/${toolId}/categories/${cat}/episodes/${i}`);
+        if (!r.ok) continue;
+        const objs = (await r.json()).objects || [];
+        if (objs.length && objs.every((o) => known[cat].has(o.word))) Progress.markComplete(cat, i);
+      } catch (e) { /* yok say */ }
+    }
+  }
+}
 function startLesson(container, api, toolId, categories, lesson) {
+  _lessonApi = { api, toolId, categories };
   const objects = lesson.cards.map(({ cat, ...o }) => ({ ...o, concept: 'concept:' + o.word.toLowerCase().replace(/[^a-z0-9]+/g, '_') }));
   const ep = {
     category_id: lesson.cards[0].cat, category_title: lesson.title, episode_index: 0, episode_count: 1,
@@ -10374,6 +10400,7 @@ function showCelebration(host, container, episode, wordList, score, onDone) {
     Progress.clearMistakes(episode.category_id, wordList.map((o) => o.word));
   } else if (episode.isLesson) {
     LessonPlan.markDone(episode.isLesson);
+    creditLessonToJourney(episode.isLesson);
   } else {
     Progress.markComplete(episode.category_id, episode.episode_index);
     try { Recall.add(episode.category_id, wordList); } catch (e) { /* yok say */ }

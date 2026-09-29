@@ -110,15 +110,27 @@ function speak(text, rate = 0.85) {
 function stopSpeech() { if ('speechSynthesis' in window) speechSynthesis.cancel(); }
 
 // ---- adimlar ----
+const GAME_NAMES = { quiz: 'Takım oyunu', missing: 'Ne eksik?', reveal: 'Gizli resim', listen: 'Dinle ve dokun', odd: 'Farklı olanı bul' };
 // Her adim: tur, dakika, tahtada ne olacagi, ogretmene Turkce not.
 function buildSteps(data, lesson) {
   const prev = data.lessons[lesson.index - 2];
   const steps = [];
-  steps.push({ kind: 'warm', min: 5, name: 'Isınma' });
-  if (prev && prev.cards.length) steps.push({ kind: 'review', min: 4, name: 'Hatırla', items: prev.cards.slice(0, 6) });
+  steps.push({ kind: 'warm', min: 4, name: 'Isınma' });
+  if (lesson.sound && lesson.sound.words && lesson.sound.words.length) steps.push({ kind: 'sound', min: 2, name: 'Günün sesi' });
+  if (prev && prev.cards.length) steps.push({ kind: 'review', min: 3, name: 'Hatırla', items: prev.cards.slice(0, 6) });
   if (!lesson.review_only) steps.push({ kind: 'new', min: 6, name: 'Yeni', items: [...lesson.cards, ...lesson.phrases.map((p) => ({ phrase: true, word: p.en, tr: p.tr }))] });
   else steps.push({ kind: 'new', min: 6, name: 'Kalıplar', items: lesson.phrases.map((p) => ({ phrase: true, word: p.en, tr: p.tr })) });
-  steps.push({ kind: 'quiz', min: 7, name: 'Takım oyunu', items: lesson.cards });
+  // Donusumlu oyun (2026-09-30): her derste ayni takim sorusu tekrar
+  // etmesin; ders sirasina gore bes oyun doner, kart yetmezse takim oyunu.
+  const cards = (lesson.game_cards || lesson.cards).filter((c) => c.icon);
+  const GAMES = ['quiz', 'missing', 'reveal', 'listen', 'odd'];
+  let game = GAMES[(lesson.index - 1) % GAMES.length];
+  if ((game === 'missing' || game === 'odd' || game === 'listen') && cards.length < 4) game = 'quiz';
+  if (cards.length >= 3) {
+    const st = { kind: game, min: 7, name: GAME_NAMES[game], items: cards };
+    if (game === 'odd') st.intruders = shuffle(data.lessons.filter((l) => l.theme !== lesson.theme).flatMap((l) => l.cards).filter((c) => c.icon && !cards.some((x) => x.word === c.word))).slice(0, 6);
+    steps.push(st);
+  }
   steps.push({ kind: 'active', min: lesson.active.minutes, name: 'Etkin öğrenme' });
   steps.push({ kind: 'exit', min: 2, name: 'Kapanış', items: lesson.cards.slice(0, 6) });
   return steps;
@@ -130,6 +142,11 @@ function teacherNote(step, lesson, paper) {
       return lesson.warm.type === 'says'
         ? 'Çocukları ayağa kaldırın. Aktapokus bir hareket söyleyecek. Komutun başında "Aktapokus says" varsa çocuklar hareketi yapar; yoksa kıpırdamaz. Siz de hareketleri yapın; kıpırdayan çocuğu gülerek oturtun, ceza yok.'
         : 'Aktapokus önceki kelimeleri söyleyip sınıfa tekrar ettirecek. Siz yalnızca koro hâlinde söylemeye teşvik edin. (Planın notu: ' + lesson.warm.tr + ')';
+    case 'sound': return `Günün sesi: "${(lesson.sound.letter || '').toUpperCase()}". Aktapokus harfi ve o sesle başlayan kelimeleri söyleyecek (${lesson.sound.words.map((w) => w.word + ' = ' + w.tr).join(', ')}). Sınıf her kelimeyi tekrar eder; ilk sesi vurgulamaları için elinizle havada harfi çizdirin.`;
+    case 'missing': return 'Ne eksik? Tahtada birkaç resim görünür; çocuklar bakar. Sonra "Close your eyes!" der, bir resim kaybolur. Sırası gelen takım hangisinin eksik olduğunu söyler ya da seçer. Puanı tahta verir.';
+    case 'reveal': return 'Gizli resim. Resim önce çok bulanık gelir, yavaş yavaş netleşir. Takımlar erken tahmin etmeye çalışır; sırası gelen takım bir seçenek seçer. Puanı tahta verir.';
+    case 'listen': return 'Dinle ve dokun. Tahtada yazısız resimler var. Aktapokus bir kelime söyler; sırası gelen takımdan bir çocuk tahtaya gelip doğru resme dokunur. Puanı tahta verir.';
+    case 'odd': return 'Farklı olanı bul. Dört resimden biri bu dersin konusuna uymuyor. Sırası gelen takım farklı olanı seçer. Doğru cevaptan sonra "neden?" diye Türkçe sorabilirsiniz.';
     case 'review': return 'Dünkü dersin kelimeleri. Aktapokus söyler, sınıf tekrar eder. Resmi parmağınızla gösterin; sessiz kalan çocuğu gülümseyerek koroya katın.';
     case 'new': return 'Yeni kelimeler. Aktapokus her kelimeyi söyleyip sınıfa tekrar ettirecek, sonra örnek cümleyi okuyacak. Sizin İngilizce konuşmanız gerekmez.' + (paper ? ' Türkçeleri aşağıdaki tabloda.' : ' Türkçesi aşağıda yalnızca sizin için.');
     case 'quiz': return 'Takım yarışması. Sınıfı ikiye bölün. Sırası gelen takımdan bir çocuk cevabı söyler ya da tahtada dokunur. Tahta doğruyu gösterir ve puanı kendisi verir' + (paper ? '.' : '; gerekirse buradan düzeltin.');
@@ -195,6 +212,11 @@ function mountBoard(data) {
       else if (st.kind === 'review') await runChorus(my, st.items, 'Remember');
       else if (st.kind === 'new') await runChorus(my, st.items, 'New words', true);
       else if (st.kind === 'quiz') await runQuiz(my, st.items);
+      else if (st.kind === 'sound') await runSound(my);
+      else if (st.kind === 'missing') await runMissing(my, st.items);
+      else if (st.kind === 'reveal') await runReveal(my, st.items);
+      else if (st.kind === 'listen') await runListen(my, st.items);
+      else if (st.kind === 'odd') await runOdd(my, st.items, st.intruders || []);
       else if (st.kind === 'active') await runActive(my, st.min);
       else if (st.kind === 'exit') await runExit(my, st.items);
     } catch (e) { /* adim degisti */ }
@@ -276,6 +298,108 @@ function mountBoard(data) {
     }
     frame(`<div class="start">${mascot('mascot_celebrate')}<h1>🔴 A: ${S.scores.A} · 🔵 B: ${S.scores.B}</h1></div>`, 'Well done!');
     await speak('Well done, everybody!'); await hold(2500, my);
+  }
+
+  // Ortak takim sorusu: soru alanini ciz, secenekleri goster, dogru/yanlis ve
+  // sira degisimi runQuiz ile ayni kurallar (ilk yanlista sira oburune, iki
+  // yanlista dogru gosterilir).
+  function askTeams(my, label, promptHtml, options, correct, question) {
+    return new Promise((resolve) => {
+      let solved = false, tries = 0;
+      frame(`<div class="quiz">${promptHtml}<div class="teams">${teamsHtml()}</div>
+        <div class="opts">${options.map((o, j) => `<button class="opt${o.pic ? ' picopt' : ''}" data-w="${esc(o.word)}"><b>${j + 1}</b> ${o.pic || esc(o.word)}</button>`).join('')}</div></div>`, label + ' · Team ' + S.turn);
+      const pick = async (w, btn) => {
+        if (solved || my !== token) return;
+        if (w === correct) {
+          solved = true; S.scores[S.turn]++; btn.classList.add('ok'); post(); refreshTeams();
+          await speak('Yes! ' + correct + '!'); resolve(true);
+        } else {
+          btn.classList.add('bad'); btn.disabled = true; tries++;
+          S.turn = S.turn === 'A' ? 'B' : 'A'; post(); refreshTeams();
+          const l = document.querySelector('.lbl'); if (l) l.textContent = label + ' · Team ' + S.turn;
+          if (tries >= 2) { solved = true; const okb = [...document.querySelectorAll('.opt')].find((b) => b.dataset.w === correct); if (okb) okb.classList.add('ok'); await speak('It is ' + correct + '.'); resolve(false); }
+          else await speak('Try again, Team ' + S.turn + '!');
+        }
+      };
+      document.querySelectorAll('.opt').forEach((b) => { b.onclick = () => pick(b.dataset.w, b); });
+      board.quizKey = (n) => { const b = document.querySelectorAll('.opt')[n - 1]; if (b && !b.disabled) pick(b.dataset.w, b); };
+      board.quizPick = (w) => { const b = [...document.querySelectorAll('.opt')].find((x) => x.dataset.w === w); if (b) pick(w, b); };
+      if (question) speak(question);
+      (async () => { while (!solved && my === token) await sleep(200); resolve(null); })();
+    });
+  }
+  async function afterAsk(my) { board.quizKey = null; board.quizPick = null; if (my !== token) return false; S.turn = S.turn === 'A' ? 'B' : 'A'; post(); await hold(1500, my); return my === token; }
+  async function gameEnd(my) {
+    frame(`<div class="start">${mascot()}<h1>🔴 A: ${S.scores.A} · 🔵 B: ${S.scores.B}</h1></div>`, 'Well done!');
+    await speak('Well done, everybody!'); await hold(2500, my);
+  }
+  function thumb(c) { return c.icon_type === 'emoji' ? `<span class="thumbemo">${esc(c.icon)}</span>` : `<img class="thumb" src="${esc(c.icon)}" alt="">`; }
+
+  async function runSound(my) {
+    const snd = lesson.sound; const L = snd.letter;
+    frame(`<div class="sound"><div class="bigletter">${esc(L.toUpperCase())}${esc(L)}</div><div class="grid" id="sndGrid"></div></div>`, 'Sound of the day');
+    await speak("Today's sound is: " + L.toUpperCase() + '!'); await hold(700, my);
+    for (const w of snd.words) {
+      if (my !== token) return; await waitWhilePaused(my);
+      const g = $('#sndGrid'); if (g) g.insertAdjacentHTML('beforeend', `<div class="mini">${pic(w)}<b><span class="hl">${esc(w.word.charAt(0))}</span>${esc(w.word.slice(1))}</b></div>`);
+      S.answer = { word: w.word, tr: w.tr }; post();
+      await speak(L.toUpperCase() + ' is for ' + w.word + '!'); await hold(600, my);
+      await speak('Everybody, say: ' + w.word); await hold(2400, my);
+    }
+  }
+  async function runMissing(my, cards) {
+    await speak("What's missing? Look and remember!");
+    for (let r = 0; r < 3 && my === token; r++) {
+      await waitWhilePaused(my);
+      const set = shuffle(cards).slice(0, Math.min(5, cards.length)); const gone = set[Math.floor(Math.random() * set.length)];
+      S.answer = { word: gone.word, tr: gone.tr }; post();
+      frame(`<div class="grid">${set.map((c) => `<div class="mini">${pic(c)}<b>${esc(c.word)}</b></div>`).join('')}</div>`, "Look! · What's missing?");
+      await hold(6000, my); if (my !== token) return;
+      frame(`<div class="start">${mascot()}<h1>Close your eyes! 🙈</h1></div>`, "What's missing?");
+      await speak('Close your eyes!'); await hold(2500, my); if (my !== token) return;
+      const rest = set.filter((c) => c !== gone);
+      const opts = shuffle([gone, ...shuffle(rest).slice(0, 2)]).map((c) => ({ word: c.word }));
+      await speak('Open your eyes!');
+      await askTeams(my, "What's missing?", `<div class="grid small">${shuffle(rest).map((c) => `<div class="mini">${pic(c)}</div>`).join('')}<div class="mini q">❓</div></div>`, opts, gone.word, "What's missing?");
+      if (!(await afterAsk(my))) return;
+    }
+    await gameEnd(my);
+  }
+  async function runReveal(my, cards) {
+    await speak('Mystery picture! What is it?');
+    const qs = shuffle(cards).slice(0, Math.min(5, cards.length));
+    for (const c of qs) {
+      if (my !== token) return; await waitWhilePaused(my);
+      S.answer = { word: c.word, tr: c.tr }; post();
+      const opts = shuffle([c, ...shuffle(cards.filter((x) => x.word !== c.word)).slice(0, 2)]).map((x) => ({ word: x.word }));
+      const p = askTeams(my, 'Mystery picture', `<div class="bigpic reveal" id="rvPic" style="--blur:26px">${c.icon_type === 'emoji' ? `<span class="rvemo">${esc(c.icon)}</span>` : `<img src="${esc(c.icon)}" alt="">`}</div>`, opts, c.word, 'What is it?');
+      (async () => { for (let b = 26; b >= 0 && my === token; b -= 2) { const el = $('#rvPic'); if (el) el.style.setProperty('--blur', b + 'px'); await sleep(700); } })();
+      await p; const el = $('#rvPic'); if (el) el.style.setProperty('--blur', '0px');
+      if (!(await afterAsk(my))) return;
+    }
+    await gameEnd(my);
+  }
+  async function runListen(my, cards) {
+    const set = shuffle(cards).slice(0, Math.min(6, cards.length));
+    await speak('Listen and touch the picture!');
+    for (const c of shuffle(set).slice(0, 5)) {
+      if (my !== token) return; await waitWhilePaused(my);
+      S.answer = { word: c.word, tr: c.tr }; post();
+      await askTeams(my, 'Listen and touch', '', set.map((x) => ({ word: x.word, pic: thumb(x) })), c.word, 'Touch the ' + c.word + '!');
+      if (!(await afterAsk(my))) return;
+    }
+    await gameEnd(my);
+  }
+  async function runOdd(my, cards, intruders) {
+    await speak('Which one is different?');
+    for (let r = 0; r < Math.min(4, intruders.length) && my === token; r++) {
+      await waitWhilePaused(my);
+      const odd = intruders[r]; const set = shuffle([odd, ...shuffle(cards).slice(0, 3)]);
+      S.answer = { word: odd.word, tr: odd.tr }; post();
+      await askTeams(my, 'Odd one out', '', set.map((x) => ({ word: x.word, pic: thumb(x) + `<span class="cap">${esc(x.word)}</span>` })), odd.word, 'Which one is different?');
+      if (!(await afterAsk(my))) return;
+    }
+    await gameEnd(my);
   }
 
   async function runActive(my, minutes) {

@@ -84,3 +84,17 @@ body[data-mode=card]{background:#fff;color:#111;font:14px/1.45 system-ui,'Segoe 
 #card table{border-collapse:collapse;width:100%;margin:8px 0}#card th,#card td{border:1px solid #ccc;padding:4px 8px;text-align:left}
 #card .small{font-size:12px;color:#555}
 @media print{.bar{display:none}body[data-mode=card]{padding:0}#card article{border:0;padding:0}}
+
+/* gunun sesi + donusumlu oyunlar */
+.sound{display:flex;flex-direction:column;align-items:center;gap:10px}
+.bigletter{font-size:clamp(70px,16vh,170px);font-weight:700;color:#ffd75a;line-height:1;letter-spacing:.05em}
+.hl{color:#ffd75a}
+.grid.small{max-width:min(80vw,90vh)}.grid.small .mini .bigpic{width:min(15vh,15vw)}
+.mini.q{font-size:min(12vh,12vw);display:grid;place-items:center}
+.bigpic.reveal img,.bigpic.reveal{filter:none}.bigpic.reveal>img,.bigpic.reveal>span{filter:blur(var(--blur));transition:filter .6s}
+.bigpic.reveal{overflow:hidden}
+.opt.picopt{padding:8px;background:#fff;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.thumb{width:min(20vh,20vw);height:min(20vh,20vw);object-fit:cover;border-radius:12px;display:block}
+.thumbemo{font-size:min(14vh,14vw);line-height:1.2}
+.opt .cap{font-size:.6em;color:#17301f}
+.rvemo{font-size:min(26vh,26vw);line-height:1;display:block}
