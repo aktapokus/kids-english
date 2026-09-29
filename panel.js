@@ -9042,12 +9042,25 @@ function normSpeech(t) {
   x = x.replace(/[\u2019']/g, '').replace(/-/g, ' ').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
   return x;
 }
+function _lev(a, b) {
+  if (Math.abs(a.length - b.length) > 2) return 9;
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
 function speechMatches(heardList, target) {
   // "Afraid / Scared" gibi iki bicimli kartlarda ikisi de kabul
   const targets = String(target || '').split(' / ').map(normSpeech).filter(Boolean);
   return heardList.some((h) => {
     const n = ` ${normSpeech(h)} `;
-    return targets.some((t) => n.includes(` ${t} `));
+    if (targets.some((t) => n.includes(` ${t} `))) return true;
+    // Tanima motoru tek kelimede harf kaydirabiliyor ("study" -> "studdy",
+    // 2026-09-30 geri bildirimi): tek kelimelik hedefte, duyulan her kelime
+    // icin 4-6 harfte 1, 7+ harfte 2 harf farki kabul.
+    const words = n.trim().split(' ');
+    return targets.some((t) => !t.includes(' ') && t.length >= 4
+      && words.some((w) => _lev(w, t) <= (t.length >= 7 ? 2 : 1)));
   });
 }
 
@@ -9142,7 +9155,9 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
     // çözmedi; aşağıdaki kendi retry mantığımız (onerror/onend + no-speech
     // kontrolü) zaten aynı toleransı daha öngörülebilir şekilde sağlıyor.
     recognition.continuous = false;
-    recognition.interimResults = false;
+    // Ara sonuclar da dinlenir: kisa tek kelimede bazi cihazlar final sonucu
+    // bos donduruyor ve "duyamadim" deniyordu (2026-09-30).
+    recognition.interimResults = true;
     recognition.maxAlternatives = 3;
   }
 
@@ -9205,6 +9220,7 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
     let handled = false;
     let restartsLeft = 2;
     const deadline = Date.now() + 7000;
+    let lastHeard = '';
 
     // errCode: gerçek tarayıcı hatası (varsa) — "no-speech" (çocuk henüz
     // konuşmamış, normal) dışındaki kodlar genelde İZİN/DONANIM sorunu
@@ -9267,16 +9283,23 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
       const alts = [];
       for (let k = 0; k < last.length; k++) if (last[k] && last[k].transcript) alts.push(last[k].transcript);
       const heard = (alts[0] || '').toLowerCase().trim();
-      finishAttempt(speechMatches(alts, target), heard);
+      if (heard) lastHeard = heard;
+      const ok = speechMatches(alts, target);
+      if (ok || last.isFinal) { try { recognition.stop(); } catch (err) { /* no-op */ } finishAttempt(ok, heard); }
+    };
+    // Final sonuc gelmeden bitti: son ara sonuc varsa onu degerlendir.
+    const finishWithLast = (errCode) => {
+      if (lastHeard) finishAttempt(speechMatches([lastHeard], target), lastHeard);
+      else finishAttempt(false, null, errCode);
     };
     recognition.onerror = (e) => {
-      if (e.error === 'no-speech' && tryRestart()) return;
-      finishAttempt(false, null, e.error);
+      if (e.error === 'no-speech' && !lastHeard && tryRestart()) return;
+      finishWithLast(e.error === 'no-speech' ? null : e.error);
     };
     recognition.onend = () => {
       if (handled || restarting) return;
-      if (tryRestart()) return;
-      finishAttempt(false, null);
+      if (!lastHeard && tryRestart()) return;
+      finishWithLast(null);
     };
 
     try {
@@ -9286,7 +9309,7 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
     }
 
     setTimeout(() => {
-      if (!handled) { try { recognition.stop(); } catch (e) { /* no-op */ } finishAttempt(false, null); }
+      if (!handled) { try { recognition.stop(); } catch (e) { /* no-op */ } finishWithLast(null); }
     }, 7300);
   };
 
@@ -9989,6 +10012,29 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
       slotItems[i] = { tile, tok };
       tile.classList.add('ke-used');
     }
+    // Surukle-birak ARAYA EKLER (2026-09-30 geri bildirimi: "kelimelerin
+    // arasina girebilmeliyim, simdi silip dogru yere koymam gerekiyor").
+    // Birakilan kutudaki kelime ve sonrakiler bir bos kutuya dogru kayar;
+    // sagda bos yoksa sola kayar; hic yer yoksa en sondaki tas bankaya doner.
+    function insertAt(entry, j, fromI) {
+      const pos = slotItems.map((it, i) => (it && it.fixed ? -1 : i)).filter((i) => i >= 0);
+      const seq = pos.map((i) => slotItems[i]);
+      if (fromI != null) seq[pos.indexOf(fromI)] = null;
+      let k = pos.indexOf(j);
+      if (k < 0) return;
+      if (seq[k]) {
+        let r = k + 1; while (r < seq.length && seq[r]) r++;
+        if (r < seq.length) { for (let t = r; t > k; t--) seq[t] = seq[t - 1]; }
+        else {
+          let l = k - 1; while (l >= 0 && seq[l]) l--;
+          if (l >= 0) { for (let t = l; t < k - 1; t++) seq[t] = seq[t + 1]; k -= 1; }
+          else { const out = seq[seq.length - 1]; if (out && out.tile) out.tile.classList.remove('ke-used'); for (let t = seq.length - 1; t > k; t--) seq[t] = seq[t - 1]; }
+        }
+      }
+      seq[k] = entry;
+      if (entry.tile) entry.tile.classList.add('ke-used');
+      pos.forEach((i, t) => { slotItems[i] = seq[t]; });
+    }
     function resetSlots() {
       slotItems.forEach((_, i) => freeItem(i));
       renderSlots();
@@ -10033,7 +10079,7 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
         ev.preventDefault();
         startDrag(ev, slotItems[i].tok.text,
           (j) => {
-            if (j >= 0 && j !== i && !(slotItems[j] && slotItems[j].fixed)) { const t = slotItems[i]; slotItems[i] = slotItems[j]; slotItems[j] = t; }
+            if (j >= 0 && j !== i && !(slotItems[j] && slotItems[j].fixed)) insertAt(slotItems[i], j, i);
             else if (j < 0) freeItem(i);
             renderSlots();
           },
@@ -10057,7 +10103,7 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
       tile.addEventListener('pointerdown', (ev) => {
         if (tile.classList.contains('ke-used')) return;
         startDrag(ev, tok.text,
-          (j) => { if (j >= 0) { placeTile(tile, tok, j); renderSlots(); } },
+          (j) => { if (j >= 0 && !(slotItems[j] && slotItems[j].fixed)) { insertAt({ tile, tok }, j, null); renderSlots(); } },
           () => {
             const j = slotItems.indexOf(null);
             if (j >= 0) { placeTile(tile, tok, j); renderSlots(); }
@@ -10237,6 +10283,29 @@ function startConversationRound(host, container, episode, mascotEl, onFinished) 
       slotItems[i] = { tile, tok };
       tile.classList.add('ke-used');
     }
+    // Surukle-birak ARAYA EKLER (2026-09-30 geri bildirimi: "kelimelerin
+    // arasina girebilmeliyim, simdi silip dogru yere koymam gerekiyor").
+    // Birakilan kutudaki kelime ve sonrakiler bir bos kutuya dogru kayar;
+    // sagda bos yoksa sola kayar; hic yer yoksa en sondaki tas bankaya doner.
+    function insertAt(entry, j, fromI) {
+      const pos = slotItems.map((it, i) => (it && it.fixed ? -1 : i)).filter((i) => i >= 0);
+      const seq = pos.map((i) => slotItems[i]);
+      if (fromI != null) seq[pos.indexOf(fromI)] = null;
+      let k = pos.indexOf(j);
+      if (k < 0) return;
+      if (seq[k]) {
+        let r = k + 1; while (r < seq.length && seq[r]) r++;
+        if (r < seq.length) { for (let t = r; t > k; t--) seq[t] = seq[t - 1]; }
+        else {
+          let l = k - 1; while (l >= 0 && seq[l]) l--;
+          if (l >= 0) { for (let t = l; t < k - 1; t++) seq[t] = seq[t + 1]; k -= 1; }
+          else { const out = seq[seq.length - 1]; if (out && out.tile) out.tile.classList.remove('ke-used'); for (let t = seq.length - 1; t > k; t--) seq[t] = seq[t - 1]; }
+        }
+      }
+      seq[k] = entry;
+      if (entry.tile) entry.tile.classList.add('ke-used');
+      pos.forEach((i, t) => { slotItems[i] = seq[t]; });
+    }
     function resetSlots() {
       slotItems.forEach((_, i) => freeItem(i));
       renderSlots();
@@ -10279,7 +10348,7 @@ function startConversationRound(host, container, episode, mascotEl, onFinished) 
         ev.preventDefault();
         startDrag(ev, slotItems[i].tok.text,
           (j) => {
-            if (j >= 0 && j !== i) { const t = slotItems[i]; slotItems[i] = slotItems[j]; slotItems[j] = t; }
+            if (j >= 0 && j !== i) insertAt(slotItems[i], j, i);
             else if (j < 0) freeItem(i);
             renderSlots();
           },
@@ -10300,7 +10369,7 @@ function startConversationRound(host, container, episode, mascotEl, onFinished) 
       tile.addEventListener('pointerdown', (ev) => {
         if (tile.classList.contains('ke-used')) return;
         startDrag(ev, tok.text,
-          (j) => { if (j >= 0) { placeTile(tile, tok, j); renderSlots(); } },
+          (j) => { if (j >= 0 && !(slotItems[j] && slotItems[j].fixed)) { insertAt({ tile, tok }, j, null); renderSlots(); } },
           () => {
             const j = slotItems.indexOf(null);
             if (j >= 0) { placeTile(tile, tok, j); renderSlots(); }

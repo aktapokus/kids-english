@@ -30,6 +30,7 @@ body[data-mode=board]{background:#17301f;color:#f3f7f2;font-family:'Fredoka','Ba
 .word{font-size:clamp(34px,7vh,86px);font-weight:700;line-height:1.05;text-align:center}
 .sent{font-size:clamp(20px,3.6vh,40px);color:#dfeee3;text-align:center;max-width:90vw}
 .cnt{font-size:16px;opacity:.6}
+.word .alt{color:#ffd75a;font-size:.7em}
 .mascwrap{height:min(40vh,380px);display:flex;justify-content:center;flex:none;max-width:100%}
 .masc{height:100%;width:auto;max-width:100%;object-fit:contain;display:block;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
 .start{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;justify-content:center;height:100%;padding:20px}

@@ -228,10 +228,11 @@ function mountBoard(data) {
     if (!items.length) return;
     for (let k = 0; k < items.length && my === token; k++) {
       await waitWhilePaused(my);
-      const c = items[k]; S.item = k; S.answer = { word: c.word, tr: c.tr }; post();
-      frame(`<div class="card">${pic(c)}<div class="word">${esc(c.word)}</div>${withSentence && c.sentence ? `<div class="sent" id="cSent"></div>` : ''}<div class="cnt">${k + 1} / ${items.length}</div></div>`, label);
+      const c = items[k]; S.item = k; S.answer = { word: c.alt ? c.word + ' / ' + c.alt : c.word, tr: c.tr }; post();
+      frame(`<div class="card">${pic(c)}<div class="word">${esc(c.word)}${c.alt ? ` <span class="alt">· ${esc(c.alt)}</span>` : ''}</div>${withSentence && c.sentence ? `<div class="sent" id="cSent"></div>` : ''}<div class="cnt">${k + 1} / ${items.length}</div></div>`, label);
       await speak(c.word); await hold(500, my); if (my !== token) return;
       await speak('Everybody, say: ' + c.word); await hold(3000, my); if (my !== token) return;
+      if (c.alt) { await speak('You can also say: ' + c.alt + '!'); await hold(2200, my); if (my !== token) return; }
       if (withSentence && c.sentence) { const el = $('#cSent'); if (el) el.textContent = c.sentence; await speak(c.sentence); await hold(1500, my); }
     }
   }
