@@ -28,6 +28,7 @@ Aktapokus Kids English, ilkokul ve ortaokulun ilk yılları (2.–6. sınıf, 7.
 - **İçerik temeli:** MEB İngilizce Öğretim Programı (Maarif Modeli, 2.–6. sınıf) ve Cambridge YLE kelime listeleri. İngiliz İngilizcesi (British English) kullanılır: *colour, autumn, rubbish* gibi.
 - **Yöntem:** Her kelime resim, sesli okuma ve örnek cümleyle öğretilir. Kelimeler farklı ama benzer cümlelerle defalarca tekrar edilir. İlkokul düzeyinde dil bilgisi kuralı ve terim ezberletilmez; yapılar örneklerle, bağlam içinde öğrenilir (Maarif yaklaşımı).
 - **Hesap gerekmez.** Reklam ve izleyici yoktur. İlerleme çocuğun kendi cihazında tutulur.
+- **Kim yapıyor?** Uygulamayı bir şirket değil, gönüllü olarak tek başıma geliştiriyorum; ücretsizdir ve satılan bir şey yoktur.
 - **Rehber karakter:** Aktapokus, altı kollu bir ahtapot. Gözlüğünün camı duruma göre renk değiştirir: düşünürken, doğru cevapta ya da emin olmadığında.
 
 > **Seviye etiketleri hakkında:** Uygulamadaki "A1 · 1", "2. Sınıf" gibi etiketler uygulama içi duraklardır. Resmi bir CEFR sınav sonucu ya da seviye tespiti değildir.
@@ -303,7 +304,7 @@ Kendi cihazınızda (sınıfa katılmamış bir cihaz) Ebeveyn Alanı'nda **İç
 - Bildirimlerde ad ya da kişisel bilgi gönderilmez.
 - İnternet yoksa bildirim cihazda bekler, bağlantı gelince gönderilir.
 
-Bildirimleriniz içeriğin düzeltilmesinde doğrudan kullanılır. Özellikle "bu resim bu kelimeyle eşleşmiyor" türü geri bildirimler çok değerlidir.
+Bildirimleri tek tek okuyup düzeltiyorum. Özellikle "bu resim bu kelimeyle eşleşmiyor" türü bildirimler çok işe yarıyor.
 
 ### 5.9 Gizlilik: öğretmen olarak neyi görürüm?
 
@@ -378,12 +379,12 @@ Ebeveyn Alanı'nda İçerik denetimini açın ve **⚑ Sorun bildir**'i kullanı
 
 ## 9. Bilinen sınırlar ve yakında gelecekler
 
-- **Aktapokus'un sesi** cihazın kendi metin okuma motorundan gelir; cihaza göre farklı duyulabilir. Uygulama İngiliz İngilizcesi sesini tercih eder. Kayıtlı, sabit bir ses seçeneği değerlendiriliyor.
+- **Aktapokus'un sesi** cihazın kendi metin okuma motorundan gelir; cihaza göre farklı duyulabilir. Uygulama İngiliz İngilizcesi sesini tercih eder. Kayıtlı, sabit bir ses seçeneği üzerinde düşünüyorum.
 - **Şarkılar** melodisiz, tekerleme olarak okunur; metin okuma motoru şarkı söyleyemez.
 - **Haftanın görevi** ve **sorun bildirimi**, sunucu tarafında bir kerelik kurulum gerektirir. Kurulum tamamlanana kadar panel "veritabanı güncellemesi gerekiyor" uyarısı gösterir; sorun bildirimleri de cihazda bekler.
 - **Günlük hatırlatma bildirimi** telefon uygulaması (APK) sürümüyle gelecek. Veli, Ebeveyn Alanı'ndan saat seçebilecek.
 - Seviye etiketleri uygulama içi duraklardır; resmi seviye tespiti değildir.
-- İçerik, uzman öğretmen incelemesinden geçirilmeye devam ediyor. Geri bildirimleriniz bu sürecin parçasıdır.
+- İçerik henüz bağımsız bir öğretmen incelemesinden geçmedi. Kaynak listelere göre kontrol ettim; gözünüze çarpan her hatayı düzeltirim.
 
 ---
 

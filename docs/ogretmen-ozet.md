@@ -2,6 +2,8 @@
 
 **Ne?** 2.–6. sınıf öğrencileri için **ücretsiz** bir İngilizce kelime, dinleme ve konuşma uygulaması. Telefonda, tablette ve akıllı tahtada tarayıcıdan açılır; kurulum gerekmez.
 
+**Kim yapıyor?** Bir şirket ya da kurum değil; uygulamayı gönüllü olarak, boş zamanlarımda geliştiriyorum. Satılan bir şey yok.
+
 - **Uygulama:** https://aktapokus.github.io/kids-english/
 - **Öğretmen paneli:** https://aktapokus.github.io/kids-english/teacher.html
 - **Ayrıntılı kılavuz:** https://aktapokus.github.io/kids-english/kilavuz.html
@@ -12,7 +14,7 @@
 
 - **MEB İngilizce Öğretim Programı (Maarif Modeli)** ve **Cambridge YLE** kelime listeleri. İngiliz İngilizcesi kullanılır.
 - Her kelime **resim + ses + örnek cümle** ile öğretilir.
-- Kelimeler farklı ama benzer cümlelerle **tekrar tekrar** karşımıza çıkar.
+- Kelimeler farklı ama benzer cümlelerle **tekrar tekrar** çocuğun karşısına çıkar.
 - İlkokulda dil bilgisi kuralı ezberletilmez; yapılar örneklerle öğrenilir.
 - **Hesap gerekmez, reklam yok, izleyici yok.**
 
@@ -79,7 +81,7 @@ Uygulama içindeki **Ebeveyn Alanı**'nda:
 - **İnterneti zayıf yerler için:** Tabletleri bir kez Wi-Fi'da açıp birkaç dakika bekletin; sonra sınıfta internetsiz kullanılabilir.
 - **Gönüllü dostu:** Sınıf modu ve basılı materyal (kartlar, tombala, çalışma kâğıdı), İngilizce öğretmeni olmayan bir gönüllünün de hazır etkinlik yürütebilmesi için tasarlandı. Doğru telaffuz her ekranda sesli olarak verilir.
 - **Evde devam:** Çocuk evde de kaldığı yerden sürdürür; aileye haftalık özet ve evde söylenecek cümleler sunulur.
-- **Durum:** Uygulama **erken test sürümündedir**. İçerik öğretmen geri bildirimleriyle sürekli düzeltiliyor; uzman öğretmen incelemesi devam ediyor. Pilot kullanım ve geri bildirim için iş birliğine açığız.
+- **Durum:** Uygulama **erken test sürümünde**. İçeriği kaynak listelere göre tek tek kontrol ettim ama henüz bağımsız bir öğretmen incelemesinden geçmedi; gelen her geri bildirimle düzeltiyorum. Küçük bir pilot kullanım ya da sadece göz atıp yorum yapmak bile çok işime yarar.
 
 ## 5 dakikada deneyin
 
@@ -89,4 +91,4 @@ Uygulama içindeki **Ebeveyn Alanı**'nda:
 
 İlginizi çektiyse her şeyin adım adım anlatıldığı **ayrıntılı kılavuz**: https://aktapokus.github.io/kids-english/kilavuz.html
 
-*Geri bildiriminiz bizim için çok değerli: hatalı bir içerik, eksik bir konu ya da sınıfta işe yarayacak bir fikir.*
+*Hatalı bir resim ya da cümle, eksik bir konu, sınıfta işe yarayacak bir fikir: ne görürseniz yazın, okuyup düzeltirim.*
