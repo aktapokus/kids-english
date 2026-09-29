@@ -31,6 +31,58 @@ function nextLesson(data) {
   const m = doneMap();
   return data.lessons.find((l) => !m[l.id]) || data.lessons[data.lessons.length - 1];
 }
+// ---- sinif eslemesi (lessons_schema.sql) ----
+// Ogretmen paneline bu cihazda giris yapilmissa "Islendi" secili sinifa da
+// yazilir (classes.lessons_done). Internet yoksa bekletilir, baglanti gelince
+// gonderilir. Giris yoksa yalniz bu cihaza kaydedilir (tek ekran / internetsiz).
+const SB_URL = 'https://wtrkfzmmhabcpoipaccf.supabase.co';
+const SB_KEY = 'sb_publishable_87EZgr1ftB1SnIY5FoDaKA_xmxlD7kU';
+const T_SESSION = 'ke_teacher_session_v1';
+const PENDING_KEY = 'ke_lessons_pending_v1';
+const CLASS_KEY = 'ke_ders_class_v1';
+const lsGet = (k, def) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? def : v; } catch (e) { return def; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* yok say */ } };
+async function sbFetch(path, opts, retried) {
+  const ses = lsGet(T_SESSION, null);
+  if (!ses || !ses.access_token) throw new Error('no-session');
+  const res = await fetch(SB_URL + path, Object.assign({}, opts, { headers: Object.assign({ 'Content-Type': 'application/json', apikey: SB_KEY, Authorization: 'Bearer ' + ses.access_token }, (opts && opts.headers) || {}) }));
+  if (res.status === 401 && !retried && ses.refresh_token) {
+    const rr = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SB_KEY }, body: JSON.stringify({ refresh_token: ses.refresh_token }) });
+    if (rr.ok) { lsSet(T_SESSION, await rr.json()); return sbFetch(path, opts, true); }
+  }
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const t = await res.text(); return t ? JSON.parse(t) : null;
+}
+const ClassSync = {
+  classes: null, error: '',
+  hasSession() { const s = lsGet(T_SESSION, null); return !!(s && s.access_token); },
+  selected() { return lsGet(CLASS_KEY, null); },
+  select(id) { lsSet(CLASS_KEY, id); },
+  async load() {
+    if (!this.hasSession()) return;
+    try { this.classes = await sbFetch('/rest/v1/classes?select=id,name,lessons_done&order=created_at.desc'); this.error = ''; }
+    catch (e) { this.error = /HTTP 400/.test(e.message) ? 'schema' : (navigator.onLine === false || e instanceof TypeError) ? 'offline' : 'err'; }
+  },
+  doneFor(id) { const c = (this.classes || []).find((x) => x.id === id); return (c && c.lessons_done) || {}; },
+  queue(classId, lessonId, day) { const q = lsGet(PENDING_KEY, []); q.push({ classId, lessonId, day }); lsSet(PENDING_KEY, q); },
+  async flush() {
+    const q = lsGet(PENDING_KEY, []);
+    if (!q.length || !this.hasSession()) return 0;
+    const byClass = {}; q.forEach((x) => { (byClass[x.classId] = byClass[x.classId] || {})[x.lessonId] = x.day; });
+    let sent = 0; const rest = [];
+    for (const cid of Object.keys(byClass)) {
+      try {
+        const rows = await sbFetch(`/rest/v1/classes?id=eq.${cid}&select=lessons_done`);
+        const merged = Object.assign({}, (rows && rows[0] && rows[0].lessons_done) || {}, byClass[cid]);
+        await sbFetch(`/rest/v1/classes?id=eq.${cid}`, { method: 'PATCH', body: JSON.stringify({ lessons_done: merged }) });
+        const c = (this.classes || []).find((x) => String(x.id) === String(cid)); if (c) c.lessons_done = merged;
+        sent += Object.keys(byClass[cid]).length;
+      } catch (e) { q.filter((x) => String(x.classId) === String(cid)).forEach((x) => rest.push(x)); }
+    }
+    lsSet(PENDING_KEY, rest); return sent;
+  },
+};
+
 function lessonById(data, id) { return data.lessons.find((l) => l.id === id) || data.lessons[0]; }
 function query(name) { return new URLSearchParams(location.search).get(name); }
 
@@ -273,14 +325,15 @@ function mountTeacher(data) {
   const send = (cmd, extra) => bc && bc.postMessage({ type: 'cmd', cmd, ...extra });
 
   function listHtml() {
-    const m = doneMap(); let theme = 0;
+    const cls = ClassSync.selected();
+    const m = Object.assign({}, doneMap(), cls != null ? ClassSync.doneFor(cls) : {}); let theme = 0;
     return data.lessons.map((l) => {
       const head = l.theme !== theme ? `<h3>Tema ${l.theme}: ${esc(data.themes[l.theme].name)} · ${esc(data.themes[l.theme].tr)}</h3>` : '';
       theme = l.theme;
       return head + `<button class="li${l.id === lesson.id ? ' cur' : ''}" data-id="${l.id}"><span>${l.index}.</span> ${esc(l.title)} <small>Hafta ${l.week}</small>${m[l.id] ? ' <em>✓ ' + esc(m[l.id]) + '</em>' : ''}</button>`;
     }).join('');
   }
-  function render() {
+  let render = function () {
     const steps = buildSteps(data, lesson);
     const cur = st && st.lessonId === lesson.id ? st.step : -1;
     const linked = Date.now() - lastSeen < 4000;
@@ -291,6 +344,7 @@ function mountTeacher(data) {
         <div class="head"><div><div class="meta">Hafta ${lesson.week} · Ders ${lesson.index} / ${data.lessons.length} · ${esc(lesson.outcomes)}</div><h1>${esc(lesson.title)}</h1>
           <div class="target"><b>Hedef dil:</b> ${esc(lesson.target)} · <i>${esc(lesson.chunk)}</i></div></div>
           <div class="acts"><button id="tOpen" class="pri">🖥️ Tahtayı aç</button><a class="btn" href="ders-kart.html?id=${lesson.id}" target="_blank" rel="noopener">🖨️ Ders kartı</a></div></div>
+        ${classBarHtml()}
         <div class="link ${linked ? 'ok' : ''}">${linked ? '🟢 Tahta bağlı' : '⚪ Tahta bağlı değil. "Tahtayı aç"a basın ve açılan pencereyi akıllı tahtaya (ikinci ekrana) sürükleyin. Tek ekranınız varsa tahta kendi başına ilerler; notları basılı ders kartından takip edin.'}</div>
         <div class="ctrl"><button data-c="prev">◀ Geri</button><button data-c="start" class="pri">▶ Başlat / Devam</button><button data-c="pause">⏸ Duraklat</button><button data-c="next">Sonraki adım ▶▶</button><button data-c="repeat">🔊 Tekrar söylet</button></div>
         ${ans ? `<div class="answer">${ans.word ? `Tahtadaki: <b>${esc(ans.word)}</b>${ans.tr ? ' = ' + esc(ans.tr) : ''}` : ''}${ans.cmd ? `Komut: <b>${esc(ans.cmd)}</b> · ${ans.says ? '✅ "Aktapokus says" dedi: hareket yapılır' : '🙅 "Aktapokus says" demedi: kıpırdamak yok'}` : ''}</div>` : ''}
@@ -304,8 +358,30 @@ function mountTeacher(data) {
     app.querySelectorAll('[data-g]').forEach((b) => { b.onclick = () => send('goto', { step: Number(b.dataset.g) }); });
     app.querySelectorAll('[data-s]').forEach((b) => { b.onclick = () => { const [team, d] = b.dataset.s.split(':'); send('score', { team, delta: Number(d) }); }; });
     $('#tOpen').onclick = () => { window.open('ders-tahta.html?id=' + lesson.id, 'ke-tahta', 'popup,width=1280,height=800'); };
-    $('#tDone').onclick = () => { markDone(lesson.id); const nx = nextLesson(data); render(); $('#tDone').textContent = '✅ Kaydedildi · sıradaki: ' + nx.title; };
+  };
+  function classBarHtml() {
+    const pend = lsGet(PENDING_KEY, []).length;
+    if (!ClassSync.hasSession()) return `<div class="link">🏫 İsteğe bağlı: Öğretmen paneline bu cihazda giriş yaparsanız "İşlendi" sınıfınıza da kaydedilir ve öğrencileriniz aynı dersi uygulamada "Bugünün dersi" olarak görür. Giriş yapmadan da ders planı çalışır.</div>`;
+    if (ClassSync.error === 'schema') return `<div class="link">🏫 Sınıf eşitlemesi için veritabanı güncellemesi gerekiyor (lessons_schema.sql bir kez çalıştırılmalı). Şimdilik "İşlendi" yalnızca bu cihaza kaydediliyor.</div>`;
+    if (!ClassSync.classes) return `<div class="link">🏫 ${ClassSync.error === 'offline' ? 'İnternet yok: sınıf listesi alınamadı. "İşlendi" bu cihazda bekletilir, internet gelince sınıfa gönderilir.' : ClassSync.error ? 'Sınıf listesi alınamadı; giriş süresi dolmuş olabilir. Öğretmen paneline yeniden giriş yapın. Şimdilik "İşlendi" bu cihaza kaydediliyor.' : 'Sınıflar yükleniyor…'}${pend ? ` · ⏳ Bekleyen ${pend} kayıt` : ''}</div>`;
+    const sel = ClassSync.selected();
+    return `<div class="link ok">🏫 Bu dersi işlediğim sınıf: <select id="tClass"><option value="">— yalnızca bu cihaz —</option>${ClassSync.classes.map((c) => `<option value="${c.id}"${String(c.id) === String(sel) ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select>${pend ? ` · ⏳ Bekleyen ${pend} kayıt (internet gelince gönderilir)` : ''}</div>`;
   }
+  const _render = render;
+  render = function () {
+    _render();
+    const s = $('#tClass'); if (s) s.onchange = () => { ClassSync.select(s.value ? Number(s.value) : null); render(); };
+    $('#tDone').onclick = async () => {
+      markDone(lesson.id);
+      const cls = ClassSync.selected(); const day = new Date().toISOString().slice(0, 10);
+      if (cls != null && ClassSync.hasSession()) { ClassSync.queue(cls, lesson.id, day); await ClassSync.flush(); }
+      const nx = nextLesson(data); render();
+      const pend = lsGet(PENDING_KEY, []).length;
+      $('#tDone').textContent = (cls != null ? (pend ? '⏳ Kaydedildi, internet gelince sınıfa gönderilecek' : '✅ Sınıfa kaydedildi') : '✅ Bu cihaza kaydedildi') + ' · sıradaki: ' + nx.title;
+    };
+  };
+  ClassSync.load().then(() => ClassSync.flush()).then(() => render());
+  window.addEventListener('online', () => ClassSync.load().then(() => ClassSync.flush()).then(() => render()));
   if (bc) {
     bc.onmessage = (ev) => { const m = ev.data || {}; if (m.type === 'state') { st = m.state; lastSeen = Date.now(); if (st.lessonId !== lesson.id) lesson = lessonById(data, st.lessonId); render(); } };
     setInterval(() => { bc.postMessage({ type: 'hello' }); if (Date.now() - lastSeen > 4500 && lastSeen) { lastSeen = 0; render(); } }, 3000);

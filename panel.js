@@ -795,6 +795,28 @@ const Classroom = {
       return d2.assignment;
     } catch (e) { return d.assignment || null; }
   },
+  // Sinifta islenen dersler (ogretmen "Islendi" dedi; lessons_schema.sql).
+  // 10 dk onbellek; hata/cevrimdisi -> son bilinen liste. Fonksiyon henuz
+  // kurulmadiysa (404) bos doner, "Bugunun dersi" kendi sirasiyla devam eder.
+  async fetchClassLessons() {
+    const d = this._load();
+    if (!d.code) return {};
+    if (d.lessonsFetchedAt && Date.now() - d.lessonsFetchedAt < 10 * 60 * 1000) return d.lessonsDone || {};
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_class_lessons`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+        body: JSON.stringify({ p_device_id: d.deviceId }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const a = await res.json();
+      const d2 = this._load();
+      d2.lessonsDone = a && typeof a === 'object' ? a : {};
+      d2.lessonsFetchedAt = Date.now();
+      this._save(d2);
+      return d2.lessonsDone;
+    } catch (e) { return d.lessonsDone || {}; }
+  },
   // Senkron: her 20 sn'de bir (flushTimeTrack) + uygulama açılışında +
   // internet geri gelince + "Şimdi eşitle" butonu. Aynı yük 5 dk içinde
   // tekrar gönderilmez (okul ağında 30 cihaz x 3/dk gereksiz istek olurdu).
@@ -823,7 +845,11 @@ const Classroom = {
     // basamagi hesabi icin) - sadece id listesi.
     let skipped = [];
     try { skipped = Journey._load().skipped.slice(0, 80); } catch (e) { /* yok say */ }
-    return { v: 1, cats, hard: hard.slice(0, 12), skipped };
+    // Gunluk ders plani: cocugun bitirdigi dersler (ogretmen panelinde
+    // "Gunluk dersler N" olarak gorunur; lessons_schema.sql).
+    let lessons = [];
+    try { lessons = Object.keys(LessonPlan.prog().done).slice(0, 300); } catch (e) { /* yok say */ }
+    return { v: 1, cats, hard: hard.slice(0, 12), skipped, lessons };
   },
   async sync(stars, streakDays, wordsLearned, minutesTotal, force) {
     const d = this._load();
@@ -4372,13 +4398,20 @@ async function mountLesson(host, container, api, toolId, categories) {
   const pid = Profiles.active().id;
   const data = await LessonPlan.load();
   if (!data || !el.isConnected || Profiles.active().id !== pid) return;
-  const nx = LessonPlan.next(data);
+  // Sinifa bagli cocuk: sinifta islenip kendisinin yapmadigi ilk ders one
+  // alinir (derse gelemeyen cocuk evde yakalar); yoksa kendi sirasi.
+  const classDone = Classroom.get().code ? await Classroom.fetchClassLessons() : {};
+  if (!el.isConnected || Profiles.active().id !== pid) return;
+  const mine = LessonPlan.prog().done;
+  const catchUp = data.lessons.find((l) => classDone[l.id] && !mine[l.id]);
+  const nx = catchUp || LessonPlan.next(data);
   const th = nx && data.themes[nx.theme];
   const full = LessonPlan.todayCount() >= LESSON_DAILY_MAX;
   el.innerHTML = !nx
     ? `<div class="ke-task-head">📘 ${L('Ders programı', 'Lesson plan')}</div><p class="ke-task-note">🎉 ${L('Bu yılın bütün derslerini bitirdin!', 'You finished all the lessons this year!')}</p>`
     : `<div class="ke-task-head">📘 ${L('Bugünün dersi', "Today's lesson")} <span>· ${L(`Ders ${nx.index} / ${data.lessons.length}`, `Lesson ${nx.index} / ${data.lessons.length}`)}</span></div>
       <p class="ke-task-note"><b>${escapeProfileText(nx.title)}</b> · ${escapeProfileText(th ? th.name : '')}</p>
+      ${catchUp ? `<p class="ke-task-note">🏫 ${L('Bu ders sınıfta işlendi; sen de yap, sınıfını yakala!', 'Your class did this lesson; do it too and catch up!')}</p>` : ''}
       ${full ? `<p class="ke-task-note">🌙 ${L(`Bugün ${LESSON_DAILY_MAX} ders bitirdin! Sıradaki ders yarın.`, `You finished ${LESSON_DAILY_MAX} lessons today! The next one is tomorrow.`)}</p>`
         : `<div class="ke-btn-row" style="justify-content:flex-start;"><button type="button" class="ke-btn-primary" id="keLessonGo">▶ ${L('Derse başla', 'Start the lesson')}</button></div>`}`;
   el.hidden = false;

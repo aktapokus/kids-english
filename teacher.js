@@ -198,7 +198,8 @@ function studentDetail(s, catalog) {
     return `<li><b>${escapeHtml(info.title)}</b> — ${p.cats[cid].length}/${info.total} bölüm</li>`;
   }).join('');
   const hard = (p.hard || []).map((h) => `<span class="chip">${escapeHtml(h[1])} <small>×${h[2]}</small></span>`).join(' ');
-  return `<div class="detail"><div><b>Bitirilen bölümler</b><ul>${rows || '<li>Henüz yok</li>'}</ul></div>
+  const les = Array.isArray(p.lessons) ? p.lessons.length : 0;
+  return `<div class="detail"><div><b>Günlük dersler</b><p>📘 ${les ? les + ' ders bitirdi' : 'Henüz ders yapmadı'}</p><b>Bitirilen bölümler</b><ul>${rows || '<li>Henüz yok</li>'}</ul></div>
     <div><b>Zorlandığı kelimeler</b><div class="chips">${hard || '<span class="empty">Henüz yok 👍</span>'}</div></div></div>`;
 }
 
