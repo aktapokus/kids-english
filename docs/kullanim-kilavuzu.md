@@ -43,7 +43,7 @@ Aktapokus Kids English, ilkokul ve ortaokulun ilk yılları (2.–6. sınıf, 7.
 ### Veli için (5 dakika)
 
 1. Uygulamayı telefonda ya da tablette açın. Ana ekrana eklemek için tarayıcının menüsünden **"Ana ekrana ekle"** seçeneğini kullanın. Uygulama bundan sonra internetsiz de açılır.
-2. **"Kim oynuyor?"** ekranında çocuğunuz için bir profil oluşturun. Kardeşler aynı cihazda ayrı profil kullanabilir.
+2. **"Kim oynuyor?"** ekranında çocuğunuz için bir profil oluşturun. Kardeşler aynı cihazda ayrı profil kullanabilir. Bir profili silmek için ana ekrandaki ⇄ çipine dokunun, **🗑️ Çocuk sil**'e basın ve veli sorusunu cevaplayın. Profilin ilerlemesi yalnızca o cihazda durur; silmeden önce **💾 Önce yedek al** ile yedek dosyası alırsanız Ebeveyn Alanı'ndan geri yükleyebilirsiniz.
 3. Sesi kontrol edin: Aktapokus'a dokunun, ardından **🔊 Ses Testi**. Aktapokus "Hello, I am Aktapokus" demeli.
 4. Öğretmen bir **sınıf kodu** verdiyse: Aktapokus'a dokunun, **🎨 Avatar**'ı açın ve en alttaki **Sınıf** bölümüne kodu yazıp **Katıl**'a basın.
 5. Ebeveyn Alanı'nı bir kez açıp gezin (bkz. [Bölüm 4](#4-veli-rehberi-neyi-nereden-takip-ederim)).

@@ -44,7 +44,7 @@ Aktapokus Kids English is an English vocabulary, listening and speaking app for 
 ### For parents (5 minutes)
 
 1. Open the app on a phone or tablet. To add it to the home screen, use **"Add to Home screen"** in the browser menu. After that the app also opens without internet.
-2. On the **"Who's playing?"** screen, create a profile for your child. Siblings can use separate profiles on the same device.
+2. On the **"Who's playing?"** screen, create a profile for your child. Siblings can use separate profiles on the same device. To remove a profile, tap the ⇄ chip on the home screen, press **🗑️ Remove a child** and answer the parent question. A profile's progress lives only on that device; save a backup first with **💾 Back up first** and you can restore it from the Parent Area.
 3. Check the sound: tap Aktapokus, then **🔊 Sound Test**. Aktapokus should say "Hello, I am Aktapokus".
 4. If the teacher gave you a **class code**: tap Aktapokus, open **🎨 Avatar**, type the code in the **Class** section at the bottom and press **Join**.
 5. Open the **Parent Area** once and look around (see [Section 4](#4-parent-guide-what-can-i-follow-and-where)).

@@ -2749,6 +2749,10 @@ ${FONT_FACES}
   .ke-who{ max-width:760px; margin:0 auto; padding:24px 0; text-align:center; position:relative; z-index:1; }
   .ke-who h1{ font-size:30px; margin:6px 0 4px; color:var(--kb-chalk); }
   .ke-who p{ margin:0 0 20px; color:var(--kb-chalk-dim); font-weight:700; }
+  .ke-who-del .ke-who-card{ border-color:#e05a4f !important; }
+  .ke-who-confirm{ margin:18px auto 0; max-width:420px; background:rgba(224,90,79,.15); border:2px solid #e05a4f; border-radius:16px; padding:14px; }
+  .ke-who-confirm p{ margin:0 0 10px; color:var(--kb-chalk); }
+  .ke-shell .ke-btn-danger{ background:#d9493e !important; box-shadow:0 4px 0 #9e2f27 !important; color:#fff !important; }
   .ke-who-grid{ display:flex; flex-wrap:wrap; justify-content:center; gap:16px; }
   .ke-shell .ke-who-card{
     display:flex; flex-direction:column; align-items:center; gap:8px; width:132px; padding:14px 8px 12px !important;
@@ -5553,7 +5557,7 @@ function showWelcome(container, api, toolId, categories) {
 }
 
 // ---- UX madde 9: ebeveyn alani ----
-function showParentGate(container, api, toolId, categories) {
+function showParentGate(container, api, toolId, categories, onPass) {
   const a = 3 + Math.floor(Math.random() * 7), b = 4 + Math.floor(Math.random() * 6);
   const shell = container.querySelector('.ke-shell');
   const ov = document.createElement('div');
@@ -5575,7 +5579,7 @@ function showParentGate(container, api, toolId, categories) {
   const inp = ov.querySelector('#keGateIn');
   inp.focus();
   const ok = () => {
-    if (Number(inp.value) === a * b) { ov.remove(); showParentArea(container, api, toolId, categories); }
+    if (Number(inp.value) === a * b) { ov.remove(); if (onPass) onPass(); else showParentArea(container, api, toolId, categories); }
     else { ov.querySelector('#keGateMsg').textContent = L('Yanlış cevap', 'Wrong answer'); inp.value = ''; }
   };
   ov.querySelector('#keGateOk').addEventListener('click', ok);
@@ -6606,7 +6610,10 @@ function reportProblemHref() {
 // acilista ve ana ekrandaki "⇄" cipinden kim oynadigi secilir. Her profilin
 // ilerlemesi, yildizi, serisi, yolculugu, rekorlari ayri anahtarlarda
 // (profileStorageKeys) tutulur.
-function showWhoIsPlaying(container, api, toolId, categories) {
+// Cocuk silme (2026-09-30, kullanici: "ekledigimiz bir kullaniciyi
+// silemiyoruz"): veli sorusundan sonra silme modu acilir; karta dokununca
+// sayfa ici onay sorulur. Son kalan profil silinemez (Profiles.remove).
+function showWhoIsPlaying(container, api, toolId, categories, delMode) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   const host = container.querySelector('#keScreenHost');
   const activeId = Profiles.active().id;
@@ -6617,18 +6624,40 @@ function showWhoIsPlaying(container, api, toolId, categories) {
   }).join('');
   host.innerHTML = `
     <div class="ke-who">
-      <h1>${L('Kim oynuyor?', "Who's playing?")}</h1>
-      <p>${L('Her çocuğun ilerlemesi ayrı tutulur.', "Each child's progress is kept separate.")}</p>
-      <div class="ke-who-grid">
+      <h1>${delMode ? L('Hangi çocuk silinsin?', 'Which child should be removed?') : L('Kim oynuyor?', "Who's playing?")}</h1>
+      <p>${delMode ? L('Silinecek çocuğa dokunun. Bu çocuğun bu cihazdaki bütün ilerlemesi silinir.', "Tap the child to remove. All of this child's progress on this device is deleted.") : L('Her çocuğun ilerlemesi ayrı tutulur.', "Each child's progress is kept separate.")}</p>
+      <div class="ke-who-grid${delMode ? ' ke-who-del' : ''}">
         ${cards}
-        <button type="button" class="ke-who-card" id="keWhoNew"><span class="ke-who-new" aria-hidden="true">＋</span><span>${L('Yeni çocuk', 'New child')}</span><small>&nbsp;</small></button>
+        ${delMode ? '' : `<button type="button" class="ke-who-card" id="keWhoNew"><span class="ke-who-new" aria-hidden="true">＋</span><span>${L('Yeni çocuk', 'New child')}</span><small>&nbsp;</small></button>`}
+      </div>
+      <div id="keWhoConfirm"></div>
+      <div class="ke-btn-row" style="margin-top:18px;">
+        ${delMode ? `<button type="button" class="ke-btn-secondary" id="keWhoDelDone">${L('Bitti', 'Done')}</button>`
+          : Profiles.all().length > 1 ? `<button type="button" class="ke-btn-secondary" id="keWhoDel">🗑️ ${L('Çocuk sil', 'Remove a child')}</button>` : ''}
       </div>
     </div>`;
   host.querySelectorAll('[data-who]').forEach((b) => b.addEventListener('click', () => {
-    Profiles.setActive(b.dataset.who);
-    resumeLastScreen(container, api, toolId, categories);
+    if (!delMode) { Profiles.setActive(b.dataset.who); resumeLastScreen(container, api, toolId, categories); return; }
+    if (Profiles.all().length < 2) return;
+    const p = Profiles.all().find((x) => x.id === b.dataset.who); if (!p) return;
+    const box = host.querySelector('#keWhoConfirm');
+    const name = escapeProfileText(p.name || L('Ben', 'Me'));
+    box.innerHTML = `<div class="ke-who-confirm"><p><b>${name}</b> ${L('silinsin mi? Yıldızları, serisi ve Macera ilerlemesi bu cihazdan silinir; geri alınamaz.', 'will be removed. Stars, streak and Adventure progress are deleted from this device; this cannot be undone.')}</p>
+      <p style="font-size:13px;">💾 ${L('Bu bilgiler yalnızca bu cihazda durur. Geri getirebilmek için önce yedek alın; yedek dosyası Ebeveyn Alanı’ndan geri yüklenir.', 'This data lives only on this device. To be able to bring it back, save a backup first; restore it from the Parent Area.')}</p>
+      <div class="ke-btn-row"><button type="button" class="ke-btn-secondary" id="keWhoNo">${L('Vazgeç', 'Cancel')}</button><button type="button" class="ke-btn-secondary" id="keWhoBak">💾 ${L('Önce yedek al', 'Back up first')}</button><button type="button" class="ke-btn-primary ke-btn-danger" id="keWhoYes">🗑️ ${L('Sil', 'Remove')}</button></div></div>`;
+    box.querySelector('#keWhoBak').addEventListener('click', exportBackup);
+    box.querySelector('#keWhoNo').addEventListener('click', () => { box.innerHTML = ''; });
+    box.querySelector('#keWhoYes').addEventListener('click', () => {
+      Profiles.remove(p.id);
+      showWhoIsPlaying(container, api, toolId, categories, Profiles.all().length > 1);
+    });
   }));
-  host.querySelector('#keWhoNew').addEventListener('click', () => showProfileScreen(container, api, toolId, categories, { newProfile: true }));
+  const nw = host.querySelector('#keWhoNew');
+  if (nw) nw.addEventListener('click', () => showProfileScreen(container, api, toolId, categories, { newProfile: true }));
+  const del = host.querySelector('#keWhoDel');
+  if (del) del.addEventListener('click', () => showParentGate(container, api, toolId, categories, () => showWhoIsPlaying(container, api, toolId, categories, true)));
+  const dd = host.querySelector('#keWhoDelDone');
+  if (dd) dd.addEventListener('click', () => showWhoIsPlaying(container, api, toolId, categories));
 }
 
 function escapeProfileText(t) {
