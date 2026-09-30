@@ -330,7 +330,8 @@ Maarif programına göre gün gün hazırlanmış dersler (şu an 2. sınıf: 66
 | Hatırla | Önceki dersin kelimeleri |
 | Yeni | Resim, kelime ve cümle; Aktapokus söyler, sınıf tekrar eder |
 | Oyun | Her derste değişir: Takım oyunu, Ne eksik?, Gizli resim, Dinle ve dokun, Farklı olanı bul. Aktapokus oyunda temanın Maarif sosyal ifadelerini kullanır (Good luck!, It's your turn!, Well done!) |
-| Etkin öğrenme | Eşli/grup etkinliği, sayaçlı; yönergeyi Aktapokus söyler |
+| Dinle ve anla | Her temada bir kez: kısa bir hikâye cümle cümle okunur, sonra takımlara 3 doğru/yanlış sorusu |
+| Etkin öğrenme | Eşli/grup etkinliği, sayaçlı; yönergeyi Aktapokus söyler. 4–6. sınıflarda zor etkinliklere örnek diyalog öğretmen ekranında |
 | Ne öğrendim? | Yalnızca tema sonu dersinde: "I can…" cümleleri, başparmakla öz değerlendirme |
 | Kapanış | Bugünün kelimeleri; ev görevi |
 
@@ -338,6 +339,9 @@ Maarif programına göre gün gün hazırlanmış dersler (şu an 2. sınıf: 66
 - **Tahtanın kendi kısayolları:** boşluk = duraklat, → = sonraki kart (son kartta sonraki adım), ← = önceki kart, S = tekrar söylet.
 - **İşlendi:** Ders bitince basın. Öğretmen paneline aynı bilgisayarda giriş yaptıysanız sınıfınızı seçin; ders sınıfa kaydedilir ve öğrencilerin uygulamasında aynı ders "Bugünün dersi" olarak öne gelir (derse gelemeyen çocuk evde yakalar). Sınıf seçilmezse kayıt yalnızca o bilgisayarda kalır.
 - **Basılı ders kartı:** Her adımın Türkçe yönergesi, kelimeler ve Türkçeleri; A4.
+- **Yıllık yapı:** Maarif saat tablosuna göre her yıl tanışma dersleriyle başlar, 3–6. sınıflarda geçen yılın temalarını tekrar eden haftalar gelir. 5–6. sınıflarda iki temada bir değerlendirme dersi (takım sınavı ve rubrikle performans görevi), yıl sonunda okul temelli çalışmalar (okuma saati, proje sergisi, yerel çalışma) vardır. 2–4. sınıflar 72, 5–6. sınıflar 108 ders.
+- **Yazma görevi (5–6. sınıf):** Her temanın proje dersinde, örnek paragraf ve yazma rubriğiyle birlikte öğretmen ekranında ve basılı kartta.
+- **Tema şarkısı:** Her temanın ilk dersinde bir şarkı önerisi ve YouTube arama bağlantısı; şarkıyı sınıfta YouTube'dan açın (uygulama şarkı kaydı içermez).
 - Resimli, adım adım anlatım: https://aktapokus.github.io/kids-english/rehber.html
 
 ---

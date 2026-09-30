@@ -135,9 +135,11 @@ function buildSteps(data, lesson) {
   if (prev && prev.cards.length && !['revision', 'assess', 'school'].includes(lesson.kind)) steps.push({ kind: 'review', min: 3, name: 'Hatırla', items: prev.cards.slice(0, 6) });
   // Tekrar / degerlendirme / okul temelli derslerde kartlar yeni degil (2026-09-30)
   const isReview = ['revision', 'assess', 'school'].includes(lesson.kind);
+  const storyStep = lesson.story ? { kind: 'story', min: 5, name: 'Dinle ve anla' } : null;
   if (isReview) steps.push({ kind: 'review', min: 6, name: 'Tekrar', items: [...lesson.cards, ...lesson.phrases.map((p) => ({ phrase: true, word: p.en, tr: p.tr }))] });
   else if (!lesson.review_only) steps.push({ kind: 'new', min: 6, name: 'Yeni', items: [...lesson.cards, ...lesson.phrases.map((p) => ({ phrase: true, word: p.en, tr: p.tr }))] });
   else steps.push({ kind: 'new', min: 6, name: 'Kalıplar', items: lesson.phrases.map((p) => ({ phrase: true, word: p.en, tr: p.tr })) });
+  if (storyStep) steps.push(storyStep);
   // Donusumlu oyun (2026-09-30): her derste ayni takim sorusu tekrar
   // etmesin; ders sirasina gore bes oyun doner, kart yetmezse takim oyunu.
   const cards = (lesson.game_cards || lesson.cards).filter((c) => c.icon);
@@ -167,6 +169,7 @@ function teacherNote(step, lesson, paper) {
     case 'listen': return 'Dinle ve dokun. Tahtada yazısız resimler var. Aktapokus bir kelime söyler; sırası gelen takımdan bir çocuk tahtaya gelip doğru resme dokunur. Puanı tahta verir.';
     case 'odd': return 'Farklı olanı bul. Dört resimden biri bu dersin konusuna uymuyor. Sırası gelen takım farklı olanı seçer. Doğru cevaptan sonra "neden?" diye Türkçe sorabilirsiniz.';
     case 'cando': return 'Tema sonu öz değerlendirme. Aktapokus "I can…" cümlelerini tek tek söyler; çocuklar yapabiliyorsa başparmağını yukarı, emin değilse yana kaldırır. Siz sınıfa bakıp basılı kontrol listesine not alın (Ders kartı sayfasının sonunda). Cümleler: ' + lesson.cando.map((c) => c.tr).join(' · ');
+    case 'story': return `Dinle ve anla: Aktapokus "${lesson.story.title}" metnini cümle cümle okur (Türkçesi aşağıda). Sonra takımlara 3 doğru/yanlış sorusu gelir. Cevaplar: ${lesson.story.qs.map((q, i) => (i + 1) + ') ' + (q.ok ? 'Doğru' : 'Yanlış')).join(', ')}.`;
     case 'review': if (step.name === 'Tekrar') return 'Tekrar kelimeleri: Aktapokus söyler, sınıf tekrar eder. Hatırlanmayan kelimeleri not alın; oyun adımında onlara dönün.';
       return 'Dünkü dersin kelimeleri. Aktapokus söyler, sınıf tekrar eder. Resmi parmağınızla gösterin; sessiz kalan çocuğu gülümseyerek koroya katın.';
     case 'new': return 'Yeni kelimeler. Aktapokus her kelimeyi söyleyip sınıfa tekrar ettirecek, sonra örnek cümleyi okuyacak. Sizin İngilizce konuşmanız gerekmez.' + (paper ? ' Türkçeleri aşağıdaki tabloda.' : ' Türkçesi aşağıda yalnızca sizin için.');
@@ -255,6 +258,7 @@ function mountBoard(data) {
       else if (st.kind === 'quiz') await runQuiz(my, st.items);
       else if (st.kind === 'sound') await runSound(my);
       else if (st.kind === 'cando') await runCando(my);
+      else if (st.kind === 'story') await runStory(my);
       else if (st.kind === 'missing') await runMissing(my, st.items);
       else if (st.kind === 'reveal') await runReveal(my, st.items);
       else if (st.kind === 'listen') await runListen(my, st.items);
@@ -395,6 +399,26 @@ function mountBoard(data) {
   }
   function thumb(c) { return c.icon_type === 'emoji' ? `<span class="thumbemo">${esc(c.icon)}</span>` : `<img class="thumb" src="${esc(c.icon)}" alt="">`; }
 
+  // Dinle ve anla (2026-09-30): kisa metin cumle cumle, sonra dogru/yanlis
+  async function runStory(my) {
+    const st = lesson.story;
+    frame(`<div class="story"><h2>${esc(st.title)}</h2><div class="slines" id="sLines"></div></div>`, 'Listen and read');
+    await say('Listen to the story: ' + st.title + '!'); await hold(500, my);
+    await eachItem(st.lines.length, my, async (k) => {
+      const box = $('#sLines'); if (!box) return;
+      box.innerHTML = st.lines.slice(0, k + 1).map((l, i) => `<p class="${i === k ? 'now' : ''}">${esc(l.en)}</p>`).join('');
+      S.answer = { word: st.lines[k].en, tr: st.lines[k].tr }; post();
+      await say(st.lines[k].en); await hold(1400, my);
+    });
+    if (my !== token) return;
+    await say('True or false?');
+    await eachItem(st.qs.length, my, async (k) => {
+      const q = st.qs[k]; S.answer = { word: q.en + ' → ' + (q.ok ? 'True' : 'False'), tr: q.tr }; post();
+      await askTeams(my, 'True or false?', `<div class="tfq">${esc(q.en)}</div>`, [{ word: 'True', pic: '✅ True' }, { word: 'False', pic: '❌ False' }], q.ok ? 'True' : 'False', q.en);
+      await afterAsk(my);
+    });
+    await gameEnd(my);
+  }
   async function runCando(my) {
     await say('What can you do now? Show me your thumbs!');
     await eachItem(lesson.cando.length, my, async (k) => { const c = lesson.cando[k];
@@ -561,6 +585,7 @@ function mountTeacher(data) {
         ${st && st.lessonId === lesson.id && st.step >= 0 ? `<div class="score">🔴 Takım A: <b>${st.scores.A}</b> <button data-s="A:1">+1</button><button data-s="A:-1">−1</button> &nbsp; 🔵 Takım B: <b>${st.scores.B}</b> <button data-s="B:1">+1</button><button data-s="B:-1">−1</button>${st.timerLeft > 0 ? ` &nbsp; ⏱️ ${Math.floor(st.timerLeft / 60)}:${String(st.timerLeft % 60).padStart(2, '0')}` : ''}</div>` : ''}
         <ol class="steps">${steps.map((s, i) => `<li class="${i === cur ? 'now' : i < cur ? 'past' : ''}"><div class="sh"><b>${i + 1}. ${esc(s.name)}</b> <span>${s.min} dk</span> <button data-g="${i}">buraya git</button></div><p>${esc(teacherNote(s, lesson))}</p>
           ${s.kind === 'new' ? `<table>${s.items.map((c) => `<tr><td>${esc(c.word)}</td><td>${esc(c.tr)}</td></tr>`).join('')}</table>` : ''}</li>`).join('')}</ol>
+        ${extrasHtml(data, lesson)}
         ${lesson.diff ? `<div class="diffbox"><b>🧩 Farklılaştırma</b><p><b>Destek:</b> ${esc(lesson.diff.support)}</p><p><b>Hızlı bitirenler:</b> ${esc(lesson.diff.extend)}</p></div>` : ''}
         <div class="done"><button id="tDone" class="pri">✅ İşlendi</button> <span>Ders bittiğinde basın. Öğrencilerin uygulamasında aynı ders "Bugünün dersi" olarak açılacak.</span></div>
       </section>`;
@@ -632,6 +657,19 @@ function checklistHtml(lesson) {
   return `<section class="ws"><h2>Tema ${lesson.theme} kontrol listesi</h2><p class="small">✓ yapabiliyor · ~ kısmen · – henüz değil</p>
     <table class="chk"><tr><th>Öğrenci</th>${lesson.cando.map((c) => `<th>${esc(c.tr)}</th>`).join('')}</tr>${'<tr><td>&nbsp;</td>' + lesson.cando.map(() => '<td></td>').join('') + '</tr>'.repeat(1)}${Array.from({ length: 24 }, () => '<tr><td>&nbsp;</td>' + lesson.cando.map(() => '<td></td>').join('') + '</tr>').join('')}</table></section>`;
 }
+// Metin, sarki, yazma gorevi, rubrik ve ornek diyalog (ogretmen ekrani + basili kart)
+function rubricTable(rows, title) {
+  return `<table class="rubric"><tr><th>${esc(title)}</th><th>3 · İyi</th><th>2 · Gelişiyor</th><th>1 · Destek gerekiyor</th></tr>${rows.map((r) => `<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')}</table>`;
+}
+function extrasHtml(data, lesson, paper) {
+  let h = '';
+  if (lesson.song) h += `<div class="xbox"><b>🎵 Tema şarkısı önerisi:</b> ${esc(lesson.song.title)}${paper ? ` (YouTube'da arayın: "${esc(lesson.song.q)}")` : ` · <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(lesson.song.q)}" target="_blank" rel="noopener">YouTube'da ara</a>`} <span class="small">Şarkıyı sınıfta YouTube'dan açın; uygulama şarkı kaydı içermez.</span></div>`;
+  if (lesson.story) h += `<div class="xbox"><b>📖 Dinle ve anla: ${esc(lesson.story.title)}</b><ol>${lesson.story.lines.map((l) => `<li>${esc(l.en)} <span class="tr">${esc(l.tr)}</span></li>`).join('')}</ol><p><b>Doğru mu, yanlış mı?</b> ${lesson.story.qs.map((q, i) => `${i + 1}) ${esc(q.en)} <span class="tr">(${q.ok ? 'Doğru' : 'Yanlış'})</span>`).join(' · ')}</p></div>`;
+  if (lesson.dialog) h += `<div class="xbox"><b>💬 Örnek diyalog</b> <span class="small">(etkinlik öncesi tahtaya yazın, iki çocukla canlandırın)</span><ul>${lesson.dialog.map((d) => `<li>${esc(d.en)} <span class="tr">${esc(d.tr)}</span></li>`).join('')}</ul></div>`;
+  if (lesson.writing) h += `<div class="xbox"><b>✍️ Yazma görevi</b> (${esc(lesson.writing.words)} kelime): ${esc(lesson.writing.tr)}<p><b>Örnek:</b> <i>${esc(lesson.writing.model)}</i></p>${paper ? '<div class="wlines"></div>' : ''}${data.rubrics ? rubricTable(data.rubrics.writing, 'Yazma rubriği') : ''}</div>`;
+  if (lesson.rubric && data.rubrics) h += `<div class="xbox"><b>📋 Değerlendirme</b>: Tahtadaki takım sınavından sonra her çocuk (ya da grup) son iki temanın yazma görevini ya da tema projesini sunar. Aşağıdaki ölçütle 1–3 arası puan verin.${rubricTable(data.rubrics.task, 'Performans rubriği')}${rubricTable(data.rubrics.writing, 'Yazma rubriği')}</div>`;
+  return h;
+}
 function mountCard(data) {
   const list = query('all') ? data.lessons : [lessonById(data, query('id') || nextLesson(data).id)];
   $('#card').innerHTML = list.map((lesson) => {
@@ -642,6 +680,7 @@ function mountCard(data) {
       ${lesson.cards.length && !lesson.review_only ? `<table><tr><th>Kelime</th><th>Türkçesi</th><th>Örnek cümle</th></tr>${lesson.cards.map((c) => `<tr><td>${esc(c.word)}</td><td>${esc(c.tr)}</td><td>${esc(c.sentence)}</td></tr>`).join('')}</table>` : ''}
       ${lesson.phrases.length ? `<p><b>Kalıplar:</b> ${lesson.phrases.map((p) => `${esc(p.en)} (${esc(p.tr)})`).join(' · ')}</p>` : ''}
       ${lesson.diff ? `<p><b>Destek:</b> ${esc(lesson.diff.support)}<br><b>Hızlı bitirenler:</b> ${esc(lesson.diff.extend)}</p>` : ''}
+      ${extrasHtml(data, lesson, true)}
       ${worksheetHtml(lesson)}${checklistHtml(lesson)}
       <p class="small">Tahta her adımı kendisi yürütür; adım numaraları tahtadaki noktalarla aynıdır. Boşluk tuşu: duraklat · →: sonraki adım · S: tekrar söylet.</p></article>`;
   }).join('');
