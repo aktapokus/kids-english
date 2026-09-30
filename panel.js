@@ -482,6 +482,10 @@ const RiverHighScore = {
 // dokunursa, ve sadece profildeki takma isim + skor gidiyor (gerçek isim,
 // cihaz bilgisi vb. yok).
 // Sunucu adresi tek yerde: ui/server-config.js (yoksa varsayilan).
+// Herkese acik skor tablosu GIZLI (2026-09-30, kullanici karari): gonderimde
+// cocugun profil adi (cogu zaman gercek adi) herkese aciliyordu; KVKK ve
+// Google Play aile politikasi riski. Kod duruyor; true yapilirsa geri gelir.
+const LEADERBOARD_ON = false;
 const SUPABASE_URL = (window.KE_SERVER && window.KE_SERVER.url) || 'https://wtrkfzmmhabcpoipaccf.supabase.co';
 const SUPABASE_KEY = (window.KE_SERVER && window.KE_SERVER.key) || 'sb_publishable_87EZgr1ftB1SnIY5FoDaKA_xmxlD7kU';
 // Kaba, en-iyi-çaba bir uygunsuz-kelime filtresi - sunucu tarafında
@@ -4224,7 +4228,7 @@ function showQuickMenu(container, api, toolId, categories) {
         <button type="button" class="ke-quickmenu-tile qm-game${hasReward ? '' : ' qm-locked'}" id="keQmGame" aria-describedby="keQmSoundInfo"><span class="qm-ico">${hasReward ? '🎮' : '🔒'}</span>${L('Ödül Oyunu', 'Reward Game')}${hasReward ? '' : `<small style="display:block;font-size:10.5px;opacity:.8;">${L(`${continuousMinutesLeft()} dk kaldı`, `${continuousMinutesLeft()} min left`)}</small>`}</button>
         <button type="button" class="ke-quickmenu-tile qm-sound" id="keQmSound"><span class="qm-ico">🔊</span>${L('Ses Testi', 'Sound Test')}</button>
         <button type="button" class="ke-quickmenu-tile qm-lang" id="keQmLang"><span class="qm-ico">🌐</span>${_lang === 'tr' ? 'English' : 'Türkçe'}</button>
-        <button type="button" class="ke-quickmenu-tile qm-rank" id="keQmRank"><span class="qm-ico">🏆</span>${L('Sıralama', 'Leaderboard')}</button>
+        ${LEADERBOARD_ON ? `<button type="button" class="ke-quickmenu-tile qm-rank" id="keQmRank"><span class="qm-ico">🏆</span>${L('Sıralama', 'Leaderboard')}</button>` : ''}
         <button type="button" class="ke-quickmenu-tile qm-guide" id="keQmGuide"><span class="qm-ico">📖</span>${L('Rehber', 'Guide')}</button>
         <button type="button" class="ke-quickmenu-tile qm-parent" id="keQmParent"><span class="qm-ico">👪</span>${L('Ebeveyn', 'Parent')}</button>
       </div>
@@ -4264,7 +4268,7 @@ function showQuickMenu(container, api, toolId, categories) {
     showSectionMenu(container, api, toolId, categories);
     showQuickMenu(container, api, toolId, categories);
   });
-  overlay.querySelector('#keQmRank').addEventListener('click', () => { close(); showLeaderboard(container); });
+  if (LEADERBOARD_ON) overlay.querySelector('#keQmRank').addEventListener('click', () => { close(); showLeaderboard(container); });
   overlay.querySelector('#keQmGuide').addEventListener('click', () => { close(); showGuide(container, api, toolId, categories); });
   overlay.querySelector('#keQmClose').addEventListener('click', close);
   mountOfflineLine(overlay.querySelector('#keQmOffline'));
@@ -4323,7 +4327,7 @@ function showGuide(container, api, toolId, categories) {
     },
     {
       icon: '🔒', title: L('Veriler ve gizlilik', 'Data and privacy'),
-      body: L('Hesap gerekmez; reklam ve izleyici yoktur. Profil, avatar ve ilerleme yalnızca bu cihazda saklanır. Üç isteğe bağlı özellik dışında hiçbir şey gönderilmez: 1) Nehir oyununda "Skoru Gönder"e basarsan yazdığın takma ad ve puan herkese açık sıralamada görünür. 2) Sınıf koduyla katılırsan ad ve ilerleme sayıların yalnızca o öğretmene gider. 3) Ebeveyn Alanı’nda içerik denetimini açan bir yetişkin "Sorun bildir" ile bir kart hakkında bildirim gönderirse yalnızca kart, neden ve not gider; kişisel bilgi gitmez. Konuşma alıştırmasında ses tanımayı tarayıcı/cihaz yapar (Android/Chrome’da Google hizmeti); uygulama sesi almaz ve kaydetmez. Hikâye okuma kayıtların cihazında kalır. Ayrıntılar: Gizlilik sayfası.', 'No account, no ads, no trackers. Profile, avatar and progress are stored only on this device. Nothing is sent except three optional features: 1) tapping "Submit Score" in the river game shows the nickname you type and your score on a public leaderboard; 2) joining a class with a code sends your name and progress numbers to that teacher only; 3) if an adult turns on content review in the Parent Area and taps "Report" on a card, only the card, the reason and the note are sent - no personal data. Speech recognition is done by your browser or device (Google’s service on Android/Chrome); the app never receives or stores the audio. Story reading recordings stay on your device. Details: Privacy page.'),
+      body: L('Hesap gerekmez; reklam ve izleyici yoktur. Profil, avatar ve ilerleme yalnızca bu cihazda saklanır. İki isteğe bağlı özellik dışında hiçbir şey gönderilmez: 1) Veli onayıyla sınıf koduyla katılırsan ad (takma ad olabilir) ve ilerleme bilgilerin yalnızca o öğretmene gider; ayrıntılar KVKK Aydınlatma Metni’nde. 2) Ebeveyn Alanı’nda içerik denetimini açan bir yetişkin "Sorun bildir" ile bir kart hakkında bildirim gönderirse yalnızca kart, neden ve not gider; kişisel bilgi gitmez. Konuşma alıştırmasında ses tanımayı tarayıcı/cihaz yapar (Android/Chrome’da Google hizmeti); uygulama sesi almaz ve kaydetmez. Hikâye okuma kayıtların cihazında kalır. Ayrıntılar: Gizlilik sayfası.', 'No account, no ads, no trackers. Profile, avatar and progress are stored only on this device. Nothing is sent except two optional features: 1) joining a class with a code (with a parent’s consent) sends your name (a nickname is fine) and progress to that teacher only; details in the data notice; 2) if an adult turns on content review in the Parent Area and taps "Report" on a card, only the card, the reason and the note are sent - no personal data. Speech recognition is done by your browser or device (Google’s service on Android/Chrome); the app never receives or stores the audio. Story reading recordings stay on your device. Details: Privacy page.'),
     },
   ];
   host.innerHTML = `
@@ -6768,8 +6772,13 @@ function showProfileScreen(container, api, toolId, categories, opts) {
             : `<div class="ke-pl-label" style="margin-top:16px;">${L('Sınıf (öğretmenin varsa)', "Class (if your teacher has one)")}</div>
                <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:4px;">
                  <input id="keClassCode" class="ke-profile-name" style="width:140px;font-size:14px;padding:8px 10px;" maxlength="9" placeholder="${L('SINIF KODU', 'CLASS CODE')}" autocomplete="off" />
-                 <button type="button" class="ke-btn-primary" id="keClassJoin" style="font-size:13px !important;padding:9px 16px !important;">${L('Katıl', 'Join')}</button>
+                 <button type="button" class="ke-btn-primary" id="keClassJoin" disabled style="font-size:13px !important;padding:9px 16px !important;">${L('Katıl', 'Join')}</button>
                </div>
+               <p style="font-size:11.5px;font-weight:700;color:var(--kb-chalk-dim);margin:6px auto 2px;max-width:320px;">${L(`Öğretmenine giden ad: <b>${escapeProfileText(draft.name || Profiles.active().name || 'Friend')}</b>. Gerçek adın yerine takma ad da kullanabilirsin.`, `Name sent to your teacher: <b>${escapeProfileText(draft.name || Profiles.active().name || 'Friend')}</b>. You can use a nickname instead of your real name.`)}</p>
+               <label style="display:flex;gap:8px;align-items:flex-start;justify-content:center;font-size:12px;font-weight:700;color:var(--kb-chalk);max-width:330px;margin:6px auto 0;text-align:left;cursor:pointer;">
+                 <input type="checkbox" id="keClassConsent" style="width:20px;height:20px;flex:none;margin-top:1px;" />
+                 <span>${L('Veliyim. <a href="aydinlatma.html" target="_blank" rel="noopener" style="color:var(--kb-yellow,#ffd75a);">Aydınlatma metnini</a> okudum; çocuğumun adı ve ilerlemesinin öğretmenine gönderilmesine onay veriyorum.', 'I am the parent. I have read the <a href="aydinlatma.html" target="_blank" rel="noopener" style="color:var(--kb-yellow,#ffd75a);">data notice</a> and agree that my child’s name and progress are sent to the teacher.')}</span>
+               </label>
                <div id="keClassMsg" style="min-height:16px;font-size:11.5px;font-weight:700;color:var(--kb-chalk-dim);margin-top:4px;"></div>`;
         })()}
       </div>
@@ -6807,7 +6816,11 @@ function showProfileScreen(container, api, toolId, categories, opts) {
     const back = host.querySelector('#keProfileBack');
     if (back) back.addEventListener('click', () => showSectionMenu(container, api, toolId, categories));
     const classJoinBtn = host.querySelector('#keClassJoin');
+    // KVKK (2026-09-30): veli onayi isaretlenmeden sinifa katilinmaz.
+    const consentEl = host.querySelector('#keClassConsent');
+    if (consentEl && classJoinBtn) consentEl.addEventListener('change', () => { classJoinBtn.disabled = !consentEl.checked; });
     if (classJoinBtn) classJoinBtn.addEventListener('click', async () => {
+      if (consentEl && !consentEl.checked) return;
       const codeEl = host.querySelector('#keClassCode');
       const msgEl = host.querySelector('#keClassMsg');
       const code = (codeEl.value || '').trim();
@@ -11775,7 +11788,7 @@ function startRiverGame(container, onExit) {
           <div class="ke-gstat"><b id="keRiverStatCoins">0</b><span>${L('altın', 'coins')}</span></div>
         </div>
         <div class="ke-word-chips" id="keRiverWordChips"></div>
-        <div class="ke-lb-submit-row">
+        <div class="ke-lb-submit-row"${LEADERBOARD_ON ? '' : ' hidden'}>
           <button type="button" class="ke-game-btn ke-game-btn-small" id="keRiverSubmitBtn">🏆 ${L('Sıralamaya Gönder', 'Submit to Leaderboard')}</button>
         </div>
         <div class="ke-submit-status" id="keRiverSubmitStatus"></div>
@@ -12447,7 +12460,7 @@ function startRiverGame(container, onExit) {
       $('keRiverWordChips').innerHTML = wordsHit.filter((w) => !seen.has(w[0]) && seen.add(w[0])).map((w) => `<span class="ke-word-chip">${w[1]} ${w[0]}</span>`).join('');
       const submitBtn = $('keRiverSubmitBtn');
       submitBtn.disabled = finalScore <= 0;
-      submitBtn.style.display = '';
+      submitBtn.style.display = LEADERBOARD_ON ? '' : 'none';
       $('keRiverSubmitStatus').textContent = '';
       $('keRiverAgainBtn').style.display = GameTokens.get() > 0 ? '' : 'none';
       $('keRiverOverMsg').style.display = 'flex';

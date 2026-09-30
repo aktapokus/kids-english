@@ -46,7 +46,7 @@ Aktapokus Kids English is an English vocabulary, listening and speaking app for 
 1. Open the app on a phone or tablet. To add it to the home screen, use **"Add to Home screen"** in the browser menu. After that the app also opens without internet.
 2. On the **"Who's playing?"** screen, create a profile for your child. Siblings can use separate profiles on the same device. To remove a profile, tap the ⇄ chip on the home screen, press **🗑️ Remove a child** and answer the parent question. A profile's progress lives only on that device; save a backup first with **💾 Back up first** and you can restore it from the Parent Area.
 3. Check the sound: tap Aktapokus, then **🔊 Sound Test**. Aktapokus should say "Hello, I am Aktapokus".
-4. If the teacher gave you a **class code**: tap Aktapokus, open **🎨 Avatar**, type the code in the **Class** section at the bottom and press **Join**.
+4. If the teacher gave you a **class code**: tap Aktapokus, open **🎨 Avatar**, type the code in the **Class** section at the bottom. The name that will be sent to the teacher is shown below it; a nickname is fine. A parent reads the **data notice** and ticks the consent box; only then does **Join** work.
 5. Open the **Parent Area** once and look around (see [Section 4](#4-parent-guide-what-can-i-follow-and-where)).
 
 ### For teachers (10 minutes)
@@ -66,7 +66,7 @@ After it has been opened once with internet, the app **works offline**. To make 
 4. **Don't use a private (incognito) tab.** Everything is deleted when the tab closes.
 5. **Before clearing browser data**, use **Download backup** in the Parent Area.
 
-**What needs internet:** speech recognition in the 🎤 Speak step (without internet the child says the word and presses Next), class sync, the weekly task, problem reports and the leaderboard. Work done offline is not lost; it is sent when the connection returns.
+**What needs internet:** speech recognition in the 🎤 Speak step (without internet the child says the word and presses Next), class sync, the weekly task, and problem reports. Work done offline is not lost; it is sent when the connection returns.
 
 **Updates arrive by themselves.** Just open the app while online: new content arrives straight away, new pictures download in the background, and the app refreshes itself once while on the home screen (never in the middle of a game or episode). A device that was switched off catches up the next time it opens. Only changed files are downloaded (usually a few hundred KB), not the whole app.
 
@@ -86,7 +86,7 @@ After it has been opened once with internet, the app **works offline**. To make 
 | **🎯 Weekly task** | Appears when the teacher has set a task (see 5.5). |
 | **🔁 Review** | Words the child got wrong come back here on later days. |
 | **Bottom menu** | Home, Adventure, Avatar, Progress. |
-| **Tapping Aktapokus** | Quick menu: Avatar, Progress, Reward Game, Sound Test, language (Türkçe/English), Leaderboard, Guide, Parent. |
+| **Tapping Aktapokus** | Quick menu: Avatar, Progress, Reward Game, Sound Test, language (Türkçe/English), Guide, Parent. |
 
 ### 3.2 Adventure (the space journey)
 
@@ -159,7 +159,6 @@ Any topic can be opened without waiting for its turn in the Adventure.
   2. Reach a station in the Adventure.
 
   The game is a reward for learning; it doesn't replace learning.
-- **🏆 Leaderboard:** Only if **"Send score"** is pressed in the river game, the nickname and score appear on a public list. Please don't use real names.
 
 ---
 
@@ -207,7 +206,7 @@ Short, frequent practice sticks better than long, rare practice. When your child
 
 - Don't let the reward game replace practice; play passes are earned by practising.
 - Siblings shouldn't share a profile; each child's progress should be kept separately.
-- Don't use real names on the leaderboard.
+- When joining a class, a nickname can be used instead of the real name; the teacher knows who is who.
 
 ---
 
@@ -352,12 +351,12 @@ Day-by-day lessons following the Maarif curriculum (currently grade 2: 66 lesson
 
 - **No account needed.** The profile, avatar and progress are stored only on the child's device.
 - **By default no personal data is sent.** Data leaves the device only in these optional cases:
-  1. **Joining a class:** The profile name and progress numbers go only to that class's teacher.
-  2. **Leaderboard:** If "Send score" is pressed in the river game, the nickname and score appear on a public list.
-  3. **Problem report:** The word, the type of problem and the note are sent. No name or personal information.
+  1. **Joining a class (with parent consent):** The profile name (a nickname is fine) and progress go only to that class's teacher. Data is stored on Supabase servers in India. What is sent, how to delete it and your rights are in the **data notice** (linked from the Privacy page). Teachers can delete a student from their panel; deletion requests: bmenderes@gmail.com.
+  2. **Problem report:** The word, the type of problem and the note are sent. No name or personal information.
 - **The microphone is optional.** Speech recognition is done by the device's or browser's own speech service; on Android/Chrome this is a Google service.
 - **Voice recordings** ("Record me" and story reading) stay only on this device, in the page's memory, and are deleted when you move on. The app never uploads recordings. If you want, you can share a story recording yourself with the phone's share menu.
 - **The weekly summary** is made only from data on the device and is never sent anywhere.
+- **The public leaderboard has been switched off** (2026-09-30).
 - For details, see the **Privacy** page in the app: Aktapokus > bottom of the menu.
 
 ---

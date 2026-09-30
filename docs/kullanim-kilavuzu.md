@@ -45,7 +45,7 @@ Aktapokus Kids English, ilkokul ve ortaokulun ilk yılları (2.–6. sınıf, 7.
 1. Uygulamayı telefonda ya da tablette açın. Ana ekrana eklemek için tarayıcının menüsünden **"Ana ekrana ekle"** seçeneğini kullanın. Uygulama bundan sonra internetsiz de açılır.
 2. **"Kim oynuyor?"** ekranında çocuğunuz için bir profil oluşturun. Kardeşler aynı cihazda ayrı profil kullanabilir. Bir profili silmek için ana ekrandaki ⇄ çipine dokunun, **🗑️ Çocuk sil**'e basın ve veli sorusunu cevaplayın. Profilin ilerlemesi yalnızca o cihazda durur; silmeden önce **💾 Önce yedek al** ile yedek dosyası alırsanız Ebeveyn Alanı'ndan geri yükleyebilirsiniz.
 3. Sesi kontrol edin: Aktapokus'a dokunun, ardından **🔊 Ses Testi**. Aktapokus "Hello, I am Aktapokus" demeli.
-4. Öğretmen bir **sınıf kodu** verdiyse: Aktapokus'a dokunun, **🎨 Avatar**'ı açın ve en alttaki **Sınıf** bölümüne kodu yazıp **Katıl**'a basın.
+4. Öğretmen bir **sınıf kodu** verdiyse: Aktapokus'a dokunun, **🎨 Avatar**'ı açın ve en alttaki **Sınıf** bölümüne kodu yazın. Altında öğretmene gidecek ad görünür; gerçek ad yerine takma ad kullanılabilir. Veli, **Aydınlatma metnini** okuyup onay kutusunu işaretler; ancak ondan sonra **Katıl** düğmesi çalışır.
 5. Ebeveyn Alanı'nı bir kez açıp gezin (bkz. [Bölüm 4](#4-veli-rehberi-neyi-nereden-takip-ederim)).
 
 ### Öğretmen için (10 dakika)
@@ -66,7 +66,7 @@ Uygulama internetle bir kez açıldıktan sonra **internetsiz çalışır**. Bun
 4. **Gizli (incognito) sekmede kullanmayın.** Sekme kapanınca her şey silinir.
 5. **Tarayıcı verilerini temizlemeden önce** Ebeveyn Alanı'ndan **Yedek indir** yapın.
 
-**İnternet gerektirenler:** 🎤 Konuş aşamasındaki konuşma tanıma (internet yoksa çocuk kelimeyi söyleyip Devam'a basar), sınıf eşitlemesi, haftanın görevi, sorun bildirimi ve sıralama listesi. İnternetsiz yapılan çalışma kaybolmaz; bağlantı gelince gönderilir.
+**İnternet gerektirenler:** 🎤 Konuş aşamasındaki konuşma tanıma (internet yoksa çocuk kelimeyi söyleyip Devam'a basar), sınıf eşitlemesi, haftanın görevi, ve sorun bildirimi. İnternetsiz yapılan çalışma kaybolmaz; bağlantı gelince gönderilir.
 
 **Güncellemeler kendiliğinden gelir.** Uygulamayı internetliyken açmanız yeterli: yeni içerik hemen gelir, yeni resimler arka planda iner ve uygulama ana ekrandayken kendini bir kez yeniler (oyun ya da bölüm ortasında kesmez). Kapalı duran bir cihaz, bir sonraki açılışta yetişir. Güncellemelerde yalnızca değişen dosyalar iner (genelde birkaç yüz KB); bütün uygulama yeniden inmez.
 
@@ -86,7 +86,7 @@ Uygulama internetle bir kez açıldıktan sonra **internetsiz çalışır**. Bun
 | **🎯 Haftanın görevi** | Öğretmen görev verdiyse görünür (bkz. 5.5). |
 | **🔁 Tekrar** | Yanlış yaptığı kelimeler sonraki günlerde burada hatırlatılır. |
 | **Alt menü** | Ana ekran, Macera, Avatar, İlerleme. |
-| **Aktapokus'a dokunmak** | Hızlı menü: Avatar, İlerleme, Ödül Oyunu, Ses Testi, dil (Türkçe/English), Sıralama, Rehber, Ebeveyn. |
+| **Aktapokus'a dokunmak** | Hızlı menü: Avatar, İlerleme, Ödül Oyunu, Ses Testi, dil (Türkçe/English), Rehber, Ebeveyn. |
 
 ### 3.2 Macera (uzay yolculuğu)
 
@@ -159,7 +159,6 @@ Macera sırasını beklemeden istenen konu açılır.
   2. Macera'da bir istasyona ulaşmak.
 
   Oyun, öğrenmenin ödülüdür; öğrenmenin yerine geçmez.
-- **🏆 Sıralama:** Yalnızca nehir oyununda **"Skoru Gönder"e** basılırsa, yazılan takma ad ve puan herkese açık listede görünür. Gerçek ad yazılmaması önerilir.
 
 ---
 
@@ -207,7 +206,7 @@ Kısa ve sık çalışma, uzun ve seyrek çalışmadan daha kalıcıdır. Çocu�
 
 - Ödül oyununu çalışmanın yerine koymayın; oyun hakkı çalışarak kazanılır.
 - Kardeşler aynı profili kullanmasın; her çocuğun ilerlemesi ayrı tutulmalı.
-- Sıralamaya gerçek ad yazılmasın.
+- Sınıfa katılırken gerçek ad yerine takma ad tercih edilebilir; öğretmen kimin kim olduğunu bilir.
 
 ---
 
@@ -368,12 +367,12 @@ Maarif programına göre gün gün hazırlanmış dersler (şu an 2. sınıf: 66
 
 - **Hesap gerekmez.** Profil, avatar ve ilerleme yalnızca çocuğun cihazında saklanır.
 - **Varsayılan olarak hiçbir kişisel veri gönderilmez.** Yalnızca şu isteğe bağlı durumlarda veri gider:
-  1. **Sınıfa katılma:** Profil adı ve ilerleme sayıları yalnızca o sınıfın öğretmenine gider.
-  2. **Sıralama:** Nehir oyununda "Skoru Gönder"e basılırsa yazılan takma ad ve puan herkese açık listede görünür.
-  3. **Sorun bildirimi:** Kelime, sorun türü ve not gider. Ad ya da kişisel bilgi gitmez.
+  1. **Sınıfa katılma (veli onayıyla):** Profil adı (takma ad olabilir) ve ilerleme bilgileri yalnızca o sınıfın öğretmenine gider. Veriler Supabase’in Hindistan’daki sunucularında saklanır. Neyin gittiği, nasıl silineceği ve haklarınız **KVKK Aydınlatma Metni**’nde (uygulamadaki Gizlilik sayfasından ulaşılır) yazılıdır. Öğretmen öğrenciyi panelinden silebilir; silme talebi için bmenderes@gmail.com.
+  2. **Sorun bildirimi:** Kelime, sorun türü ve not gider. Ad ya da kişisel bilgi gitmez.
 - **Mikrofon isteğe bağlıdır.** Konuşma tanıma cihazın ya da tarayıcının kendi ses servisiyle yapılır; Android/Chrome'da bu Google servisidir.
 - **Ses kayıtları** ("Sesimi kaydet" ve hikâye okuma) yalnızca bu cihazda, sayfanın belleğinde durur ve geçince silinir. Uygulama kayıtları hiçbir yere yüklemez. Hikâye kaydını isterseniz telefonun paylaş menüsüyle kendiniz paylaşabilirsiniz.
 - **Haftalık özet** yalnızca cihazdaki veriden hazırlanır ve hiçbir yere gönderilmez.
+- **Herkese açık sıralama kapatıldı** (2026-09-30).
 - Ayrıntılar için uygulamadaki **Gizlilik** sayfasına bakın: Aktapokus > menünün altı.
 
 ---
