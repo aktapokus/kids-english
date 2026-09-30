@@ -9,4 +9,8 @@ Runs in the browser and installs as an app (PWA). Works offline after the first 
 
 Status: early test version. It supports learning and does not replace a teacher.
 
-(c) Aktapokus. All rights reserved (character and app). Photos: Pixabay Content License; other drawings are our own.
+## License / Lisans
+
+Free for children, families, teachers and schools; it must not be sold by others.
+Code: PolyForm Noncommercial 1.0.0 · Content: CC BY-NC-SA 4.0 · Name, logo and character: all rights reserved.
+Details: [LICENSE.md](LICENSE.md) · Third-party photos and fonts: [NOTICE.md](NOTICE.md)
