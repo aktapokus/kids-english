@@ -4396,7 +4396,7 @@ function applyTeacherStart(a, categories) {
 const LESSON_DAILY_MAX = 2;
 // Istasyon -> sinif duzeyi (Ay = 2, Mars = 3; 2026-09-30). Diger istasyonlarin
 // ders plani henuz yok: orada "Bugunun dersi" gorunmez.
-const LESSON_GRADES = { moon: 2, mars: 3, jupiter: 4, neptune: 5 };
+const LESSON_GRADES = { moon: 2, mars: 3, jupiter: 4, neptune: 5, galaxy: 6 };
 function lessonGradeOf(cur) { return (cur && cur.sector && LESSON_GRADES[cur.sector.id]) || 0; }
 const LessonPlan = {
   _data: null, _cache: {},
