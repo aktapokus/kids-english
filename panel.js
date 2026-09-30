@@ -9175,24 +9175,46 @@ function normSpeech(t) {
   return x;
 }
 function _lev(a, b) {
-  if (Math.abs(a.length - b.length) > 2) return 9;
+  if (Math.abs(a.length - b.length) > 3) return 9;
   const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
   for (let j = 1; j <= b.length; j++) d[0][j] = j;
   for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
   return d[a.length][b.length];
 }
+// Ayni okunan kelimeler: motor "two" yerine "to", "eye" yerine "i" yazar.
+const SP_HOMO = [['two', 'to', 'too'], ['four', 'for'], ['eight', 'ate'], ['one', 'won'], ['eye', 'i', 'aye'], ['sea', 'see', 'c'],
+  ['red', 'read'], ['hi', 'high'], ['bye', 'by', 'buy'], ['right', 'write'], ['sun', 'son'], ['pear', 'pair'], ['flower', 'flour'],
+  ['meat', 'meet'], ['night', 'knight'], ['hour', 'our'], ['tea', 't'], ['bee', 'be', 'b'], ['you', 'u'], ['blue', 'blew'],
+  ['week', 'weak'], ['tail', 'tale'], ['road', 'rode'], ['hear', 'here'], ['whole', 'hole'], ['knows', 'nose'], ['no', 'know'], ['mail', 'male'], ['plane', 'plain'], ['wear', 'where']];
+function spHomo(w) { const g = SP_HOMO.find((x) => x.includes(w)); return g ? g[0] : w; }
+// Tanima gevsek: puan yok, amac cesaret. Turk cocuklarin aksani ve cocuk
+// sesi motoru zorluyor (2026-09-30: "tum kullanicilar sesimi anlamiyor").
 function speechMatches(heardList, target) {
   // "Afraid / Scared" gibi iki bicimli kartlarda ikisi de kabul
-  const targets = String(target || '').split(' / ').map(normSpeech).filter(Boolean);
+  const targets = String(target || '').split(' / ').map(normSpeech).filter(Boolean)
+    .map((t) => t.split(' ').map(spHomo).join(' '));
+  const tol = (len) => (len <= 3 ? 1 : len <= 6 ? 2 : 3);
   return heardList.some((h) => {
-    const n = ` ${normSpeech(h)} `;
-    if (targets.some((t) => n.includes(` ${t} `))) return true;
-    // Tanima motoru tek kelimede harf kaydirabiliyor ("study" -> "studdy",
-    // 2026-09-30 geri bildirimi): tek kelimelik hedefte, duyulan her kelime
-    // icin 4-6 harfte 1, 7+ harfte 2 harf farki kabul.
-    const words = n.trim().split(' ');
-    return targets.some((t) => !t.includes(' ') && t.length >= 4
-      && words.some((w) => _lev(w, t) <= (t.length >= 7 ? 2 : 1)));
+    const words = normSpeech(h).split(' ').filter(Boolean).map(spHomo);
+    const n = ` ${words.join(' ')} `;
+    return targets.some((t) => {
+      if (n.includes(` ${t} `)) return true;
+      const tw = t.split(' ');
+      if (tw.length === 1) {
+        if (words.join('') === t) return true; // "grand mother" = "grandmother"
+        // 3 harfte ilk harf ayni ve 1 fark; uzunlarda 2-3 harf farki
+        // ilk harf farkliysa tolerans bir azalir ("seven" != "eleven")
+        return words.some((w) => (w[0] === t[0] ? _lev(w, t) <= tol(t.length) : t.length > 3 && _lev(w, t) <= tol(t.length) - 1));
+      }
+      // Cok kelimeli hedef ("good morning"): bosluksuz karsilastir, ya da
+      // ayni uzunlukta ardisik kelime grubu
+      const tj = tw.join('');
+      for (let i = 0; i + tw.length <= words.length; i++) {
+        const seg = words.slice(i, i + tw.length).join('');
+        if (_lev(seg, tj) <= tol(tj.length)) return true;
+      }
+      return _lev(words.join(''), tj) <= tol(tj.length);
+    });
   });
 }
 
@@ -9343,10 +9365,19 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
   micBtn.onclick = () => {
     if (!recognition || recognizing) return;
     recStop(); // mikrofon ayni anda iki ise verilmez
+    // Aktapokus konusurken mikrofon kendi sesini duymasin
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     recognizing = true;
     micBtn.classList.add('ke-listening');
-    micBtn.textContent = L('🎙️ Dinliyorum...', '🎙️ Listening...');
+    micBtn.textContent = L('⏳ Hazırlanıyor...', '⏳ Getting ready...');
     feedbackEl.textContent = '';
+    // Cocuk dugmeye basar basmaz konusunca kelimenin basi kaciyordu:
+    // mikrofon gercekten acilinca "Simdi soyle!" deriz.
+    recognition.onaudiostart = () => {
+      if (handled) return;
+      micBtn.textContent = L('🎙️ Şimdi söyle!', '🎙️ Say it now!');
+      feedbackEl.textContent = L('Dinliyorum... 👂', 'Listening... 👂');
+    };
 
     const target = wordList[order[idx]].word.toLowerCase();
     let handled = false;
@@ -9412,8 +9443,10 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
 
     recognition.onresult = (e) => {
       const last = e.results[e.results.length - 1];
+      // Tum sonuclarin tum alternatifleri (bazi cihazlar kelimeyi ilk
+      // sonucta verip sonra bos sonuc ekliyor)
       const alts = [];
-      for (let k = 0; k < last.length; k++) if (last[k] && last[k].transcript) alts.push(last[k].transcript);
+      for (let r = e.results.length - 1; r >= 0; r--) for (let k = 0; k < e.results[r].length; k++) if (e.results[r][k] && e.results[r][k].transcript) alts.push(e.results[r][k].transcript);
       const heard = (alts[0] || '').toLowerCase().trim();
       if (heard) lastHeard = heard;
       const ok = speechMatches(alts, target);
@@ -9425,6 +9458,8 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
       else finishAttempt(false, null, errCode);
     };
     recognition.onerror = (e) => {
+      // Bazi Android cihazlarda en-GB yok: bir kez en-US ile yeniden dene
+      if (e.error === 'language-not-supported' && recognition.lang !== 'en-US') { recognition.lang = 'en-US'; if (tryRestart()) return; }
       if (e.error === 'no-speech' && !lastHeard && tryRestart()) return;
       finishWithLast(e.error === 'no-speech' ? null : e.error);
     };
@@ -10362,6 +10397,7 @@ function startConversationRound(host, container, episode, mascotEl, onFinished) 
       let rec;
       try { rec = new SR(); } catch (e) { return; }
       rec.lang = EN_LANG; rec.interimResults = false; rec.maxAlternatives = 3;
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       micBtn.disabled = true;
       micBtn.textContent = `🎙️ ${L('Dinliyorum…', 'Listening…')}`;
       container._keActiveRecognition = rec;
@@ -10369,11 +10405,12 @@ function startConversationRound(host, container, episode, mascotEl, onFinished) 
       rec.onresult = (e) => {
         const target = norm(turn.a);
         let best = 0;
+        // Kelime kelime gevsek eslestirme (aksan/cocuk sesi, 2026-09-30)
         for (let k = 0; k < e.results[0].length; k++) {
-          const heard = new Set(norm(e.results[0][k].transcript));
-          best = Math.max(best, target.filter((w) => heard.has(w)).length / target.length);
+          const tr = e.results[0][k].transcript;
+          best = Math.max(best, target.filter((w) => speechMatches([tr], w)).length / target.length);
         }
-        if (best >= 0.7) {
+        if (best >= 0.6) {
           // Kartlari dogru sirayla doldurup ayni "dogru" akisini calistir
           slotEls0().forEach((sl, i) => { sl.textContent = tokens[i]; sl.dataset.origIndex = String(i); sl.classList.add('ke-filled'); });
           checkBtn.disabled = false;
