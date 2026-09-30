@@ -4382,14 +4382,21 @@ function applyTeacherStart(a, categories) {
 // (Macera'da Ay istasyonundaki cocuk). Gunde en fazla 2 ders (kullanici karari);
 // kacirilan ders kaybolmaz, sirada bekler. Ilerleme profil basina.
 const LESSON_DAILY_MAX = 2;
+// Istasyon -> sinif duzeyi (Ay = 2, Mars = 3; 2026-09-30). Diger istasyonlarin
+// ders plani henuz yok: orada "Bugunun dersi" gorunmez.
+const LESSON_GRADES = { moon: 2, mars: 3 };
+function lessonGradeOf(cur) { return (cur && cur.sector && LESSON_GRADES[cur.sector.id]) || 0; }
 const LessonPlan = {
-  _data: null,
-  async load() {
-    if (this._data) return this._data;
-    try {
-      const r = await fetch(new URL('data/lessons.json', ASSET_BASE_URL).href);
-      if (r.ok) this._data = await r.json();
-    } catch (e) { /* ders verisi yoksa kart gorunmez */ }
+  _data: null, _cache: {},
+  async load(grade = 2) {
+    if (!this._cache[grade]) {
+      try {
+        const f = grade === 2 ? 'data/lessons.json' : `data/lessons_${grade}.json`;
+        const r = await fetch(new URL(f, ASSET_BASE_URL).href);
+        if (r.ok) this._cache[grade] = await r.json();
+      } catch (e) { /* ders verisi yoksa kart gorunmez */ }
+    }
+    this._data = this._cache[grade] || null;
     return this._data;
   },
   _key() { return 'ke_lesson_prog_v1_' + Profiles.active().id; },
@@ -4444,9 +4451,10 @@ async function mountLesson(host, container, api, toolId, categories) {
   const el = host.querySelector('#keLesson');
   if (!el) return;
   const st = Journey.state(categories); const cur = st.list[st.current];
-  if (!cur || cur.sector.id !== 'moon') return;
+  const grade = lessonGradeOf(cur);
+  if (!grade) return;
   const pid = Profiles.active().id;
-  const data = await LessonPlan.load();
+  const data = await LessonPlan.load(grade);
   if (!data || !el.isConnected || Profiles.active().id !== pid) return;
   // Sinifa bagli cocuk: sinifta islenip kendisinin yapmadigi ilk ders one
   // alinir (derse gelemeyen cocuk evde yakalar); yoksa kendi sirasi.
@@ -4488,8 +4496,8 @@ async function todayPlan(container, api, toolId, categories) {
     }
   }
   const st = Journey.state(categories); const cur = st.list[st.current];
-  if (cur && cur.sector.id === 'moon' && LessonPlan.todayCount() < LESSON_DAILY_MAX) {
-    const data = await LessonPlan.load();
+  if (lessonGradeOf(cur) && LessonPlan.todayCount() < LESSON_DAILY_MAX) {
+    const data = await LessonPlan.load(lessonGradeOf(cur));
     if (data) {
       const classDone = (cls.code && cls.lessonsDone) || {};
       const mine = LessonPlan.prog().done;

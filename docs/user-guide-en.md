@@ -317,7 +317,7 @@ I read every report and fix it. Reports like "this picture doesn't match this wo
 
 ### 5.10 Daily lesson plan and the smart board
 
-Day-by-day lessons following the Maarif curriculum (currently grade 2: 66 lessons, 2 a week). Designed so that a teacher **who is not an English specialist** can run the lesson: the board runs the lesson itself, Aktapokus says everything in English, and the teacher gets step-by-step notes in Turkish.
+Day-by-day lessons following the Maarif curriculum (currently grade 2: 66 lessons; grade 3: the first two themes, 20 lessons; 2 a week). Pick the grade with the **2. sınıf / 3. sınıf** buttons on the left of the teacher screen. In the app, "Today's lesson" opens grade 2 lessons for a child at the Moon station of the Adventure and grade 3 lessons at Mars. Designed so that a teacher **who is not an English specialist** can run the lesson: the board runs the lesson itself, Aktapokus says everything in English, and the teacher gets step-by-step notes in Turkish.
 
 - **Where to open it:** in the teacher panel, **📘 Günlük ders planı → Ders planını aç**, or the same card in the Parent Area on a device not linked to a class. No sign-in; works offline.
 - **Open the board:** If the smart board is connected as a second screen, the window opens there directly; otherwise drag it onto the board. If the projector **mirrors** the screen, the teacher page is projected too: press **⛶ Full screen** on the board, run the lesson with the board's own buttons, and print the **lesson card** for your notes. For two separate screens on Windows: **Win + P → Extend**.

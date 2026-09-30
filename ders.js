@@ -17,11 +17,24 @@ const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({ '&':
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
-async function loadData() {
-  const r = await fetch('data/lessons.json');
-  if (!r.ok) throw new Error('lessons.json ' + r.status);
-  return r.json();
+// Sinif duzeyi (2026-09-30: 3. sinif eklendi): ders kimliginden (g3-...),
+// ?grade= parametresinden ya da ogretmenin son seciminden.
+const GRADES = [2, 3];
+const GRADE_KEY = 'ke_ders_grade_v1';
+function currentGrade() {
+  const m = /^g(\d)-/.exec(query('id') || '');
+  let g = Number(query('grade') || (m && m[1]) || 0);
+  if (!g) { try { g = Number(localStorage.getItem(GRADE_KEY)) || 2; } catch (e) { g = 2; } }
+  return GRADES.includes(g) ? g : 2;
 }
+async function loadData() {
+  const g = currentGrade();
+  const file = g === 2 ? 'data/lessons.json' : `data/lessons_${g}.json`;
+  const r = await fetch(file);
+  if (!r.ok) throw new Error(file + ' ' + r.status);
+  const d = await r.json(); d.grade = d.grade || g; return d;
+}
+function themeLen(data, t) { return (data.theme_lessons && data.theme_lessons[t]) || 11; }
 function doneMap() { try { return JSON.parse(localStorage.getItem(DONE_KEY) || '{}'); } catch (e) { return {}; } }
 function markDone(id) {
   const m = doneMap(); m[id] = new Date().toISOString().slice(0, 10);
@@ -216,7 +229,7 @@ function mountBoard(data) {
   function titleScreen() {
     S.step = -1; post();
     app.innerHTML = `<div class="start">${mascot('mascot_wave')}<h1>${esc(lesson.title)}</h1>
-      <p>Tema ${lesson.theme} · Ders ${lesson.n} / 11</p><button id="bStart" class="go">▶ Start</button>
+      <p>Tema ${lesson.theme} · Ders ${lesson.n} / ${themeLen(data, lesson.theme)}</p><button id="bStart" class="go">▶ Start</button>
       <button id="bFs0" class="fsbtn big">⛶ Tam ekran</button>
       <p class="hint">Boşluk: duraklat · → sonraki · ← önceki · S: tekrar söyle</p></div>`;
     $('#bStart').onclick = () => go(0);
@@ -529,7 +542,7 @@ function mountTeacher(data) {
     const linked = Date.now() - lastSeen < 4000;
     const ans = st && st.lessonId === lesson.id && st.answer;
     app.innerHTML = `
-      <aside><h2>2. sınıf ders planı</h2>${listHtml()}</aside>
+      <aside><div class="gtabs">${GRADES.map((g) => `<button type="button" class="gtab${g === data.grade ? ' on' : ''}" data-grade="${g}">${g}. sınıf</button>`).join('')}</div><h2>${data.grade}. sınıf ders planı</h2>${listHtml()}</aside>
       <section>
         <div class="head"><div><div class="meta">Hafta ${lesson.week} · Ders ${lesson.index} / ${data.lessons.length} · ${esc(lesson.outcomes)}</div><h1>${esc(lesson.title)}</h1>
           <div class="target"><b>Hedef dil:</b> ${esc(lesson.target)} · <i>${esc(lesson.chunk)}</i></div></div>
@@ -545,6 +558,7 @@ function mountTeacher(data) {
         ${lesson.diff ? `<div class="diffbox"><b>🧩 Farklılaştırma</b><p><b>Destek:</b> ${esc(lesson.diff.support)}</p><p><b>Hızlı bitirenler:</b> ${esc(lesson.diff.extend)}</p></div>` : ''}
         <div class="done"><button id="tDone" class="pri">✅ İşlendi</button> <span>Ders bittiğinde basın. Öğrencilerin uygulamasında aynı ders "Bugünün dersi" olarak açılacak.</span></div>
       </section>`;
+    app.querySelectorAll('.gtab').forEach((b) => { b.onclick = () => { try { localStorage.setItem(GRADE_KEY, b.dataset.grade); } catch (e) { /* yok say */ } location.href = 'ders-ogretmen.html?grade=' + b.dataset.grade; }; });
     app.querySelectorAll('.li').forEach((b) => { b.onclick = () => { lesson = lessonById(data, b.dataset.id); history.replaceState(null, '', '?id=' + lesson.id); render(); }; });
     app.querySelectorAll('[data-c]').forEach((b) => { b.disabled = !linked; b.onclick = () => send(b.dataset.c); });
     app.querySelectorAll('[data-g]').forEach((b) => { b.onclick = () => send('goto', { step: Number(b.dataset.g) }); });
@@ -616,7 +630,7 @@ function mountCard(data) {
   const list = query('all') ? data.lessons : [lessonById(data, query('id') || nextLesson(data).id)];
   $('#card').innerHTML = list.map((lesson) => {
     const steps = buildSteps(data, lesson);
-    return `<article><div class="meta">2. sınıf · Hafta ${lesson.week} · Ders ${lesson.index} / ${data.lessons.length} · Tema ${lesson.theme}: ${esc(data.themes[lesson.theme].tr)} · ${esc(lesson.outcomes)}</div>
+    return `<article><div class="meta">${data.grade}. sınıf · Hafta ${lesson.week} · Ders ${lesson.index} / ${data.lessons.length} · Tema ${lesson.theme}: ${esc(data.themes[lesson.theme].tr)} · ${esc(lesson.outcomes)}</div>
       <h1>${esc(lesson.title)}</h1><p><b>Hedef dil:</b> ${esc(lesson.target)} — <i>${esc(lesson.chunk)}</i></p>
       <ol>${steps.map((s, i) => `<li><b>Adım ${i + 1}/${steps.length}: ${esc(s.name)} (${s.min} dk).</b> ${esc(teacherNote(s, lesson, true))}</li>`).join('')}</ol>
       ${lesson.cards.length && !lesson.review_only ? `<table><tr><th>Kelime</th><th>Türkçesi</th><th>Örnek cümle</th></tr>${lesson.cards.map((c) => `<tr><td>${esc(c.word)}</td><td>${esc(c.tr)}</td><td>${esc(c.sentence)}</td></tr>`).join('')}</table>` : ''}
