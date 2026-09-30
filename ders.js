@@ -19,7 +19,7 @@ const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) {
 
 // Sinif duzeyi (2026-09-30: 3. sinif eklendi): ders kimliginden (g3-...),
 // ?grade= parametresinden ya da ogretmenin son seciminden.
-const GRADES = [2, 3];
+const GRADES = [2, 3, 4];
 const GRADE_KEY = 'ke_ders_grade_v1';
 function currentGrade() {
   const m = /^g(\d)-/.exec(query('id') || '');
