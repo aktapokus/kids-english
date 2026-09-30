@@ -326,11 +326,13 @@ Maarif programına göre gün gün hazırlanmış dersler (şu an 2. sınıf, 66
 | Adım | Tahtada ne olur? |
 |---|---|
 | Isınma | Aktapokus Says (ayakta, dinle ve yap) |
+| Özel gün | Yalnızca o haftaya bayram denk gelirse: kart ve kutlama cümlesi ("Happy Republic Day!"), sınıf tekrar eder |
 | Günün sesi | Temanın harfi ve o sesle başlayan 3 resimli kelime |
 | Hatırla | Önceki dersin kelimeleri |
 | Yeni | Resim, kelime ve cümle; Aktapokus söyler, sınıf tekrar eder |
-| Oyun | Her derste değişir: Takım oyunu, Ne eksik?, Gizli resim, Dinle ve dokun, Farklı olanı bul |
+| Oyun | Her derste değişir: Takım oyunu, Ne eksik?, Gizli resim, Dinle ve dokun, Farklı olanı bul. Aktapokus oyunda temanın Maarif sosyal ifadelerini kullanır (Good luck!, It's your turn!, Well done!) |
 | Etkin öğrenme | Eşli/grup etkinliği, sayaçlı; yönergeyi Aktapokus söyler |
+| Ne öğrendim? | Yalnızca tema sonu dersinde: "I can…" cümleleri, başparmakla öz değerlendirme |
 | Kapanış | Bugünün kelimeleri; ev görevi |
 
 - **Öğretmen ekranı:** Her adımın Türkçe yönergesi, tahtadaki kelimenin Türkçesi (yalnızca sizde), takım puanı ve Geri / Başlat / Duraklat / Sonraki adım / Tekrar söylet düğmeleri. Düğmeler tahta **aynı bilgisayarda** açıkken çalışır.
