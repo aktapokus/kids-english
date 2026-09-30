@@ -326,7 +326,6 @@ Maarif programına göre gün gün hazırlanmış dersler (şu an 2. sınıf, 66
 | Adım | Tahtada ne olur? |
 |---|---|
 | Isınma | Aktapokus Says (ayakta, dinle ve yap) |
-| Özel gün | Yalnızca o haftaya bayram denk gelirse: kart ve kutlama cümlesi ("Happy Republic Day!"), sınıf tekrar eder |
 | Günün sesi | Temanın harfi ve o sesle başlayan 3 resimli kelime |
 | Hatırla | Önceki dersin kelimeleri |
 | Yeni | Resim, kelime ve cümle; Aktapokus söyler, sınıf tekrar eder |

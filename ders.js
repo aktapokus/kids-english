@@ -111,19 +111,11 @@ function stopSpeech() { if ('speechSynthesis' in window) speechSynthesis.cancel(
 
 // ---- adimlar ----
 const GAME_NAMES = { quiz: 'Takım oyunu', missing: 'Ne eksik?', reveal: 'Gizli resim', listen: 'Dinle ve dokun', odd: 'Farklı olanı bul' };
-// Ozel gun (2026-09-30): bugun, gunun 6 gun oncesiyle 1 gun sonrasi
-// arasindaysa (o haftanin dersi) kisa bir adim eklenir. ?date=YYYY-MM-DD dener.
-function specialDays(data) {
-  const q = query('date'); const now = q ? new Date(q + 'T12:00:00') : new Date();
-  return (data.special_days || []).filter((d) => d.dates.some((x) => { const diff = (new Date(x + 'T12:00:00') - now) / 864e5; return diff >= -1 && diff <= 6; }));
-}
 // Her adim: tur, dakika, tahtada ne olacagi, ogretmene Turkce not.
 function buildSteps(data, lesson) {
   const prev = data.lessons[lesson.index - 2];
   const steps = [];
   steps.push({ kind: 'warm', min: 4, name: 'Isınma' });
-  const sp = specialDays(data);
-  if (sp.length) steps.push({ kind: 'special', min: 3, name: 'Özel gün', items: sp });
   if (lesson.sound && lesson.sound.words && lesson.sound.words.length) steps.push({ kind: 'sound', min: 2, name: 'Günün sesi' });
   if (prev && prev.cards.length) steps.push({ kind: 'review', min: 3, name: 'Hatırla', items: prev.cards.slice(0, 6) });
   if (!lesson.review_only) steps.push({ kind: 'new', min: 6, name: 'Yeni', items: [...lesson.cards, ...lesson.phrases.map((p) => ({ phrase: true, word: p.en, tr: p.tr }))] });
@@ -157,7 +149,6 @@ function teacherNote(step, lesson, paper) {
     case 'listen': return 'Dinle ve dokun. Tahtada yazısız resimler var. Aktapokus bir kelime söyler; sırası gelen takımdan bir çocuk tahtaya gelip doğru resme dokunur. Puanı tahta verir.';
     case 'odd': return 'Farklı olanı bul. Dört resimden biri bu dersin konusuna uymuyor. Sırası gelen takım farklı olanı seçer. Doğru cevaptan sonra "neden?" diye Türkçe sorabilirsiniz.';
     case 'cando': return 'Tema sonu öz değerlendirme. Aktapokus "I can…" cümlelerini tek tek söyler; çocuklar yapabiliyorsa başparmağını yukarı, emin değilse yana kaldırır. Siz sınıfa bakıp basılı kontrol listesine not alın (Ders kartı sayfasının sonunda). Cümleler: ' + lesson.cando.map((c) => c.tr).join(' · ');
-    case 'special': return 'Bu hafta özel gün var: ' + step.items.map((d) => d.tr).join(', ') + '. Aktapokus kartı gösterip kutlama cümlesini söyler ("' + step.items.map((d) => d.greet).join('", "') + '"); sınıf koro hâlinde tekrar eder. İsterseniz Türkçe olarak bu günün neden kutlandığını bir iki cümleyle anlatın.';
     case 'review': return 'Dünkü dersin kelimeleri. Aktapokus söyler, sınıf tekrar eder. Resmi parmağınızla gösterin; sessiz kalan çocuğu gülümseyerek koroya katın.';
     case 'new': return 'Yeni kelimeler. Aktapokus her kelimeyi söyleyip sınıfa tekrar ettirecek, sonra örnek cümleyi okuyacak. Sizin İngilizce konuşmanız gerekmez.' + (paper ? ' Türkçeleri aşağıdaki tabloda.' : ' Türkçesi aşağıda yalnızca sizin için.');
     case 'quiz': return 'Takım yarışması. Sınıfı ikiye bölün. Sırası gelen takımdan bir çocuk cevabı söyler ya da tahtada dokunur. Tahta doğruyu gösterir ve puanı kendisi verir' + (paper ? '.' : '; gerekirse buradan düzeltin.');
@@ -221,7 +212,6 @@ function mountBoard(data) {
     try {
       if (st.kind === 'warm') await (lesson.warm.type === 'says' ? runSays(my) : runChorus(my, (data.lessons[lesson.index - 2] || lesson).cards.slice(0, 6), 'Warm-up'));
       else if (st.kind === 'review') await runChorus(my, st.items, 'Remember');
-      else if (st.kind === 'special') await runSpecial(my, st.items);
       else if (st.kind === 'new') await runChorus(my, st.items, 'New words', true);
       else if (st.kind === 'quiz') await runQuiz(my, st.items);
       else if (st.kind === 'sound') await runSound(my);
@@ -364,16 +354,6 @@ function mountBoard(data) {
   }
   function thumb(c) { return c.icon_type === 'emoji' ? `<span class="thumbemo">${esc(c.icon)}</span>` : `<img class="thumb" src="${esc(c.icon)}" alt="">`; }
 
-  async function runSpecial(my, days) {
-    for (const d of days) {
-      if (my !== token) return; await waitWhilePaused(my);
-      S.answer = { word: d.word, tr: d.tr }; post();
-      frame(`<div class="card">${pic(d)}<div class="word">${esc(d.greet)}</div><div class="sent" id="spSent"></div></div>`, 'Special day');
-      await speak(d.greet); await hold(600, my); if (my !== token) return;
-      await speak('Everybody, say: ' + d.greet); await hold(3200, my); if (my !== token) return;
-      const el = $('#spSent'); if (el) el.textContent = d.sentence; await speak(d.sentence); await hold(2000, my);
-    }
-  }
   async function runCando(my) {
     await speak('What can you do now? Show me your thumbs!');
     for (const c of lesson.cando) {
