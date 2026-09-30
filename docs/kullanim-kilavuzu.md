@@ -317,7 +317,7 @@ Bildirimleri tek tek okuyup düzeltiyorum. Özellikle "bu resim bu kelimeyle eş
 
 ### 5.10 Günlük ders planı ve akıllı tahta
 
-Maarif programına göre gün gün hazırlanmış dersler (şu an 2. sınıf: 66 ders; 3. sınıf: ilk iki tema, 20 ders; haftada 2). Öğretmen ekranının solundaki **2. sınıf / 3. sınıf** düğmeleriyle sınıf seçilir. Uygulamada "Bugünün dersi", Macera'da Ay istasyonundaki çocuğa 2. sınıf, Mars'takine 3. sınıf dersini açar. **İngilizce öğretmeni olmayan** bir öğretmen de dersi yürütebilsin diye tasarlandı: tahta dersi kendisi yürütür, İngilizce olan her şeyi Aktapokus söyler, öğretmene Türkçe yönerge düşer.
+Maarif programına göre gün gün hazırlanmış dersler (şu an 2. sınıf: 66 ders; 3. sınıf: 60 ders; haftada 2). Öğretmen ekranının solundaki **2. sınıf / 3. sınıf** düğmeleriyle sınıf seçilir. Uygulamada "Bugünün dersi", Macera'da Ay istasyonundaki çocuğa 2. sınıf, Mars'takine 3. sınıf dersini açar. **İngilizce öğretmeni olmayan** bir öğretmen de dersi yürütebilsin diye tasarlandı: tahta dersi kendisi yürütür, İngilizce olan her şeyi Aktapokus söyler, öğretmene Türkçe yönerge düşer.
 
 - **Nereden açılır?** Öğretmen panelinde **📘 Günlük ders planı → Ders planını aç**, ya da sınıfa bağlı olmayan cihazda Ebeveyn Alanı'ndaki aynı kart. Giriş gerekmez, internetsiz de açılır.
 - **Tahtayı aç:** Tahta görünümü açılır. Akıllı tahta bilgisayara ikinci ekran olarak bağlıysa pencere doğrudan orada açılır; değilse pencereyi tahtaya sürükleyin. Projektör ekranı **yansıtıyorsa** öğretmen sayfası da tahtaya yansır; o durumda tahtada **⛶ Tam ekran** deyip dersi tahtanın kendi düğmeleriyle yönetin ve notlar için **Ders kartı**nı yazdırın. İki ayrı ekran için Windows'ta **Win + P → Genişlet**.
