@@ -34,6 +34,8 @@ async function loadData() {
   if (!r.ok) throw new Error(file + ' ' + r.status);
   const d = await r.json(); d.grade = d.grade || g; return d;
 }
+// Yil basi (0) ve yil sonu (9) bolumleri tema degildir (2026-09-30)
+function themeLabel(data, t) { const th = data.themes[t] || {}; return (t === 0 || t === 9) ? th.tr : `Tema ${t}: ${th.tr}`; }
 function themeLen(data, t) { return (data.theme_lessons && data.theme_lessons[t]) || 11; }
 function doneMap() { try { return JSON.parse(localStorage.getItem(DONE_KEY) || '{}'); } catch (e) { return {}; } }
 function markDone(id) {
@@ -130,14 +132,17 @@ function buildSteps(data, lesson) {
   const steps = [];
   steps.push({ kind: 'warm', min: 4, name: 'Isınma' });
   if (lesson.sound && lesson.sound.words && lesson.sound.words.length) steps.push({ kind: 'sound', min: 2, name: 'Günün sesi' });
-  if (prev && prev.cards.length) steps.push({ kind: 'review', min: 3, name: 'Hatırla', items: prev.cards.slice(0, 6) });
-  if (!lesson.review_only) steps.push({ kind: 'new', min: 6, name: 'Yeni', items: [...lesson.cards, ...lesson.phrases.map((p) => ({ phrase: true, word: p.en, tr: p.tr }))] });
+  if (prev && prev.cards.length && !['revision', 'assess', 'school'].includes(lesson.kind)) steps.push({ kind: 'review', min: 3, name: 'Hatırla', items: prev.cards.slice(0, 6) });
+  // Tekrar / degerlendirme / okul temelli derslerde kartlar yeni degil (2026-09-30)
+  const isReview = ['revision', 'assess', 'school'].includes(lesson.kind);
+  if (isReview) steps.push({ kind: 'review', min: 6, name: 'Tekrar', items: [...lesson.cards, ...lesson.phrases.map((p) => ({ phrase: true, word: p.en, tr: p.tr }))] });
+  else if (!lesson.review_only) steps.push({ kind: 'new', min: 6, name: 'Yeni', items: [...lesson.cards, ...lesson.phrases.map((p) => ({ phrase: true, word: p.en, tr: p.tr }))] });
   else steps.push({ kind: 'new', min: 6, name: 'Kalıplar', items: lesson.phrases.map((p) => ({ phrase: true, word: p.en, tr: p.tr })) });
   // Donusumlu oyun (2026-09-30): her derste ayni takim sorusu tekrar
   // etmesin; ders sirasina gore bes oyun doner, kart yetmezse takim oyunu.
   const cards = (lesson.game_cards || lesson.cards).filter((c) => c.icon);
   const GAMES = ['quiz', 'missing', 'reveal', 'listen', 'odd'];
-  let game = GAMES[(lesson.index - 1) % GAMES.length];
+  let game = lesson.kind === 'assess' ? 'quiz' : GAMES[(lesson.index - 1) % GAMES.length];
   if ((game === 'missing' || game === 'odd' || game === 'listen') && cards.length < 4) game = 'quiz';
   if (cards.length >= 3) {
     const st = { kind: game, min: 7, name: GAME_NAMES[game], items: cards };
@@ -162,7 +167,8 @@ function teacherNote(step, lesson, paper) {
     case 'listen': return 'Dinle ve dokun. Tahtada yazısız resimler var. Aktapokus bir kelime söyler; sırası gelen takımdan bir çocuk tahtaya gelip doğru resme dokunur. Puanı tahta verir.';
     case 'odd': return 'Farklı olanı bul. Dört resimden biri bu dersin konusuna uymuyor. Sırası gelen takım farklı olanı seçer. Doğru cevaptan sonra "neden?" diye Türkçe sorabilirsiniz.';
     case 'cando': return 'Tema sonu öz değerlendirme. Aktapokus "I can…" cümlelerini tek tek söyler; çocuklar yapabiliyorsa başparmağını yukarı, emin değilse yana kaldırır. Siz sınıfa bakıp basılı kontrol listesine not alın (Ders kartı sayfasının sonunda). Cümleler: ' + lesson.cando.map((c) => c.tr).join(' · ');
-    case 'review': return 'Dünkü dersin kelimeleri. Aktapokus söyler, sınıf tekrar eder. Resmi parmağınızla gösterin; sessiz kalan çocuğu gülümseyerek koroya katın.';
+    case 'review': if (step.name === 'Tekrar') return 'Tekrar kelimeleri: Aktapokus söyler, sınıf tekrar eder. Hatırlanmayan kelimeleri not alın; oyun adımında onlara dönün.';
+      return 'Dünkü dersin kelimeleri. Aktapokus söyler, sınıf tekrar eder. Resmi parmağınızla gösterin; sessiz kalan çocuğu gülümseyerek koroya katın.';
     case 'new': return 'Yeni kelimeler. Aktapokus her kelimeyi söyleyip sınıfa tekrar ettirecek, sonra örnek cümleyi okuyacak. Sizin İngilizce konuşmanız gerekmez.' + (paper ? ' Türkçeleri aşağıdaki tabloda.' : ' Türkçesi aşağıda yalnızca sizin için.');
     case 'quiz': return 'Takım yarışması. Sınıfı ikiye bölün. Sırası gelen takımdan bir çocuk cevabı söyler ya da tahtada dokunur. Tahta doğruyu gösterir ve puanı kendisi verir' + (paper ? '.' : '; gerekirse buradan düzeltin.');
     case 'active': return lesson.active.tr.replace(/[.!]?$/, '.') + ' Tahtada ' + lesson.active.minutes + ' dakikalık sayaç var; bitince Aktapokus "Time\'s up!" der.';
@@ -229,7 +235,7 @@ function mountBoard(data) {
   function titleScreen() {
     S.step = -1; post();
     app.innerHTML = `<div class="start">${mascot('mascot_wave')}<h1>${esc(lesson.title)}</h1>
-      <p>Tema ${lesson.theme} · Ders ${lesson.n} / ${themeLen(data, lesson.theme)}</p><button id="bStart" class="go">▶ Start</button>
+      <p>${esc(themeLabel(data, lesson.theme))} · Ders ${lesson.n} / ${themeLen(data, lesson.theme)}</p><button id="bStart" class="go">▶ Start</button>
       <button id="bFs0" class="fsbtn big">⛶ Tam ekran</button>
       <p class="hint">Boşluk: duraklat · → sonraki · ← önceki · S: tekrar söyle</p></div>`;
     $('#bStart').onclick = () => go(0);
@@ -529,9 +535,9 @@ function mountTeacher(data) {
 
   function listHtml() {
     const cls = ClassSync.selected();
-    const m = Object.assign({}, doneMap(), cls != null ? ClassSync.doneFor(cls) : {}); let theme = 0;
+    const m = Object.assign({}, doneMap(), cls != null ? ClassSync.doneFor(cls) : {}); let theme = -1;
     return data.lessons.map((l) => {
-      const head = l.theme !== theme ? `<h3>Tema ${l.theme}: ${esc(data.themes[l.theme].name)} · ${esc(data.themes[l.theme].tr)}</h3>` : '';
+      const head = l.theme !== theme ? `<h3>${esc(themeLabel(data, l.theme))} · ${esc(data.themes[l.theme].name)}</h3>` : '';
       theme = l.theme;
       return head + `<button class="li${l.id === lesson.id ? ' cur' : ''}" data-id="${l.id}"><span>${l.index}.</span> ${esc(l.title)} <small>Hafta ${l.week}</small>${m[l.id] ? ' <em>✓ ' + esc(m[l.id]) + '</em>' : ''}</button>`;
     }).join('');
@@ -630,7 +636,7 @@ function mountCard(data) {
   const list = query('all') ? data.lessons : [lessonById(data, query('id') || nextLesson(data).id)];
   $('#card').innerHTML = list.map((lesson) => {
     const steps = buildSteps(data, lesson);
-    return `<article><div class="meta">${data.grade}. sınıf · Hafta ${lesson.week} · Ders ${lesson.index} / ${data.lessons.length} · Tema ${lesson.theme}: ${esc(data.themes[lesson.theme].tr)} · ${esc(lesson.outcomes)}</div>
+    return `<article><div class="meta">${data.grade}. sınıf · Hafta ${lesson.week} · Ders ${lesson.index} / ${data.lessons.length} · ${esc(themeLabel(data, lesson.theme))} · ${esc(lesson.outcomes)}</div>
       <h1>${esc(lesson.title)}</h1><p><b>Hedef dil:</b> ${esc(lesson.target)} — <i>${esc(lesson.chunk)}</i></p>
       <ol>${steps.map((s, i) => `<li><b>Adım ${i + 1}/${steps.length}: ${esc(s.name)} (${s.min} dk).</b> ${esc(teacherNote(s, lesson, true))}</li>`).join('')}</ol>
       ${lesson.cards.length && !lesson.review_only ? `<table><tr><th>Kelime</th><th>Türkçesi</th><th>Örnek cümle</th></tr>${lesson.cards.map((c) => `<tr><td>${esc(c.word)}</td><td>${esc(c.tr)}</td><td>${esc(c.sentence)}</td></tr>`).join('')}</table>` : ''}

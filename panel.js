@@ -4419,7 +4419,8 @@ const LessonPlan = {
     idbPut(this._key(), d);
   },
   todayCount() { const t = dayStr(Date.now()); return Object.values(this.prog().done).filter((x) => x === t).length; },
-  next(data) { const d = this.prog().done; return data.lessons.find((l) => !d[l.id]) || null; },
+  // Tanisma ve okul temelli dersler sinif ici etkinliktir; evde atlanir.
+  next(data) { const d = this.prog().done; return data.lessons.find((l) => !d[l.id] && l.kind !== 'orient' && l.kind !== 'school') || null; },
 };
 // Ders bitince Macera'ya da islenir (kullanici karari 2026-09-29): bitirilen
 // derslerin kelimeleri bir bolumun TUM kelimelerini kapsiyorsa o bolum
@@ -4473,7 +4474,7 @@ async function mountLesson(host, container, api, toolId, categories) {
   const classDone = Classroom.get().code ? await Classroom.fetchClassLessons() : {};
   if (!el.isConnected || Profiles.active().id !== pid) return;
   const mine = LessonPlan.prog().done;
-  const catchUp = data.lessons.find((l) => classDone[l.id] && !mine[l.id]);
+  const catchUp = data.lessons.find((l) => classDone[l.id] && !mine[l.id] && l.kind !== 'orient' && l.kind !== 'school');
   const nx = catchUp || LessonPlan.next(data);
   const th = nx && data.themes[nx.theme];
   const full = LessonPlan.todayCount() >= LESSON_DAILY_MAX;
@@ -4513,7 +4514,7 @@ async function todayPlan(container, api, toolId, categories) {
     if (data) {
       const classDone = (cls.code && cls.lessonsDone) || {};
       const mine = LessonPlan.prog().done;
-      const nx = data.lessons.find((l) => classDone[l.id] && !mine[l.id]) || LessonPlan.next(data);
+      const nx = data.lessons.find((l) => classDone[l.id] && !mine[l.id] && l.kind !== 'orient' && l.kind !== 'school') || LessonPlan.next(data);
       if (nx) return { icon: '📘', label: L('Bugünün dersi', "Today's lesson"), sub: nx.title, run: () => startLesson(container, api, toolId, categories, nx) };
     }
   }
