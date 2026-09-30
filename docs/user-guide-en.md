@@ -81,7 +81,7 @@ After it has been opened once with internet, the app **works offline**. To make 
 | Item | What it does |
 |---|---|
 | **⭐ What do I do today? → Start** | The first place to look. Opens, in order: the teacher's task, today's lesson (grade 2, following the national curriculum; at most 2 lessons a day) or the next step in the Adventure. |
-| **🚀 Space Adventure → Continue** | The main path, by grade. Topics open in order (see 3.2). Words finished in daily lessons also count in the Adventure. |
+| **🚀 Adventure row** | Right under the Start button: the station you are heading to, planets passed and a progress bar. The **🗺️ Adventure** button opens the map. The Adventure is the main path, by grade; topics open in order (see 3.2). Words finished in daily lessons also count in the Adventure. |
 | **⭐ Word of the Day** | One word a day, with its picture, meaning and sentence. Tap to hear it; mark it with "I learned it ✓". |
 | **🎯 Weekly task** | Appears when the teacher has set a task (see 5.5). |
 | **🔁 Review** | Words the child got wrong come back here on later days. |

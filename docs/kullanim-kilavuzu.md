@@ -81,7 +81,7 @@ Uygulama internetle bir kez açıldıktan sonra **internetsiz çalışır**. Bun
 | Öğe | Ne işe yarar? |
 |---|---|
 | **⭐ Bugün ne yapacağım? → Başla** | Çocuğun ilk bakacağı yer. Sırayla öğretmenin görevini, bugünün dersini (2. sınıf, Maarif programına göre; günde en fazla 2 ders) ya da Macera'da kaldığı yeri açar. |
-| **🚀 Uzay Macerası → Devam et** | Sınıf düzeyine göre ilerleyen ana yol. Konular sırayla açılır (bkz. 3.2). Günlük derste bitirilen kelimeler Macera'da da sayılır. |
+| **🚀 Macera satırı** | Başla düğmesinin hemen altında: hangi istasyona gidildiği, kaç gezegen geçildiği ve ilerleme çubuğu. **🗺️ Macera** düğmesi haritayı açar. Macera sınıf düzeyine göre ilerleyen ana yoldur; konular sırayla açılır (bkz. 3.2). Günlük derste bitirilen kelimeler Macera'da da sayılır. |
 | **⭐ Günün Kelimesi** | Her gün bir kelime: resmi, anlamı ve cümlesiyle. Dokununca okunur. "Öğrendim ✓" ile işaretlenir. |
 | **🎯 Haftanın görevi** | Öğretmen görev verdiyse görünür (bkz. 5.5). |
 | **🔁 Tekrar** | Yanlış yaptığı kelimeler sonraki günlerde burada hatırlatılır. |

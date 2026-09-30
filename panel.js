@@ -2603,6 +2603,14 @@ ${FONT_FACES}
   .ke-jhome-kicker{ font-size:11.5px; font-weight:800; opacity:.85; letter-spacing:.02em; }
   .ke-jhome-title{ font-family:'Fredoka','Baloo 2',sans-serif; font-size:21px; font-weight:700; line-height:1.15; }
   .ke-jhome-sub{ font-size:12.5px; font-weight:700; opacity:.9; }
+  .ke-today-box{ width:100%; max-width:560px; margin:0 auto 14px; display:flex; flex-direction:column; gap:8px; }
+  .ke-today-box .ke-today{ margin:0; }
+  .ke-jmini{ background:linear-gradient(135deg,#3B2A8C,#6A2FA0); color:#fff; border-radius:16px; padding:10px 12px 8px; }
+  .ke-jmini-row{ display:flex; align-items:center; gap:10px; }
+  .ke-jmini-t{ flex:1; min-width:0; font-size:14px; font-weight:800; line-height:1.3; }
+  .ke-jmini-t small{ font-weight:700; opacity:.8; }
+  .ke-shell .ke-jmini-map{ flex:none; font:800 14px 'Fredoka','Baloo 2',sans-serif; padding:8px 12px; min-height:44px; background:rgba(255,255,255,.16); color:#fff; border:2px solid rgba(255,255,255,.45); border-radius:14px; cursor:pointer; }
+  .ke-jmini .ke-jhome-bar{ margin:8px 0 2px; }
   .ke-jhome-bar{ height:10px; border-radius:99px; background:rgba(255,255,255,.2); overflow:hidden; margin:12px 0 3px; }
   .ke-jhome-bar i{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#FFD84D,#FF9A1F); }
   .ke-jhome-meta{ font-size:11.5px; font-weight:800; opacity:.85; }
@@ -4763,8 +4771,10 @@ function showSectionMenu(container, api, toolId, categories) {
       </button>
       <button type="button" class="ke-who-chip" id="keWhoChip" aria-label="${L('Çocuk değiştir', 'Switch child')}">👤 ${escapeProfileText(Profiles.active().name || L('Ben', 'Me'))} <span aria-hidden="true">⇄</span></button>
     </div>
-    <button type="button" class="ke-today" id="keToday" hidden></button>
-    ${journeyHomeCardHTML(categories)}
+    <div class="ke-today-box">
+      <button type="button" class="ke-today" id="keToday" hidden></button>
+      ${journeyMiniHTML(categories)}
+    </div>
     <div class="ke-simple-row">
       <button type="button" class="ke-simple-btn" id="keGoLib">📚 ${L('Kütüphane', 'Library')}</button>
       ${dueTotal ? `<button type="button" class="ke-simple-btn" id="keDueChip">🔁 ${L(`Tekrar (${dueTotal})`, `Review (${dueTotal})`)}</button>` : ''}
@@ -5071,30 +5081,24 @@ function planetName(p) {
   return name;
 }
 
-// Ana ekrandaki yolculuk karti (Bugunun gorevi) - bkz. showSectionMenu
-function journeyHomeCardHTML(categories) {
+// Ana ekranda tek buyuk dugme (2026-09-30, kullanici: "iki kart kafa
+// karistiriyor, ilki zaten kaldigim yerden devam gibi"): "Bugun ne
+// yapacagim?" karti baslatir; yol altinda ince bir satir olarak gorunur
+// kalir (istasyon + ilerleme cubugu + Macera haritasi).
+function journeyMiniHTML(categories) {
   const st = Journey.state(categories);
   const p = st.list[st.current];
-  if (!p) return '';
-  const sec = p.sector;
-  const pct = Math.round(st.cleared / st.list.length * 100);
-  const nextEp = Progress.nextIncompleteEpisode(p.id, p.cat.episode_count);
+  const pct = Math.round(st.cleared / Math.max(1, st.list.length) * 100);
+  const sec = p ? p.sector : null;
+  const where = !p || p.full ? L('Tüm gezegenleri gezdin! 🎉', 'You visited every planet! 🎉')
+    : L(`${sec.emoji} ${sec.tr} yolunda`, `On the way to ${sec.emoji} ${sec.en}`);
   return `
-    <div class="ke-jhome">
-      <div class="ke-jhome-top">
-        <span class="ke-jhome-planet" style="--pc:${planetTheme(p.id).c}">${planetMotif(p.id)}</span>
-        <div class="ke-jhome-text">
-          <div class="ke-jhome-kicker">🚀 ${L('Uzay Macerası', 'Space Adventure')} · ${sec.level}</div>
-          <div class="ke-jhome-title">${planetName(p)}</div>
-          <div class="ke-jhome-sub">${p.full ? L('Tüm gezegenleri gezdin! 🎉', 'You visited every planet! 🎉') : L(`Bölüm ${nextEp + 1} / ${p.cat.episode_count} · Sıradaki durak: ${sec.emoji} ${sec.tr}`, `Episode ${nextEp + 1} / ${p.cat.episode_count} · Next stop: ${sec.emoji} ${sec.en}`)}</div>
-        </div>
+    <div class="ke-jmini">
+      <div class="ke-jmini-row">
+        <span class="ke-jmini-t">🚀 ${where} <small>· ${L(`${st.cleared}/${st.list.length} gezegen`, `${st.cleared}/${st.list.length} planets`)}</small></span>
+        <button type="button" class="ke-jmini-map" id="keJourneyMap">🗺️ ${L('Macera', 'Adventure')}</button>
       </div>
       <div class="ke-jhome-bar" aria-label="${pct}%"><i style="width:${Math.max(3, pct)}%"></i></div>
-      <div class="ke-jhome-meta">${L(`${st.cleared}/${st.list.length} gezegen`, `${st.cleared}/${st.list.length} planets`)}</div>
-      <div class="ke-jhome-actions">
-        <button type="button" class="ke-btn-primary ke-jhome-go" id="keJourneyGo">▶ ${L('Devam et', 'Continue')}</button>
-        <button type="button" class="ke-btn-secondary ke-jhome-map" id="keJourneyMap">🚀 ${L('Macera', 'Adventure')}</button>
-      </div>
     </div>`;
 }
 function wireJourneyHomeCard(host, container, api, toolId, categories) {
