@@ -335,7 +335,7 @@ Maarif programına göre gün gün hazırlanmış dersler (şu an 2. sınıf, 66
 | Kapanış | Bugünün kelimeleri; ev görevi |
 
 - **Öğretmen ekranı:** Her adımın Türkçe yönergesi, tahtadaki kelimenin Türkçesi (yalnızca sizde), takım puanı ve Geri / Başlat / Duraklat / Sonraki adım / Tekrar söylet düğmeleri. Düğmeler tahta **aynı bilgisayarda** açıkken çalışır.
-- **Tahtanın kendi kısayolları:** boşluk = duraklat, → = sonraki adım, ← = önceki, S = tekrar söylet.
+- **Tahtanın kendi kısayolları:** boşluk = duraklat, → = sonraki kart (son kartta sonraki adım), ← = önceki kart, S = tekrar söylet.
 - **İşlendi:** Ders bitince basın. Öğretmen paneline aynı bilgisayarda giriş yaptıysanız sınıfınızı seçin; ders sınıfa kaydedilir ve öğrencilerin uygulamasında aynı ders "Bugünün dersi" olarak öne gelir (derse gelemeyen çocuk evde yakalar). Sınıf seçilmezse kayıt yalnızca o bilgisayarda kalır.
 - **Basılı ders kartı:** Her adımın Türkçe yönergesi, kelimeler ve Türkçeleri; A4.
 - Resimli, adım adım anlatım: https://aktapokus.github.io/kids-english/rehber.html

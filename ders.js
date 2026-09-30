@@ -165,6 +165,26 @@ function mountBoard(data) {
   const bc = 'BroadcastChannel' in window ? new BroadcastChannel(CH) : null;
   const S = { lessonId: lesson.id, step: -1, item: 0, paused: false, scores: { A: 0, B: 0 }, turn: 'A', timerLeft: 0, answer: null, ended: false };
   let token = 0; // her adim degisiminde artar; eski dongu kendini durdurur
+  // Kart duzeyinde ileri/geri (2026-09-30: "ileri geri tum bolumu atliyor,
+  // bir onceki slayta donemiyorum"). Adimin icinde kart varsa once kartlar
+  // arasinda gezer, uca gelince adim degisir.
+  let nav = 0, cur = null;
+  function stepNav(d) {
+    if (S.step >= 0 && cur && (d > 0 ? cur.k < cur.n - 1 : cur.k > 0)) { nav = d; stopSpeech(); return; }
+    go(S.step + d);
+  }
+  const say = (t) => (nav ? Promise.resolve() : speak(t));
+  async function eachItem(n, my, body) {
+    let k = 0;
+    while (k < n && my === token) {
+      cur = { k, n }; nav = 0; S.item = k; post();
+      await waitWhilePaused(my);
+      await body(k);
+      if (my !== token) return;
+      k = nav < 0 ? Math.max(0, k - 1) : k + 1;
+    }
+    nav = 0; cur = null;
+  }
   const app = $('#board');
 
   function post() { if (bc) bc.postMessage({ type: 'state', state: S, stepName: steps[S.step] && steps[S.step].name }); }
@@ -174,7 +194,7 @@ function mountBoard(data) {
       <main>${label ? `<div class="lbl">${esc(label)}</div>` : ''}${inner}</main>
       <footer><button id="bPrev" aria-label="Geri">◀</button><button id="bPause" aria-label="Duraklat">${S.paused ? '▶' : '⏸'}</button><button id="bNext" aria-label="Devam">▶▶</button></footer>`;
     $('#bFs').onclick = toggleFs;
-    $('#bPrev').onclick = () => go(S.step - 1); $('#bNext').onclick = () => go(S.step + 1); $('#bPause').onclick = togglePause;
+    $('#bPrev').onclick = () => stepNav(-1); $('#bNext').onclick = () => stepNav(1); $('#bPause').onclick = togglePause;
     renderTimer();
   }
   function renderTimer() { const t = $('#bTimer'); if (t) t.textContent = S.timerLeft > 0 ? `${Math.floor(S.timerLeft / 60)}:${String(S.timerLeft % 60).padStart(2, '0')}` : ''; }
@@ -191,7 +211,7 @@ function mountBoard(data) {
   }
   function toggleFs() { const d = document.documentElement; if (document.fullscreenElement) document.exitFullscreen(); else if (d.requestFullscreen) d.requestFullscreen().catch(() => {}); }
   async function waitWhilePaused(my) { while (S.paused && my === token) await sleep(200); }
-  async function hold(ms, my) { const end = Date.now() + ms; while (Date.now() < end && my === token) { await waitWhilePaused(my); await sleep(100); } }
+  async function hold(ms, my) { const end = Date.now() + ms; while (Date.now() < end && my === token && !nav) { await waitWhilePaused(my); await sleep(100); } }
 
   function titleScreen() {
     S.step = -1; post();
@@ -204,7 +224,7 @@ function mountBoard(data) {
   }
 
   async function go(i) {
-    stopSpeech(); token++;
+    stopSpeech(); token++; nav = 0; cur = null;
     if (i < 0) { titleScreen(); return; }
     if (i >= steps.length) { endScreen(); return; }
     S.step = i; S.item = 0; S.paused = false; S.answer = null; S.timerLeft = 0; post();
@@ -245,8 +265,8 @@ function mountBoard(data) {
   async function runSays(my) {
     const cmds = shuffle(data.says).slice(0, 8);
     frame(`<div class="says">${mascot('mascot_point')}<div class="saytxt" id="sTxt">Listen and do!</div><div class="emo big" id="sEmo"></div><div class="sayres" id="sRes"></div></div>`, 'Aktapokus Says');
-    await speak("Let's play Aktapokus Says! Listen and do!"); await hold(800, my);
-    for (let k = 0; k < cmds.length && my === token; k++) {
+    await say("Let's play Aktapokus Says! Listen and do!"); await hold(800, my);
+    await eachItem(cmds.length, my, async (k) => {
       await waitWhilePaused(my);
       const [cmd, emo] = cmds[k]; const says = k === 0 || Math.random() < 0.7;
       S.item = k; S.answer = { says, cmd }; post();
@@ -256,34 +276,34 @@ function mountBoard(data) {
       // Telefonda ses gec bitse/hic cikmasa da beklemez (2026-09-30).
       txt.textContent = cmd.charAt(0).toUpperCase() + cmd.slice(1) + '!'; em.textContent = emo;
       res.textContent = '👂 Did you hear "Aktapokus says"?'; res.className = 'sayres';
-      await Promise.race([speak((says ? 'Aktapokus says: ' : '') + cmd + '!'), sleep(4000)]);
+      await Promise.race([say((says ? 'Aktapokus says: ' : '') + cmd + '!'), sleep(4000)]);
       await hold(2500, my); if (my !== token) return;
       res.textContent = says ? '✅ Aktapokus says: ' + cmd + '! Do it!' : '🙅 No "Aktapokus says": don\'t move!';
       res.className = 'sayres ' + (says ? 'ok' : 'no');
       await hold(2400, my);
-    }
-    await speak('Well done! Sit down, please.');
+    });
+    if (my === token) await say('Well done! Sit down, please.');
   }
 
   async function runChorus(my, items, label, withSentence) {
     if (!items.length) return;
-    for (let k = 0; k < items.length && my === token; k++) {
+    await eachItem(items.length, my, async (k) => {
       await waitWhilePaused(my);
       const c = items[k]; S.item = k; S.answer = { word: c.alt ? c.word + ' / ' + c.alt : c.word, tr: c.tr }; post();
       frame(`<div class="card">${pic(c)}<div class="word">${esc(c.word)}${c.alt ? ` <span class="alt">· ${esc(c.alt)}</span>` : ''}</div>${withSentence && c.sentence ? `<div class="sent" id="cSent"></div>` : ''}<div class="cnt">${k + 1} / ${items.length}</div></div>`, label);
-      await speak(c.word); await hold(500, my); if (my !== token) return;
-      await speak('Everybody, say: ' + c.word); await hold(3000, my); if (my !== token) return;
-      if (c.alt) { await speak('You can also say: ' + c.alt + '!'); await hold(2200, my); if (my !== token) return; }
-      if (withSentence && c.sentence) { const el = $('#cSent'); if (el) el.textContent = c.sentence; await speak(c.sentence); await hold(1500, my); }
-    }
+      await say(c.word); await hold(500, my); if (my !== token) return;
+      await say('Everybody, say: ' + c.word); await hold(3000, my); if (my !== token) return;
+      if (c.alt) { await say('You can also say: ' + c.alt + '!'); await hold(2200, my); if (my !== token) return; }
+      if (withSentence && c.sentence) { const el = $('#cSent'); if (el) el.textContent = c.sentence; await say(c.sentence); await hold(1500, my); }
+    });
   }
 
   async function runQuiz(my, pool) {
     const cards = pool.filter((c) => !c.phrase);
     if (cards.length < 3) return;
     const qs = shuffle(cards).slice(0, Math.min(8, cards.length));
-    await speak(soc('start') + ' Team game! Team A and Team B.');
-    for (let k = 0; k < qs.length && my === token; k++) {
+    await say(soc('start') + ' Team game! Team A and Team B.');
+    await eachItem(qs.length, my, async (k) => {
       await waitWhilePaused(my);
       const c = qs[k]; const opts = shuffle([c, ...shuffle(cards.filter((x) => x.word !== c.word)).slice(0, 2)]);
       S.item = k; S.answer = { word: c.word, tr: c.tr }; post();
@@ -296,27 +316,28 @@ function mountBoard(data) {
           if (solved) return;
           if (w === c.word) {
             solved = true; S.scores[S.turn]++; btn.classList.add('ok'); post(); refreshTeams();
-            await speak(soc('good') + ' ' + c.word + '!'); resolve();
+            await say(soc('good') + ' ' + c.word + '!'); resolve();
           } else {
             btn.classList.add('bad'); btn.disabled = true; tries++;
             S.turn = S.turn === 'A' ? 'B' : 'A'; post(); refreshTeams();
-            if (tries < 2) await speak(soc('turn'));
-            if (tries >= 2) { solved = true; const okb = [...document.querySelectorAll('.opt')].find((b) => b.dataset.w === c.word); if (okb) okb.classList.add('ok'); await speak('It is ' + c.word + '.'); resolve(); }
+            if (tries < 2) await say(soc('turn'));
+            if (tries >= 2) { solved = true; const okb = [...document.querySelectorAll('.opt')].find((b) => b.dataset.w === c.word); if (okb) okb.classList.add('ok'); await say('It is ' + c.word + '.'); resolve(); }
           }
         };
         document.querySelectorAll('.opt').forEach((b) => { b.onclick = () => pick(b.dataset.w, b); });
         board.quizKey = (n) => { const b = document.querySelectorAll('.opt')[n - 1]; if (b && !b.disabled) pick(b.dataset.w, b); };
         board.quizPick = (w) => { const b = [...document.querySelectorAll('.opt')].find((x) => x.dataset.w === w); if (b) pick(w, b); };
       });
-      await speak('What is it?');
-      await Promise.race([answered, (async () => { while (!solved && my === token) await sleep(150); })()]);
+      await say('What is it?');
+      await Promise.race([answered, (async () => { while (!solved && my === token && !nav) await sleep(150); })()]);
       board.quizKey = null; board.quizPick = null;
       if (my !== token) return;
       S.turn = S.turn === 'A' ? 'B' : 'A'; post();
       await hold(1500, my);
-    }
+    });
+    if (my !== token) return;
     frame(`<div class="start">${mascot('mascot_celebrate')}<h1>🔴 A: ${S.scores.A} · 🔵 B: ${S.scores.B}</h1></div>`, 'Well done!');
-    await speak(soc('end')); await hold(2500, my);
+    await say(soc('end')); await hold(2500, my);
   }
 
   // Ortak takim sorusu: soru alanini ciz, secenekleri goster, dogru/yanlis ve
@@ -331,73 +352,74 @@ function mountBoard(data) {
         if (solved || my !== token) return;
         if (w === correct) {
           solved = true; S.scores[S.turn]++; btn.classList.add('ok'); post(); refreshTeams();
-          await speak(soc('good') + ' ' + correct + '!'); resolve(true);
+          await say(soc('good') + ' ' + correct + '!'); resolve(true);
         } else {
           btn.classList.add('bad'); btn.disabled = true; tries++;
           S.turn = S.turn === 'A' ? 'B' : 'A'; post(); refreshTeams();
           const l = document.querySelector('.lbl'); if (l) l.textContent = label + ' · Team ' + S.turn;
-          if (tries >= 2) { solved = true; const okb = [...document.querySelectorAll('.opt')].find((b) => b.dataset.w === correct); if (okb) okb.classList.add('ok'); await speak('It is ' + correct + '.'); resolve(false); }
-          else await speak(soc('turn'));
+          if (tries >= 2) { solved = true; const okb = [...document.querySelectorAll('.opt')].find((b) => b.dataset.w === correct); if (okb) okb.classList.add('ok'); await say('It is ' + correct + '.'); resolve(false); }
+          else await say(soc('turn'));
         }
       };
       document.querySelectorAll('.opt').forEach((b) => { b.onclick = () => pick(b.dataset.w, b); });
       board.quizKey = (n) => { const b = document.querySelectorAll('.opt')[n - 1]; if (b && !b.disabled) pick(b.dataset.w, b); };
       board.quizPick = (w) => { const b = [...document.querySelectorAll('.opt')].find((x) => x.dataset.w === w); if (b) pick(w, b); };
-      if (question) speak(question);
-      (async () => { while (!solved && my === token) await sleep(200); resolve(null); })();
+      if (question) say(question);
+      (async () => { while (!solved && my === token && !nav) await sleep(200); resolve(null); })();
     });
   }
   async function afterAsk(my) { board.quizKey = null; board.quizPick = null; if (my !== token) return false; S.turn = S.turn === 'A' ? 'B' : 'A'; post(); await hold(1500, my); return my === token; }
   async function gameEnd(my) {
+    if (my !== token) return; // adim atlandiysa eski oyun yeni ekrani ezmesin
     frame(`<div class="start">${mascot()}<h1>🔴 A: ${S.scores.A} · 🔵 B: ${S.scores.B}</h1></div>`, 'Well done!');
-    await speak(soc('end')); await hold(2500, my);
+    await say(soc('end')); await hold(2500, my);
   }
   function thumb(c) { return c.icon_type === 'emoji' ? `<span class="thumbemo">${esc(c.icon)}</span>` : `<img class="thumb" src="${esc(c.icon)}" alt="">`; }
 
   async function runCando(my) {
-    await speak('What can you do now? Show me your thumbs!');
-    for (const c of lesson.cando) {
+    await say('What can you do now? Show me your thumbs!');
+    await eachItem(lesson.cando.length, my, async (k) => { const c = lesson.cando[k];
       if (my !== token) return; await waitWhilePaused(my);
       S.answer = { word: c.en, tr: c.tr }; post();
       frame(`<div class="start">${mascot()}<h1>${esc(c.en)}</h1><p class="thumbs">👍 Yes! &nbsp;&nbsp; 👉 A little</p></div>`, 'Can you do it?');
-      await speak(c.en); await hold(4500, my);
-    }
-    await speak('Well done! You learned a lot!');
+      await say(c.en); await hold(4500, my);
+    });
+    if (my === token) await say('Well done! You learned a lot!');
   }
   async function runSound(my) {
     const snd = lesson.sound; const L = snd.letter;
     frame(`<div class="sound"><div class="bigletter">${esc(L.toUpperCase())}${esc(L)}</div><div class="grid" id="sndGrid"></div></div>`, 'Sound of the day');
-    await speak("Today's sound is: " + L.toUpperCase() + '!'); await hold(700, my);
-    for (const w of snd.words) {
+    await say("Today's sound is: " + L.toUpperCase() + '!'); await hold(700, my);
+    await eachItem(snd.words.length, my, async (k) => { const w = snd.words[k];
       if (my !== token) return; await waitWhilePaused(my);
       const g = $('#sndGrid'); if (g) g.insertAdjacentHTML('beforeend', `<div class="mini">${pic(w)}<b><span class="hl">${esc(w.word.charAt(0))}</span>${esc(w.word.slice(1))}</b></div>`);
       S.answer = { word: w.word, tr: w.tr }; post();
-      await speak(L.toUpperCase() + ' is for ' + w.word + '!'); await hold(600, my);
-      await speak('Everybody, say: ' + w.word); await hold(2400, my);
-    }
+      await say(L.toUpperCase() + ' is for ' + w.word + '!'); await hold(600, my);
+      await say('Everybody, say: ' + w.word); await hold(2400, my);
+    });
   }
   async function runMissing(my, cards) {
-    await speak(soc('start') + ' ' + "What's missing? Look and remember!");
-    for (let r = 0; r < 3 && my === token; r++) {
+    await say(soc('start') + ' ' + "What's missing? Look and remember!");
+    await eachItem(3, my, async (k) => { const r = k;
       await waitWhilePaused(my);
       const set = shuffle(cards).slice(0, Math.min(5, cards.length)); const gone = set[Math.floor(Math.random() * set.length)];
       S.answer = { word: gone.word, tr: gone.tr }; post();
       frame(`<div class="grid">${set.map((c) => `<div class="mini">${pic(c)}<b>${esc(c.word)}</b></div>`).join('')}</div>`, "Look! · What's missing?");
       await hold(6000, my); if (my !== token) return;
       frame(`<div class="start">${mascot()}<h1>Close your eyes! 🙈</h1></div>`, "What's missing?");
-      await speak('Close your eyes!'); await hold(2500, my); if (my !== token) return;
+      await say('Close your eyes!'); await hold(2500, my); if (my !== token) return;
       const rest = set.filter((c) => c !== gone);
       const opts = shuffle([gone, ...shuffle(rest).slice(0, 2)]).map((c) => ({ word: c.word }));
-      await speak('Open your eyes!');
+      await say('Open your eyes!');
       await askTeams(my, "What's missing?", `<div class="grid small">${shuffle(rest).map((c) => `<div class="mini">${pic(c)}</div>`).join('')}<div class="mini q">❓</div></div>`, opts, gone.word, "What's missing?");
       if (!(await afterAsk(my))) return;
-    }
+    });
     await gameEnd(my);
   }
   async function runReveal(my, cards) {
-    await speak(soc('start') + ' ' + 'Mystery picture! What is it?');
+    await say(soc('start') + ' ' + 'Mystery picture! What is it?');
     const qs = shuffle(cards).slice(0, Math.min(5, cards.length));
-    for (const c of qs) {
+    await eachItem(qs.length, my, async (k) => { const c = qs[k];
       if (my !== token) return; await waitWhilePaused(my);
       S.answer = { word: c.word, tr: c.tr }; post();
       const opts = shuffle([c, ...shuffle(cards.filter((x) => x.word !== c.word)).slice(0, 2)]).map((x) => ({ word: x.word }));
@@ -405,49 +427,50 @@ function mountBoard(data) {
       (async () => { for (let b = 26; b >= 0 && my === token; b -= 2) { const el = $('#rvPic'); if (el) el.style.setProperty('--blur', b + 'px'); await sleep(700); } })();
       await p; const el = $('#rvPic'); if (el) el.style.setProperty('--blur', '0px');
       if (!(await afterAsk(my))) return;
-    }
+    });
     await gameEnd(my);
   }
   async function runListen(my, cards) {
     const set = shuffle(cards).slice(0, Math.min(6, cards.length));
-    await speak(soc('start') + ' ' + 'Listen and touch the picture!');
-    for (const c of shuffle(set).slice(0, 5)) {
+    await say(soc('start') + ' ' + 'Listen and touch the picture!');
+    const lq = shuffle(set).slice(0, 5);
+    await eachItem(lq.length, my, async (k) => { const c = lq[k];
       if (my !== token) return; await waitWhilePaused(my);
       S.answer = { word: c.word, tr: c.tr }; post();
       await askTeams(my, 'Listen and touch', '', set.map((x) => ({ word: x.word, pic: thumb(x) })), c.word, 'Touch the ' + c.word + '!');
       if (!(await afterAsk(my))) return;
-    }
+    });
     await gameEnd(my);
   }
   async function runOdd(my, cards, intruders) {
-    await speak(soc('start') + ' ' + 'Which one is different?');
-    for (let r = 0; r < Math.min(4, intruders.length) && my === token; r++) {
+    await say(soc('start') + ' ' + 'Which one is different?');
+    await eachItem(Math.min(4, intruders.length), my, async (k) => { const r = k;
       await waitWhilePaused(my);
       const odd = intruders[r]; const set = shuffle([odd, ...shuffle(cards).slice(0, 3)]);
       S.answer = { word: odd.word, tr: odd.tr }; post();
       await askTeams(my, 'Odd one out', '', set.map((x) => ({ word: x.word, pic: thumb(x) + `<span class="cap">${esc(x.word)}</span>` })), odd.word, 'Which one is different?');
       if (!(await afterAsk(my))) return;
-    }
+    });
     await gameEnd(my);
   }
 
   async function runActive(my, minutes) {
     frame(`<div class="active">${mascot('mascot_point')}<div class="inst">${esc(lesson.active.en)}</div></div>`, "Let's do it!");
-    await speak(lesson.active.en); await hold(600, my); await speak(lesson.active.en);
+    await say(lesson.active.en); await hold(600, my); await say(lesson.active.en);
     S.timerLeft = minutes * 60; post(); renderTimer();
     while (S.timerLeft > 0 && my === token) {
       await sleep(1000); await waitWhilePaused(my);
       if (my !== token) return;
       S.timerLeft--; renderTimer(); if (S.timerLeft % 5 === 0) post();
     }
-    if (my === token) { await speak("Time's up! Well done! Sit down, please."); await hold(1000, my); }
+    if (my === token) { await say("Time's up! Well done! Sit down, please."); await hold(1000, my); }
   }
 
   async function runExit(my, items) {
     frame(`<div class="grid">${items.map((c) => `<div class="mini">${pic(c)}<b>${esc(c.word)}</b></div>`).join('')}</div>`, 'Bye bye!');
-    await speak('Say it with me!');
-    for (const c of items) { if (my !== token) return; await waitWhilePaused(my); await speak(c.word); await hold(1800, my); }
-    await speak('Goodbye, everybody! See you next time!');
+    await say('Say it with me!');
+    await eachItem(items.length, my, async (k) => { const c = items[k]; await say(c.word); await hold(1800, my); });
+    await say('Goodbye, everybody! See you next time!');
   }
 
   function endScreen() {
@@ -460,8 +483,8 @@ function mountBoard(data) {
   const board = { quizKey: null, quizPick: null };
   document.addEventListener('keydown', (e) => {
     if (e.key === ' ') { e.preventDefault(); if (S.step < 0) go(0); else togglePause(); }
-    else if (e.key === 'ArrowRight') go(S.step + 1);
-    else if (e.key === 'ArrowLeft') go(S.step - 1);
+    else if (e.key === 'ArrowRight') stepNav(1);
+    else if (e.key === 'ArrowLeft') stepNav(-1);
     else if (e.key === 's' || e.key === 'S') repeat();
     else if (/^[1-3]$/.test(e.key) && board.quizKey) board.quizKey(Number(e.key));
   });
@@ -470,8 +493,8 @@ function mountBoard(data) {
     if (m.type === 'hello') post();
     else if (m.type === 'cmd') {
       if (m.cmd === 'start') go(Math.max(0, S.step));
-      else if (m.cmd === 'next') go(S.step + 1);
-      else if (m.cmd === 'prev') go(S.step - 1);
+      else if (m.cmd === 'next') stepNav(1);
+      else if (m.cmd === 'prev') stepNav(-1);
       else if (m.cmd === 'goto') go(m.step);
       else if (m.cmd === 'pause') togglePause();
       else if (m.cmd === 'repeat') repeat();
