@@ -4234,7 +4234,7 @@ function showQuickMenu(container, api, toolId, categories) {
       </div>
       <div id="keQmSoundInfo" style="margin-top:2px;font-size:11.5px;color:var(--kb-chalk-dim);font-weight:700;"></div>
       <div id="keQmOffline" style="margin-top:8px;font-size:12.5px;color:#3A3326;font-weight:700;line-height:1.35;"></div>
-      ${window.KE_STATIC ? `<div style="margin-top:10px;font-size:12.5px;font-weight:700;"><a href="privacy.html" style="color:var(--kb-chalk-dim);">${L('Gizlilik', 'Privacy')}</a> · <a href="${reportProblemHref()}" style="color:var(--kb-chalk-dim);">${L('Sorun bildir', 'Report a problem')}</a> · <a href="teacher.html" target="_blank" rel="noopener noreferrer" style="color:var(--kb-chalk-dim);">${L('Öğretmen Paneli', 'Teacher Portal')}</a></div>` : ''}
+      ${window.KE_STATIC ? `<div style="margin-top:10px;font-size:12.5px;font-weight:700;"><a href="privacy.html" style="color:var(--kb-chalk-dim);">${L('Gizlilik', 'Privacy')}</a> · <a href="${reportProblemHref()}" style="color:var(--kb-chalk-dim);">${L('Sorun bildir', 'Report a problem')}</a> · <a href="teacher.html" id="keQmTeacher" style="color:var(--kb-chalk-dim);">${L('Öğretmen Paneli', 'Teacher Portal')}</a></div>` : ''}
       <button type="button" class="ke-btn-secondary" id="keQmClose" style="margin-top:14px;">${L('Kapat', 'Close')}</button>
       <button type="button" id="keQmTestKey" style="margin-top:10px;font-size:11px !important;padding:4px 10px !important;opacity:.4;" title="test">🔑</button>
     </div>
@@ -4271,6 +4271,10 @@ function showQuickMenu(container, api, toolId, categories) {
   if (LEADERBOARD_ON) overlay.querySelector('#keQmRank').addEventListener('click', () => { close(); showLeaderboard(container); });
   overlay.querySelector('#keQmGuide').addEventListener('click', () => { close(); showGuide(container, api, toolId, categories); });
   overlay.querySelector('#keQmClose').addEventListener('click', close);
+  // Aile politikasi (2026-10-01): ogretmen paneli e-posta ile hesap acar;
+  // cocuk oraya veli kapisindan gecmeden ulasmasin.
+  const tLink = overlay.querySelector('#keQmTeacher');
+  if (tLink) tLink.addEventListener('click', (e) => { e.preventDefault(); close(); showParentGate(container, api, toolId, categories, () => { location.href = 'teacher.html'; }); });
   mountOfflineLine(overlay.querySelector('#keQmOffline'));
   overlay.querySelector('#keQmTestKey').addEventListener('click', () => {
     const code = window.prompt(L('Test şifresi', 'Test code'));
