@@ -68,7 +68,7 @@ Uygulama içindeki **Ebeveyn Alanı**'nda:
 
 ## Android uygulaması (APK)
 
-- **Aktapokus Word Safari** adıyla bir Android uygulaması hazır ve **test aşamasında**; Google Play yayını planlanıyor.
+- **Aktapokus Kids English** adıyla bir Android uygulaması hazır ve **test aşamasında**; Google Play yayını planlanıyor.
 - Web sürümünün aynısıdır: telefona kurulur, simgesiyle açılır, adres çubuğu olmadan tam ekran çalışır.
 - İçerik siteden geldiği için **kendiliğinden güncellenir**; her düzeltme için yeniden kurmak gerekmez. İnternetsiz kullanım web sürümündeki gibidir.
 - **APK ile gelecekler:** velinin seçtiği saatte **günlük hatırlatma bildirimi** ve İngilizce ses paketini **tek dokunuşla yükleme** ekranı.

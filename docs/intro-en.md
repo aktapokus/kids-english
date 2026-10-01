@@ -69,7 +69,7 @@ In the **Parent Area** inside the app:
 
 ## Android app (APK)
 
-- An Android app called **Aktapokus Word Safari** is ready and **being tested**; a Google Play release is planned.
+- An Android app called **Aktapokus Kids English** is ready and **being tested**; a Google Play release is planned.
 - It is the same as the web version: installed on the phone, opened from its icon, full screen without an address bar.
 - Because the content comes from the site, it **updates itself**; no reinstalling for every fix. Offline use works as in the web version.
 - **Coming with the APK:** a **daily reminder notification** at a time the parent chooses, and a screen to install the English voice pack **with one tap**.

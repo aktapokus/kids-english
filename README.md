@@ -1,4 +1,4 @@
-# Aktapokus Word Safari (Kids English)
+# Aktapokus Kids English
 
 Free English learning game for children (A1: words, prepositions, question words) with the character Aktapokus.
 Runs in the browser and installs as an app (PWA). Works offline after the first load.
