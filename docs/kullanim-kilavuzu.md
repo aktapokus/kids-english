@@ -43,7 +43,7 @@ Aktapokus Kids English, ilkokul ve ortaokulun ilk yılları (2.–6. sınıf, 7.
 ### Veli için (5 dakika)
 
 1. Uygulamayı telefonda ya da tablette açın. Ana ekrana eklemek için tarayıcının menüsünden **"Ana ekrana ekle"** seçeneğini kullanın. Uygulama bundan sonra internetsiz de açılır.
-2. **"Kim oynuyor?"** ekranında çocuğunuz için bir profil oluşturun. Kardeşler aynı cihazda ayrı profil kullanabilir. Bir profili silmek için ana ekrandaki ⇄ çipine dokunun, **🗑️ Çocuk sil**'e basın ve veli sorusunu cevaplayın. Profilin ilerlemesi yalnızca o cihazda durur; silmeden önce **💾 Önce yedek al** ile yedek dosyası alırsanız Ebeveyn Alanı'ndan geri yükleyebilirsiniz.
+2. **"Kim oynuyor?"** ekranında çocuğunuz için bir profil oluşturun. Kardeşler aynı cihazda ayrı profil kullanabilir. Bir profili silmek için ana ekrandaki ⇄ çipine dokunun, **🗑️ Kullanıcı sil**'e basın ve veli sorusunu cevaplayın. Profilin ilerlemesi yalnızca o cihazda durur; silmeden önce **💾 Önce yedek al** ile yedek dosyası alırsanız Ebeveyn Alanı'ndan geri yükleyebilirsiniz.
 3. Sesi kontrol edin: Aktapokus'a dokunun, ardından **🔊 Ses Testi**. Aktapokus "Hello, I am Aktapokus" demeli.
 4. Öğretmen bir **sınıf kodu** verdiyse: Aktapokus'a dokunun, **🎨 Avatar**'ı açın ve en alttaki **Sınıf** bölümüne kodu yazın. Altında öğretmene gidecek ad görünür; gerçek ad yerine takma ad kullanılabilir. Veli, **Aydınlatma metnini** okuyup onay kutusunu işaretler; ancak ondan sonra **Katıl** düğmesi çalışır.
 5. Ebeveyn Alanı'nı bir kez açıp gezin (bkz. [Bölüm 4](#4-veli-rehberi-neyi-nereden-takip-ederim)).
@@ -105,9 +105,11 @@ Her bölümde 4–6 kelime vardır. Aşamalar sırayla gelir; üstteki simgeler 
 | 👀 **Keşif** | Resimlere dokunur, kelimeyi ve cümlesini dinler. | Anlam ve telaffuz (girdi) |
 | ❓ **Soru** | Sesi dinler, doğru resmi seçer. İlk yanlışta ikinci hak verilir. | Dinleyerek tanıma |
 | 🇹🇷 **Anlamı ne?** | (A1) Söylediği kelimenin Türkçe anlamını 3 seçenekten seçer. | Kelimeyi söylemekle anlamını bilmek aynı şey değil |
-| 🎤 **Konuş** | Kelimeyi söyler, uygulama dinler. İsterse **🔴 Sesimi kaydet** ile kendini kaydedip Aktapokus'la karşılaştırır. Puan yoktur. | Telaffuz, özgüven |
+| 🎤 **Konuş** | Kelimeyi söyler, uygulama dinler. İsterse **🔴 Sesimi kaydet** ile kendini kaydedip Aktapokus'la karşılaştırır. Puan yoktur. Mikrofon ya da ses çalışmıyorsa alttaki **🔇 bu adımı atla** bağlantısıyla Cümle aşamasına geçilir. | Telaffuz, özgüven |
 | 🧩 **Cümle** | Kelime taşlarını sıraya dizerek cümle kurar. | Kelimeyi cümle içinde kullanma |
 | 🔤 **Harf** | İlk harfler hazır; kalan harfleri tamamlar. | Yazılış |
+
+Aşamalar atlanamaz; üstteki simgelerle yalnızca geçilmiş bir aşamaya geri dönülebilir. Tek istisna, ses ya da mikrofon sorunu olduğunda Konuş aşamasıdır.
 
 Bazı konularda Cümle ile Harf arasında **ek turlar** gelir:
 
@@ -406,7 +408,19 @@ Güncelleme arka planda iner; uygulama ana ekrana ya da haritaya dönünce kendi
 **Bir resim ya da cümle yanlış.**
 Ebeveyn Alanı'nda İçerik denetimini açın ve **⚑ Sorun bildir**'i kullanın (bkz. 5.8).
 
+**Hata bildirmek ya da öneri yapmak istiyorum.**
+Bkz. 8.1.
+
 ---
+
+### 8.1 Hata bildirme ve öneri yapma
+
+Her geri bildirim okunur. İki yol vardır:
+
+1. **Uygulamanın içinden:** Ekrandaki Aktapokus maskotuna dokunun. Açılan menünün en altında **💬 Hata bildir / Öneri yap** bağlantısı vardır. Dokununca telefonun e-posta uygulaması, konusu ve soruları hazır bir e-postayla açılır. Hata ise nerede olduğunuzu (konu, bölüm ya da ders) ve ne olduğunu; öneri ise neyin nasıl değişmesini istediğinizi yazmanız yeterlidir. Cihaz bilgisi e-postaya kendiliğinden eklenir; ad ya da başka kişisel bilgi eklenmez.
+2. **Doğrudan e-posta:** bmenderes@gmail.com
+
+Bir kelime kartındaki yanlış resim, cümle ya da anlam için en hızlısı **İçerik denetimi**dir (bkz. 5.8): kartın kendisi bildirime eklenir.
 
 ## 9. Bilinen sınırlar ve yakında gelecekler
 

@@ -1845,6 +1845,7 @@ ${FONT_FACES}
      yeterli olurdu, ama bu blok display:flex atadığı için (author CSS
      UA stylesheet'ini her zaman ezer) o davranışı burada elle
      tekrarlamak gerekiyor — yoksa düğmeler kapalıyken de görünür kalır. */
+  .ke-speak-skip{ display:block; margin:10px auto 0; background:none; border:0; color:var(--kb-chalk-dim); font:700 12.5px/1.3 inherit; text-decoration:underline; cursor:pointer; padding:8px 10px; min-height:44px; }
   .ke-jump-buttons{ display:none; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:8px; }
   .ke-jump-row[open] .ke-jump-buttons{ display:flex; }
   .ke-jump-btn{ font-size:11.5px !important; font-weight:700 !important; padding:6px 13px !important; border-radius:8px 12px 9px 11px !important; background:rgba(245,240,223,.06) !important; color:var(--kb-chalk-dim) !important; border:1.5px dashed rgba(245,240,223,.4) !important; --btn-shadow:transparent !important; box-shadow:none; }
@@ -4234,7 +4235,7 @@ function showQuickMenu(container, api, toolId, categories) {
       </div>
       <div id="keQmSoundInfo" style="margin-top:2px;font-size:11.5px;color:var(--kb-chalk-dim);font-weight:700;"></div>
       <div id="keQmOffline" style="margin-top:8px;font-size:12.5px;color:#3A3326;font-weight:700;line-height:1.35;"></div>
-      ${window.KE_STATIC ? `<div style="margin-top:10px;font-size:12.5px;font-weight:700;"><a href="privacy.html" style="color:var(--kb-chalk-dim);">${L('Gizlilik', 'Privacy')}</a> · <a href="${reportProblemHref()}" style="color:var(--kb-chalk-dim);">${L('Sorun bildir', 'Report a problem')}</a> · <a href="teacher.html" id="keQmTeacher" style="color:var(--kb-chalk-dim);">${L('Öğretmen Paneli', 'Teacher Portal')}</a></div>` : ''}
+      ${window.KE_STATIC ? `<div style="margin-top:10px;font-size:12.5px;font-weight:700;"><a href="privacy.html" style="color:var(--kb-chalk-dim);">${L('Gizlilik', 'Privacy')}</a> · <a href="${reportProblemHref()}" style="color:var(--kb-chalk-dim);">💬 ${L('Hata bildir / Öneri yap', 'Report a bug / Suggest')}</a> · <a href="teacher.html" id="keQmTeacher" style="color:var(--kb-chalk-dim);">${L('Öğretmen Paneli', 'Teacher Portal')}</a></div>` : ''}
       <button type="button" class="ke-btn-secondary" id="keQmClose" style="margin-top:14px;">${L('Kapat', 'Close')}</button>
       <button type="button" id="keQmTestKey" style="margin-top:10px;font-size:11px !important;padding:4px 10px !important;opacity:.4;" title="test">🔑</button>
     </div>
@@ -6607,10 +6608,10 @@ async function showStatsScreen(container, api, toolId, categories) {
 // posta uygulamasina dogrudan, konu/govde onceden doldurulmus sekilde
 // aciliyor - gelistiriciye (bmenderes@gmail.com) direkt ulasiyor.
 function reportProblemHref() {
-  const subject = L('Aktapokus Kids English - Sorun Bildirimi', 'Aktapokus Kids English - Bug Report');
+  const subject = L('Aktapokus Kids English - Hata / Öneri', 'Aktapokus Kids English - Bug / Suggestion');
   const body = L(
-    'Neredeydin (kategori/bölüm) ve ne oldu?\n\n\n---\nCihaz: ' + navigator.userAgent,
-    'Where were you (category/episode) and what happened?\n\n\n---\nDevice: ' + navigator.userAgent
+    'Hata mı, öneri mi?\n\nHata ise: neredeydin (kategori/bölüm ya da ders) ve ne oldu?\nÖneri ise: neyi nasıl değiştirelim?\n\n\n---\nCihaz: ' + navigator.userAgent,
+    'Bug or suggestion?\n\nIf a bug: where were you (category/episode or lesson) and what happened?\nIf a suggestion: what should we change, and how?\n\n\n---\nDevice: ' + navigator.userAgent
   );
   return `mailto:bmenderes@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
@@ -6633,8 +6634,8 @@ function showWhoIsPlaying(container, api, toolId, categories, delMode) {
   }).join('');
   host.innerHTML = `
     <div class="ke-who">
-      <h1>${delMode ? L('Hangi çocuk silinsin?', 'Which child should be removed?') : L('Kim oynuyor?', "Who's playing?")}</h1>
-      <p>${delMode ? L('Silinecek çocuğa dokunun. Bu çocuğun bu cihazdaki bütün ilerlemesi silinir.', "Tap the child to remove. All of this child's progress on this device is deleted.") : L('Her çocuğun ilerlemesi ayrı tutulur.', "Each child's progress is kept separate.")}</p>
+      <h1>${delMode ? L('Hangi kullanıcı silinsin?', 'Which user should be removed?') : L('Kim oynuyor?', "Who's playing?")}</h1>
+      <p>${delMode ? L('Silinecek kullanıcıya dokunun. Bu kullanıcının bu cihazdaki bütün ilerlemesi silinir.', "Tap the user to remove. All of this user's progress on this device is deleted.") : L('Her çocuğun ilerlemesi ayrı tutulur.', "Each child's progress is kept separate.")}</p>
       <div class="ke-who-grid${delMode ? ' ke-who-del' : ''}">
         ${cards}
         ${delMode ? '' : `<button type="button" class="ke-who-card" id="keWhoNew"><span class="ke-who-new" aria-hidden="true">＋</span><span>${L('Yeni çocuk', 'New child')}</span><small>&nbsp;</small></button>`}
@@ -6642,7 +6643,7 @@ function showWhoIsPlaying(container, api, toolId, categories, delMode) {
       <div id="keWhoConfirm"></div>
       <div class="ke-btn-row" style="margin-top:18px;">
         ${delMode ? `<button type="button" class="ke-btn-secondary" id="keWhoDelDone">${L('Bitti', 'Done')}</button>`
-          : Profiles.all().length > 1 ? `<button type="button" class="ke-btn-secondary" id="keWhoDel">🗑️ ${L('Çocuk sil', 'Remove a child')}</button>` : ''}
+          : Profiles.all().length > 1 ? `<button type="button" class="ke-btn-secondary" id="keWhoDel">🗑️ ${L('Kullanıcı sil', 'Remove a user')}</button>` : ''}
       </div>
     </div>`;
   host.querySelectorAll('[data-who]').forEach((b) => b.addEventListener('click', () => {
@@ -7846,6 +7847,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
             <button class="ke-btn-primary ke-speak-mic" id="keSpeakMic">🎤 ${L('Söyle', 'Say it')}</button>
             <button class="ke-btn-secondary" id="keSpeakNext" style="display:none;">${L('Devam Et', 'Next')} →</button>
           </div>
+          <button type="button" class="ke-speak-skip" id="keSpeakSkip">🔇 ${L('Mikrofon ya da ses çalışmıyorsa bu adımı atla', 'Microphone or sound not working? Skip this step')}</button>
           <div class="ke-rec-row" id="keRecRow" hidden>
             <button type="button" class="ke-rec-btn" id="keRecBtn">🔴 ${L('Sesimi kaydet', 'Record me')}</button>
             <button type="button" class="ke-rec-btn" id="keRecAk" hidden>🐙 ${L('Aktapokus', 'Aktapokus')}</button>
@@ -7882,8 +7884,10 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
       <p class="ke-hint">👆🔊 ${L('Dokun → dinle. Tekrar dokun → tekrar dinle.', 'Tap → listen. Tap again → listen again.')}</p>
       <button class="ke-btn-primary" id="keGoToQuizBtn" style="display:none;">${L('Sorulara Geç', 'Go to questions')} → (<span id="keGoToQuizCount">0</span> ${L('kelimeyle', 'words')})</button>
     </div>
-    <details class="ke-jump-row">
-      <summary class="ke-jump-summary">⚙ ${L('Bölüm içinde atla (geliştirici)', 'Jump within episode (dev)')}</summary>
+    <!-- Bolum ici atlama satiri kullaniciya gosterilmez (2026-10-01, kullanici karari);
+         dugmeler gizli kalir: ustteki asama cubugu (yalniz gecilmis asamalara donus)
+         ve tekrar turu bunlari .click() ile kullaniyor. -->
+    <div class="ke-jump-row" hidden>
       <div class="ke-jump-buttons">
         <button class="ke-jump-btn" id="keJumpDiscovery">1. ${L('Kelime Keşfi', 'Discovery')}</button>
         <button class="ke-jump-btn" id="keJumpQuiz">2. ${L('Sorular', 'Quiz')}</button>
@@ -7891,7 +7895,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
         <button class="ke-jump-btn" id="keJumpSentence">4. ${L('Cümle', 'Sentence')}</button>
         <button class="ke-jump-btn" id="keJumpLetters">5. ${L('Harfler', 'Letters')}</button>
       </div>
-    </details>
+    </div>
   `;
 
   function jumpToEpisode(index) {
@@ -9289,6 +9293,9 @@ function startSpeakRound(host, container, episode, wordList, mascotEl, score, on
   const micBtn = host.querySelector('#keSpeakMic');
   const nextBtn = host.querySelector('#keSpeakNext');
   const replayBtn = host.querySelector('#keSpeakReplay');
+  // Bolum icinde tek izinli atlama: ses/mikrofon sorunu varsa konusma adimi.
+  const speakSkip = host.querySelector('#keSpeakSkip');
+  if (speakSkip) speakSkip.onclick = () => { const j = host.querySelector('#keJumpSentence'); if (j) j.click(); };
   const speakCard = speakEl.querySelector('.ke-speak-card');
 
   // Kendi sesini kaydet ve karsilastir (ogretmen degerlendirmesi 5c).

@@ -44,7 +44,7 @@ Aktapokus Kids English is an English vocabulary, listening and speaking app for 
 ### For parents (5 minutes)
 
 1. Open the app on a phone or tablet. To add it to the home screen, use **"Add to Home screen"** in the browser menu. After that the app also opens without internet.
-2. On the **"Who's playing?"** screen, create a profile for your child. Siblings can use separate profiles on the same device. To remove a profile, tap the ⇄ chip on the home screen, press **🗑️ Remove a child** and answer the parent question. A profile's progress lives only on that device; save a backup first with **💾 Back up first** and you can restore it from the Parent Area.
+2. On the **"Who's playing?"** screen, create a profile for your child. Siblings can use separate profiles on the same device. To remove a profile, tap the ⇄ chip on the home screen, press **🗑️ Remove a user** and answer the parent question. A profile's progress lives only on that device; save a backup first with **💾 Back up first** and you can restore it from the Parent Area.
 3. Check the sound: tap Aktapokus, then **🔊 Sound Test**. Aktapokus should say "Hello, I am Aktapokus".
 4. If the teacher gave you a **class code**: tap Aktapokus, open **🎨 Avatar**, type the code in the **Class** section at the bottom. The name that will be sent to the teacher is shown below it; a nickname is fine. A parent reads the **data notice** and ticks the consent box; only then does **Join** work.
 5. Open the **Parent Area** once and look around (see [Section 4](#4-parent-guide-what-can-i-follow-and-where)).
@@ -105,9 +105,11 @@ Each episode has 4–6 words. The steps come in order; the icons at the top show
 | 👀 **Discover** | Taps the pictures and listens to the word and its sentence. | Meaning and pronunciation (input) |
 | ❓ **Quiz** | Listens and chooses the right picture. A second try is given after the first mistake. | Recognising by ear |
 | 🇹🇷 **Meaning** | (A1) Chooses the Turkish meaning of the word from 3 options. | Saying a word is not the same as knowing its meaning |
-| 🎤 **Speak** | Says the word; the app listens. With **🔴 Record me** the child can record themselves and compare with Aktapokus. No score. | Pronunciation, confidence |
+| 🎤 **Speak** | Says the word; the app listens. With **🔴 Record me** the child can record themselves and compare with Aktapokus. No score. If the microphone or sound is not working, the **🔇 skip this step** link below moves on to the Sentence step. | Pronunciation, confidence |
 | 🧩 **Sentence** | Builds the sentence by putting word tiles in order. | Using the word in a sentence |
 | 🔤 **Letters** | The first letters are given; the child completes the rest. | Spelling |
+
+Steps cannot be skipped; the icons at the top only go back to a step already reached. The one exception is the Speak step when there is a sound or microphone problem.
 
 Some topics add **extra rounds** between Sentence and Letters:
 
@@ -390,7 +392,20 @@ First get the file with Parent Area > **Download backup**. On the new device, re
 **A picture or sentence is wrong.**
 Turn on Content review in the Parent Area and use **⚑ Report a problem** (see 5.8).
 
+**I want to report a bug or make a suggestion.**
+See 8.1.
+
 ---
+
+
+### 8.1 Reporting a bug or making a suggestion
+
+Every message is read. There are two ways:
+
+1. **From inside the app:** tap the Aktapokus mascot on the screen. At the bottom of the menu there is a **💬 Report a bug / Suggest** link. It opens your email app with a ready subject and questions. For a bug, write where you were (topic, episode or lesson) and what happened; for a suggestion, what should change and how. Device information is added automatically; no name or other personal data.
+2. **Email directly:** bmenderes@gmail.com
+
+For a wrong picture, sentence or meaning on a word card, **Content review** is fastest (see 5.8): the card itself is attached to the report.
 
 ## 9. Known limits and what is coming
 
