@@ -10,6 +10,7 @@
 
 - **Uygulama:** https://aktapokus.github.io/kids-english/
 - **Öğretmen paneli:** https://aktapokus.github.io/kids-english/teacher.html
+- **Günlük ders planı (akıllı tahta):** https://aktapokus.github.io/kids-english/ders-ogretmen.html
 - **Ayrıntılı kılavuz:** https://aktapokus.github.io/kids-english/kilavuz.html
 - **Resimli rehber:** https://aktapokus.github.io/kids-english/rehber.html
 
@@ -48,7 +49,8 @@ Her bölümde 4–6 kelime vardır. Aşamalar sırayla gelir:
 | **🎯 Haftanın görevi** | Konu seçin, not ve son gün ekleyin. Görev öğrencinin ana ekranında çıkar. |
 | **🧑‍🏫 Sınıf modu** | Akıllı tahtada büyük resimler ve **iki takımlı soru oyunu**. Yalnızca öğretmen panelinden açılır. |
 | **🖨️ Basılı materyal** | Kelime kartları, **tombala**, çalışma kâğıdı (cevap anahtarıyla). |
-| **⚑ Sorun bildir** | Hatalı resim ya da cümle görürseniz tek dokunuşla bildirin. |
+| **📘 Günlük ders planı** | 2–6. sınıf için Maarif yıllık yapısına göre tam yıl: 2–4. sınıfta 72, 5–6. sınıfta 108 ders. Akıllı tahtada ders kendi ilerler, İngilizce olan her şeyi Aktapokus söyler; öğretmen Türkçe yönergeleri ayrı ekranda görür. Basılı ders kartı da var. İngilizce öğretmeni olmayan bir öğretmen de dersi yürütebilir. |
+| **⚑ İçerik denetimi** | Bir kartta hatalı resim ya da cümle görürseniz Ebeveyn Alanı’ndan İçerik denetimini açıp kartın üzerinden bildirin. |
 
 ## Veli ne görüyor?
 
@@ -77,7 +79,7 @@ Uygulama içindeki **Ebeveyn Alanı**'nda:
 ## Gizlilik (kısaca)
 
 - İlerleme çocuğun **kendi cihazında** durur.
-- Sınıfa katılınca öğretmene yalnızca **ad ve ilerleme sayıları** gider.
+- Sınıfa yalnızca **veli onayıyla** katılınır; öğretmene yalnızca **ad (takma ad olabilir) ve ilerleme bilgileri** gider. Ayrıntılar: [KVKK Aydınlatma Metni](aydinlatma.html).
 - E-posta, telefon, konum ya da ses kaydı toplanmaz.
 
 ## Eğitim kurumları ve gönüllüler için
@@ -86,7 +88,7 @@ Uygulama içindeki **Ebeveyn Alanı**'nda:
 - **İnterneti zayıf yerler için:** Tabletleri bir kez Wi-Fi'da açıp birkaç dakika bekletin; sonra sınıfta internetsiz kullanılabilir.
 - **Gönüllü dostu:** Sınıf modu ve basılı materyal (kartlar, tombala, çalışma kâğıdı), İngilizce öğretmeni olmayan bir gönüllünün de hazır etkinlik yürütebilmesi için tasarlandı. Doğru telaffuz her ekranda sesli olarak verilir.
 - **Evde devam:** Çocuk evde de kaldığı yerden sürdürür; aileye haftalık özet ve evde söylenecek cümleler sunulur.
-- **Durum:** Uygulama **neredeyse yayına ve kullanıma hazır**. İçeriği kaynak listelere göre tek tek kontrol ettim; ancak bağımsız bir öğretmen ya da alanında uzman biri görmeden yaygınlaştırmak istemiyorum. Bu yüzden küçük bir pilot kullanım ya da sadece göz atıp yorum yapmak bile çok işime yarar; gelen her geri bildirimle düzeltiyorum.
+- **Durum:** Uygulama **pilot uygulamalar için hazır**. Tam sürüm, okullarda ve eğitim merkezlerinde yapılacak saha çalışmaları tamamlandıktan sonra yayınlanacak. İçeriği kaynak listelere göre tek tek kontrol ettim; sınıfta ve gerçek hayatta denenmesi için İngilizce öğretmenlerinin, STK’ların ve eğitim gönüllülerinin desteğine ihtiyaç var. Küçük bir pilot kullanım ya da göz atıp yorum yapmak bile çok işe yarar.
 
 ## 5 dakikada deneyin
 
@@ -96,4 +98,9 @@ Uygulama içindeki **Ebeveyn Alanı**'nda:
 
 İlginizi çektiyse her şeyin adım adım anlatıldığı **ayrıntılı kılavuz**: https://aktapokus.github.io/kids-english/kilavuz.html
 
-*Hatalı bir resim ya da cümle, eksik bir konu, sınıfta işe yarayacak bir fikir: ne görürseniz yazın, okuyup düzeltirim.*
+## Hata bildirme ve öneri
+
+Hatalı bir resim ya da cümle, eksik bir konu, sınıfta işe yarayacak bir fikir: ne görürseniz yazın, her mesajı okuyorum.
+
+- **Uygulamanın içinden:** Aktapokus maskotuna dokunun; açılan menünün en altındaki **💬 Hata bildir / Öneri yap** bağlantısı, konusu hazır bir e-posta açar.
+- **E-posta:** bmenderes@gmail.com

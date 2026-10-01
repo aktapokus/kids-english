@@ -10,6 +10,7 @@
 
 - **App:** https://aktapokus.github.io/kids-english/
 - **Teacher panel:** https://aktapokus.github.io/kids-english/teacher.html
+- **Daily lesson plan (smart board):** https://aktapokus.github.io/kids-english/ders-ogretmen.html
 - **Full guide:** https://aktapokus.github.io/kids-english/guide.html
 
 ---
@@ -47,7 +48,8 @@ Each episode has 4–6 words. The steps come in order:
 | **🎯 Weekly task** | Choose topics, add a note and a due date. The task appears on the student's home screen. |
 | **🧑‍🏫 Classroom mode** | Big pictures on the smart board and a **two-team quiz game**. Opens only from the teacher panel. |
 | **🖨️ Printables** | Word cards, **bingo**, worksheets (with an answer key). |
-| **⚑ Report a problem** | If you see a wrong picture or sentence, report it with one tap. |
+| **📘 Daily lesson plan** | A full school year for grades 2–6 following the national curriculum’s yearly structure: 72 lessons in grades 2–4, 108 in grades 5–6. On the smart board the lesson runs by itself and Aktapokus says all the English; the teacher sees Turkish instructions on a separate screen. A printed lesson card is included. A teacher who is not an English teacher can run the lesson. |
+| **⚑ Content review** | If a card has a wrong picture or sentence, turn on Content review in the Parent Area and report it from the card. |
 
 The teacher panel is currently in Turkish; the app itself can be switched to English.
 
@@ -78,7 +80,7 @@ In the **Parent Area** inside the app:
 ## Privacy (in short)
 
 - Progress stays on the child's **own device**.
-- When a child joins a class, only their **name and progress numbers** go to the teacher.
+- A child joins a class only **with a parent’s consent**; only the **name (a nickname is fine) and progress** go to the teacher. Details: [data notice](aydinlatma.html) (Turkish).
 - No email, phone number, location or voice recording is collected.
 
 ## For educational organisations and volunteers
@@ -87,7 +89,7 @@ In the **Parent Area** inside the app:
 - **For places with weak internet:** Open the tablets once on Wi-Fi and leave them for a few minutes; after that they can be used offline in class.
 - **Volunteer-friendly:** Classroom mode and the printables (cards, bingo, worksheets) are designed so that a volunteer who is not an English teacher can also run a ready-made activity. The correct pronunciation is given with audio on every screen.
 - **Continuing at home:** The child carries on at home from where they left off; the family gets a weekly summary and sentences to say at home.
-- **Status:** The app is **almost ready for release and everyday use**. I have checked the content one by one against the source lists, but I don't want to spread it widely before an independent teacher or subject expert has looked at it. So a small pilot, or even just a quick look and a comment, would help me a lot; I fix things with every piece of feedback.
+- **Status:** The app is **ready for pilot use**. The full release will follow field work in schools and learning centres. I have checked the content one by one against the source lists; to test it in real classrooms and real life, I need the support of English teachers, NGOs and education volunteers. A small pilot, or even a quick look and a comment, helps a lot.
 
 ## Try it in 5 minutes
 
@@ -97,4 +99,9 @@ In the **Parent Area** inside the app:
 
 If you are interested, the **full guide** explains everything step by step: https://aktapokus.github.io/kids-english/guide.html
 
-*A wrong picture or sentence, a missing topic, an idea that would work in class: whatever you notice, write to me and I will read it and fix it.*
+## Reporting a bug or making a suggestion
+
+A wrong picture or sentence, a missing topic, an idea that would work in class: whatever you notice, write to me; I read every message.
+
+- **From inside the app:** tap the Aktapokus mascot; the **💬 Report a bug / Suggest** link at the bottom of the menu opens an email with the subject filled in.
+- **Email:** bmenderes@gmail.com
