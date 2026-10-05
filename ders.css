@@ -19,6 +19,8 @@ body[data-mode=board]{background:#17301f;color:#f3f7f2;font-family:'Fredoka','Ba
 #board footer{display:flex;justify-content:center;gap:10px;padding:8px;opacity:.35;transition:opacity .2s}
 #board footer:hover{opacity:1}
 @media (hover:none){#board footer{opacity:.9}}
+#board footer button.wait{background:#ffd75a;color:#1b2a1f;animation:kewait 1.4s ease-in-out infinite}
+@keyframes kewait{0%,100%{box-shadow:0 0 0 0 rgba(255,215,90,.7)}50%{box-shadow:0 0 0 12px rgba(255,215,90,0)}}
 #board footer button{background:rgba(255,255,255,.16);color:#fff;border:0;border-radius:12px;padding:10px 24px;font-size:20px;min-width:64px;min-height:48px}
 .fsbtn{background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:10px;padding:6px 12px;font-size:18px}.fsbtn.big{font-size:16px;padding:8px 16px;margin-top:4px}
 @media (max-width:640px){.active{flex-direction:column;gap:12px}.inst{max-width:92vw;text-align:center;font-size:clamp(24px,5vh,40px)}.opt{min-width:0;padding:10px 16px}}
@@ -118,3 +120,6 @@ table.chk th{font-size:11px;font-weight:600;vertical-align:bottom}table.chk td{h
 .xbox{background:#fff;border:1px solid #dde4dd;border-left:5px solid #2f6f4f;border-radius:10px;padding:8px 14px;margin:10px 0}.xbox .tr{color:#6a756d;font-size:.92em}.xbox ol,.xbox ul{margin:6px 0 6px 18px;padding:0}
 table.rubric{border-collapse:collapse;width:100%;margin:8px 0;font-size:13px}table.rubric th,table.rubric td{border:1px solid #cfd8cf;padding:4px 6px;vertical-align:top;text-align:left}
 .wlines{height:120px;background:repeating-linear-gradient(#fff 0 27px,#9aa 27px 28px);margin:8px 0}
+
+.waitnote{background:#fff6d6;border:1px solid #e8c547;border-radius:10px;padding:8px 12px;margin:8px 0;font-weight:600}
+.ctrl button.wait{animation:kewait 1.4s ease-in-out infinite}

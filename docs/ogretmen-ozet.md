@@ -49,7 +49,7 @@ Her bölümde 4–6 kelime vardır. Aşamalar sırayla gelir:
 | **🎯 Haftanın görevi** | Konu seçin, not ve son gün ekleyin. Görev öğrencinin ana ekranında çıkar. |
 | **🧑‍🏫 Sınıf modu** | Akıllı tahtada büyük resimler ve **iki takımlı soru oyunu**. Yalnızca öğretmen panelinden açılır. |
 | **🖨️ Basılı materyal** | Kelime kartları, **tombala**, çalışma kâğıdı (cevap anahtarıyla). |
-| **📘 Günlük ders planı** | 2–6. sınıf için Maarif yıllık yapısına göre tam yıl: 2–4. sınıfta 72, 5–6. sınıfta 108 ders. Akıllı tahtada ders kendi ilerler, İngilizce olan her şeyi Aktapokus söyler; öğretmen Türkçe yönergeleri ayrı ekranda görür. Basılı ders kartı da var. İngilizce öğretmeni olmayan bir öğretmen de dersi yürütebilir. |
+| **📘 Günlük ders planı** | 2–6. sınıf için Maarif yıllık yapısına göre tam yıl: 2–4. sınıfta 72, 5–6. sınıfta 108 ders. Akıllı tahtada İngilizce olan her şeyi Aktapokus söyler; öğretmen sınıf hazır olunca tek tuşla ilerletir; öğretmen Türkçe yönergeleri ayrı ekranda görür. Basılı ders kartı da var. İngilizce öğretmeni olmayan bir öğretmen de dersi yürütebilir. |
 | **⚑ İçerik denetimi** | Bir kartta hatalı resim ya da cümle görürseniz Ebeveyn Alanı’ndan İçerik denetimini açıp kartın üzerinden bildirin. |
 
 ## Veli ne görüyor?

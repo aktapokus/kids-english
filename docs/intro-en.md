@@ -48,7 +48,7 @@ Each episode has 4–6 words. The steps come in order:
 | **🎯 Weekly task** | Choose topics, add a note and a due date. The task appears on the student's home screen. |
 | **🧑‍🏫 Classroom mode** | Big pictures on the smart board and a **two-team quiz game**. Opens only from the teacher panel. |
 | **🖨️ Printables** | Word cards, **bingo**, worksheets (with an answer key). |
-| **📘 Daily lesson plan** | A full school year for grades 2–6 following the national curriculum’s yearly structure: 72 lessons in grades 2–4, 108 in grades 5–6. On the smart board the lesson runs by itself and Aktapokus says all the English; the teacher sees Turkish instructions on a separate screen. A printed lesson card is included. A teacher who is not an English teacher can run the lesson. |
+| **📘 Daily lesson plan** | A full school year for grades 2–6 following the national curriculum’s yearly structure: 72 lessons in grades 2–4, 108 in grades 5–6. On the smart board Aktapokus says all the English and the teacher moves on with one key when the class is ready; the teacher sees Turkish instructions on a separate screen. A printed lesson card is included. A teacher who is not an English teacher can run the lesson. |
 | **⚑ Content review** | If a card has a wrong picture or sentence, turn on Content review in the Parent Area and report it from the card. |
 
 The teacher panel is currently in Turkish; the app itself can be switched to English.

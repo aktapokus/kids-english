@@ -4096,7 +4096,18 @@ let _currentSection = null;
 // durumunu yeniden kurmak kırılgan olurdu, bölüm zaten kısa.
 const RESUME_KEY = 'ke_resume_v1';
 const RESUME_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+// 2026-10-05 ("uygulama hala kendi kendine basa donuyor" - aile testi):
+// bolum icindeki asama da kaydedilir ve geri yuklenir; "Bugunun dersi" de
+// kaydedilir (once hic kaydedilmiyordu, ders ortasinda ana ekrana donuyordu).
+let _resumePhase = null; // { key, phase } - acilista bir kez tuketilir
 const Resume = {
+  patch(extra) {
+    try {
+      const s = JSON.parse(window.localStorage.getItem(RESUME_KEY));
+      if (!s || s.profile !== Profiles.active().id) return;
+      window.localStorage.setItem(RESUME_KEY, JSON.stringify({ ...s, ...extra, ts: Date.now() }));
+    } catch (e) { /* yok say */ }
+  },
   save(state) {
     try { window.localStorage.setItem(RESUME_KEY, JSON.stringify({ ...state, profile: Profiles.active().id, ts: Date.now() })); } catch (e) { /* yok say */ }
   },
@@ -4111,6 +4122,17 @@ const Resume = {
 
 function resumeLastScreen(container, api, toolId, categories) {
   const s = Resume.load();
+  if (s && s.phase && s.phase !== 'discover') _resumePhase = { key: s.lessonId || s.categoryId, phase: s.phase };
+  if (s && s.screen === 'lesson' && s.lessonId) {
+    showSectionMenu(container, api, toolId, categories);
+    const g = Number((/^g(\d)-/.exec(s.lessonId) || [])[1]) || 2;
+    LessonPlan.load(g).then((d) => {
+      const l = d && d.lessons.find((x) => x.id === s.lessonId);
+      if (l && Profiles.active().id === s.profile) startLesson(container, api, toolId, categories, l);
+      else _resumePhase = null;
+    }).catch(() => { _resumePhase = null; });
+    return;
+  }
   if (s && s.screen === 'grid' && s.sectionId) { showCategoryGrid(container, api, toolId, categories, s.sectionId); return; }
   if (s && s.screen === 'journey') { showJourney(container, api, toolId, categories); return; }
   const cat = s && s.screen === 'episode' && s.categoryId ? categories.find((c) => c.id === s.categoryId) : null;
@@ -4465,6 +4487,7 @@ function startLesson(container, api, toolId, categories, lesson) {
   };
   _journeyMode = false; _currentSection = null;
   _goHomeFn = () => showSectionMenu(container, api, toolId, categories);
+  Resume.save({ screen: 'lesson', lessonId: lesson.id });
   renderEpisodeScene(container, api, toolId, categories, ep);
   const sub = container.querySelector('#keSubtitle');
   if (sub) sub.textContent = L(`Bugünün dersi · Ders ${lesson.index}`, `Today's lesson · Lesson ${lesson.index}`);
@@ -6011,7 +6034,7 @@ async function showParentArea(container, api, toolId, categories) {
     </div>
     <div class="ke-week-card ke-parent-card">
       <div class="ke-kpi-lbl">📘 ${L('Günlük ders planı (2. sınıf, pilot)', 'Daily lesson plan (Grade 2, pilot)')}</div>
-      <p class="ke-parent-p">${L('Maarif programına göre gün gün hazır dersler. Tahta dersi kendisi yürütür, İngilizceyi Aktapokus söyler; size Türkçe yönerge düşer. Giriş gerekmez, internetsiz de açılır.', 'Ready day-by-day lessons following the national curriculum. The board runs the lesson and Aktapokus speaks the English; you get step-by-step notes in Turkish. No sign-in, works offline.')}</p>
+      <p class="ke-parent-p">${L('Maarif programına göre gün gün hazır dersler. İngilizceyi Aktapokus söyler, siz tek tuşla ilerletirsiniz; size Türkçe yönerge düşer. Giriş gerekmez, internetsiz de açılır.', 'Ready day-by-day lessons following the national curriculum. Aktapokus speaks the English and you move on with one key; you get step-by-step notes in Turkish. No sign-in, works offline.')}</p>
       <div class="ke-pick-row" style="justify-content:flex-start;"><a class="ke-pick" href="ders-ogretmen.html" target="_blank" rel="noopener">▶ ${L('Ders planını aç', 'Open the lesson plan')}</a></div>
     </div>
     <div class="ke-week-card ke-parent-card">
@@ -7912,6 +7935,7 @@ function renderEpisodeScene(container, api, toolId, categories, episode) {
   renderMap(host, episode.episode_index, episode.episode_count, jumpToEpisode, completedSet, journeyEpisodeGate(categories, episode));
   ['#keBubble', '#keQuizBubble', '#keSentenceBubble'].forEach((sel) => addSpeakButton(host.querySelector(sel)));
   wirePhaseBar(host);
+  consumeResumePhase(host, episode);
   mountWhyButton(host, container, episode);
 
   const leaveEpisode = () => {
@@ -8284,6 +8308,7 @@ function renderConversationEpisodeScene(container, api, toolId, categories, epis
   renderMap(host, episode.episode_index, episode.episode_count, jumpToEpisode, completedSet, journeyEpisodeGate(categories, episode));
   ['#keBubble', '#keQuizBubble', '#keSentenceBubble'].forEach((sel) => addSpeakButton(host.querySelector(sel)));
   wirePhaseBar(host);
+  consumeResumePhase(host, episode);
   mountWhyButton(host, container, episode);
 
   const leaveEpisode = () => {
@@ -8526,6 +8551,7 @@ function phaseBarHTML() {
   return `<div class="ke-phasebar" id="kePhaseBar" data-max="0" role="navigation" aria-label="${L('Bölüm aşamaları', 'Episode steps')}">${EPISODE_PHASES.map(([id, ic, lb], i) => `<button type="button" class="ke-phase${i === 0 ? ' cur' : ''}" data-phase="${id}" data-i="${i}" ${i === 0 ? '' : 'disabled'}><span>${ic}</span>${lb()}</button>`).join('')}</div>`;
 }
 function setEpisodePhase(host, id) {
+  Resume.patch({ phase: id });
   // Kesif disindaki adimlarda kesif kelime kutusu kapanir (sabit konumlu ve en
   // ustte; soru/konus kartinin ustune biniyordu, 2026-09-30).
   if (id !== 'discover') document.querySelectorAll('.ke-word-popup.ke-show').forEach((el) => el.classList.remove('ke-show'));
@@ -8541,6 +8567,13 @@ function setEpisodePhase(host, id) {
     b.classList.toggle('done', bi < i || (bi <= max && bi !== i));
     b.disabled = bi > max || bi === i;
   });
+}
+function consumeResumePhase(host, episode) {
+  const r = _resumePhase; _resumePhase = null;
+  if (!r || r.key !== (episode.isLesson || episode.category_id)) return;
+  const ph = EPISODE_PHASES.find((x) => x[0] === r.phase);
+  if (!ph) return;
+  setTimeout(() => { const j = host.isConnected && host.querySelector(ph[3]); if (j) j.click(); }, 700);
 }
 function wirePhaseBar(host) {
   const bar = host.querySelector('#kePhaseBar');

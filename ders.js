@@ -1,5 +1,7 @@
-// Ders oynatici (2026-09-29): gunluk ders planini akilli tahtada kendi kendine
-// yurutur. Uc gorunum, ayni veri (data/lessons.json):
+// Ders oynatici (2026-09-29): gunluk ders planini akilli tahtada yurutur.
+// 2026-10-05: gecisler TAMAMEN ogretmende ("kendi kendine gecis var; ogretmen
+// inisiyatifine birakmamiz lazim" - aile testi). Aktapokus karti soyler ve
+// bekler; ogretmen -> / >> / ogretmen ekranindaki Sonraki ile ilerletir. Uc gorunum, ayni veri (data/lessons.json):
 //  - tahta  (ders-tahta.html):   cocuklarin gordugu ekran; dersi SAHIBI budur
 //    (adimlar, zamanlayicilar, ses). Tek basina da calisir (tek ekran).
 //  - ogretmen (ders-ogretmen.html): Turkce adim adim yonerge, cevaplar, puan,
@@ -174,7 +176,7 @@ function teacherNote(step, lesson, paper) {
       return 'Dünkü dersin kelimeleri. Aktapokus söyler, sınıf tekrar eder. Resmi parmağınızla gösterin; sessiz kalan çocuğu gülümseyerek koroya katın.';
     case 'new': return 'Yeni kelimeler. Aktapokus her kelimeyi söyleyip sınıfa tekrar ettirecek, sonra örnek cümleyi okuyacak. Sizin İngilizce konuşmanız gerekmez.' + (paper ? ' Türkçeleri aşağıdaki tabloda.' : ' Türkçesi aşağıda yalnızca sizin için.');
     case 'quiz': return 'Takım yarışması. Sınıfı ikiye bölün. Sırası gelen takımdan bir çocuk cevabı söyler ya da tahtada dokunur. Tahta doğruyu gösterir ve puanı kendisi verir' + (paper ? '.' : '; gerekirse buradan düzeltin.');
-    case 'active': return lesson.active.tr.replace(/[.!]?$/, '.') + ' Tahtada ' + lesson.active.minutes + ' dakikalık sayaç var; bitince Aktapokus "Time\'s up!" der.';
+    case 'active': return lesson.active.tr.replace(/[.!]?$/, '.') + ' Tahtada ' + lesson.active.minutes + ' dakikalık sayaç var; bitince Aktapokus "Time\'s up!" der. Erken bitirmek için → tuşuna basın.';
     case 'exit': return 'Kapanış. Aktapokus bugünün kelimelerini söyletecek. Ev görevi: ' + lesson.home_tr + '' + (paper ? '' : ' Ders bitince aşağıdaki "İşlendi" düğmesine basın.');
     default: return '';
   }
@@ -202,6 +204,8 @@ function mountBoard(data) {
       cur = { k, n }; nav = 0; S.item = k; post();
       await waitWhilePaused(my);
       await body(k);
+      if (my !== token) return;
+      if (!nav) await waitTeacher(my);
       if (my !== token) return;
       k = nav < 0 ? Math.max(0, k - 1) : k + 1;
     }
@@ -233,6 +237,13 @@ function mountBoard(data) {
   }
   function toggleFs() { const d = document.documentElement; if (document.fullscreenElement) document.exitFullscreen(); else if (d.requestFullscreen) d.requestFullscreen().catch(() => {}); }
   async function waitWhilePaused(my) { while (S.paused && my === token) await sleep(200); }
+  // Ogretmen ilerletene kadar bekle; >> dugmesi yanip soner, ogretmen ekranina
+  // "tahta sizi bekliyor" gider. Adim sonunda (cur yok) -> dogrudan go(adim+1) yapar.
+  async function waitTeacher(my) {
+    S.waiting = true; post(); const b = $('#bNext'); if (b) b.classList.add('wait');
+    while (!nav && my === token) await sleep(120);
+    S.waiting = false; const b2 = $('#bNext'); if (b2) b2.classList.remove('wait');
+  }
   async function hold(ms, my) { const end = Date.now() + ms; while (Date.now() < end && my === token && !nav) { await waitWhilePaused(my); await sleep(100); } }
 
   function titleScreen() {
@@ -249,7 +260,7 @@ function mountBoard(data) {
     stopSpeech(); token++; nav = 0; cur = null;
     if (i < 0) { titleScreen(); return; }
     if (i >= steps.length) { endScreen(); return; }
-    S.step = i; S.item = 0; S.paused = false; S.answer = null; S.timerLeft = 0; post();
+    S.step = i; S.item = 0; S.paused = false; S.answer = null; S.timerLeft = 0; S.waiting = false; post();
     const my = token; const st = steps[i];
     try {
       if (st.kind === 'warm') await (lesson.warm.type === 'says' ? runSays(my) : runChorus(my, (data.lessons[lesson.index - 2] || lesson).cards.slice(0, 6), 'Warm-up'));
@@ -266,7 +277,8 @@ function mountBoard(data) {
       else if (st.kind === 'active') await runActive(my, st.min);
       else if (st.kind === 'exit') await runExit(my, st.items);
     } catch (e) { /* adim degisti */ }
-    if (my === token) go(i + 1);
+    // Adim bitti: sonraki adima ogretmen gecer (-> / >> / Sonraki).
+    if (my === token) { cur = null; await waitTeacher(my); }
   }
 
   // Maarif "Target Social Language in Use" (2. sinif, tema basina). Oyunlarda
@@ -499,7 +511,7 @@ function mountBoard(data) {
 
   async function runActive(my, minutes) {
     frame(`<div class="active">${mascot('mascot_point')}<div class="inst">${esc(lesson.active.en)}</div></div>`, "Let's do it!");
-    await say(lesson.active.en); await hold(600, my); await say(lesson.active.en);
+    await say(lesson.active.en);
     S.timerLeft = minutes * 60; post(); renderTimer();
     while (S.timerLeft > 0 && my === token) {
       await sleep(1000); await waitWhilePaused(my);
@@ -580,7 +592,8 @@ function mountTeacher(data) {
         ${classBarHtml()}
         <div class="link ${linked ? 'ok' : ''}">${linked ? '🟢 Tahta bağlı: dersi aşağıdaki düğmelerle yönetebilirsiniz.' : '⚪ Tahta bağlı değil. <b>Tahtayı aç</b>\'a basın. Aşağıdaki düğmeler yalnızca tahta <b>bu bilgisayarda</b> açıkken çalışır (telefondan kumanda henüz yok).'}</div>
         ${!linked && window.screen && window.screen.isExtended === false ? SINGLE_SCREEN_NOTE : ''}
-        <div class="ctrl${linked ? '' : ' off'}"><button data-c="prev">◀ Geri</button><button data-c="start" class="pri">▶ Başlat / Devam</button><button data-c="pause">⏸ Duraklat</button><button data-c="next">Sonraki adım ▶▶</button><button data-c="repeat">🔊 Tekrar söylet</button></div>
+        <div class="ctrl${linked ? '' : ' off'}"><button data-c="prev">◀ Geri</button><button data-c="start" class="pri">▶ Başlat / Devam</button><button data-c="pause">⏸ Duraklat</button><button data-c="next"${st && st.waiting ? ' class="pri wait"' : ''}>Sonraki ▶▶</button><button data-c="repeat">🔊 Tekrar söylet</button></div>
+        ${linked && st && st.waiting ? '<div class="waitnote">⏳ Tahta sizi bekliyor. Sınıf hazır olunca <b>Sonraki ▶▶</b> düğmesine basın.</div>' : ''}
         ${ans ? `<div class="answer">${ans.word ? `Tahtadaki: <b>${esc(ans.word)}</b>${ans.tr ? ' = ' + esc(ans.tr) : ''}` : ''}${ans.cmd ? `Komut: <b>${esc(ans.cmd)}</b> · ${ans.says ? '✅ "Aktapokus says" dedi: hareket yapılır' : '🙅 "Aktapokus says" demedi: kıpırdamak yok'}` : ''}</div>` : ''}
         ${st && st.lessonId === lesson.id && st.step >= 0 ? `<div class="score">🔴 Takım A: <b>${st.scores.A}</b> <button data-s="A:1">+1</button><button data-s="A:-1">−1</button> &nbsp; 🔵 Takım B: <b>${st.scores.B}</b> <button data-s="B:1">+1</button><button data-s="B:-1">−1</button>${st.timerLeft > 0 ? ` &nbsp; ⏱️ ${Math.floor(st.timerLeft / 60)}:${String(st.timerLeft % 60).padStart(2, '0')}` : ''}</div>` : ''}
         <ol class="steps">${steps.map((s, i) => `<li class="${i === cur ? 'now' : i < cur ? 'past' : ''}"><div class="sh"><b>${i + 1}. ${esc(s.name)}</b> <span>${s.min} dk</span> <button data-g="${i}">buraya git</button></div><p>${esc(teacherNote(s, lesson))}</p>
@@ -682,7 +695,7 @@ function mountCard(data) {
       ${lesson.diff ? `<p><b>Destek:</b> ${esc(lesson.diff.support)}<br><b>Hızlı bitirenler:</b> ${esc(lesson.diff.extend)}</p>` : ''}
       ${extrasHtml(data, lesson, true)}
       ${worksheetHtml(lesson)}${checklistHtml(lesson)}
-      <p class="small">Tahta her adımı kendisi yürütür; adım numaraları tahtadaki noktalarla aynıdır. Boşluk tuşu: duraklat · →: sonraki adım · S: tekrar söylet.</p></article>`;
+      <p class="small">Aktapokus her kartı söyler ve bekler; siz → tuşuyla (ya da ▶▶ düğmesiyle) ilerletirsiniz. Adım numaraları tahtadaki noktalarla aynıdır. Boşluk: duraklat · →: sonraki · ←: önceki · S: tekrar söylet.</p></article>`;
   }).join('');
   $('#pPrint').onclick = () => window.print();
 }
