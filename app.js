@@ -3,7 +3,7 @@ window.KE_STATIC = true;
 // Surum, mount()'tan ONCE bilinmeli: ana ekrandaki internetsiz-kullanim
 // gostergesi ilk cizimde bunu okuyor (2026-09-28 hatasi: sonra atandigi icin
 // gosterge hic gorunmuyordu).
-window.KE_SW_VER = '590c6543df';
+window.KE_SW_VER = 'd3767b6829';
 
 const data = await (await fetch('data/episodes.json')).json();
 const storiesData = await (await fetch('data/stories.json')).json();
@@ -43,7 +43,7 @@ if ('serviceWorker' in navigator) {
   // (kullanicinin kendi geri bildirimi). Iki parca:
   //
   // (1) sw.js'i her build'de degisen bir ?v= sorgu dizgesiyle kaydediyoruz
-  // (asagida 590c6543df yer tutucusu, build_pwa.py build hash'iyle
+  // (asagida d3767b6829 yer tutucusu, build_pwa.py build hash'iyle
   // degistiriyor) - GitHub Pages TUM dosyalari CDN'de 10 dakika
   // onbelleklediginden (Cache-Control: max-age=600, updateViaCache:'none'
   // SADECE tarayicinin KENDI HTTP onbellegini atlar, GitHub'in CDN edge
@@ -69,7 +69,7 @@ if ('serviceWorker' in navigator) {
   // Boylece kullanici HICBIR SEY yapmadan (site verisi temizlemeden) bir
   // sonraki dogal ac/kapa VEYA arka plandan on plana gelisinde guncel
   // surume geciyor - ama bu tek reload asla tekrarlanmiyor.
-  navigator.serviceWorker.register('sw.js?v=590c6543df', { updateViaCache: 'none' }).then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=d3767b6829', { updateViaCache: 'none' }).then((reg) => {
     reg.update().catch(() => {});
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') reg.update().catch(() => {});
@@ -78,7 +78,7 @@ if ('serviceWorker' in navigator) {
   const hadControllerAtLoad = !!navigator.serviceWorker.controller;
   if (hadControllerAtLoad) {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      const target = '590c6543df';
+      const target = 'd3767b6829';
       let already = '';
       try { already = window.localStorage.getItem('ke_sw_reloaded_for') || ''; } catch (e) { /* yok say */ }
       if (already === target) return;

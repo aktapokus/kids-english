@@ -196,9 +196,11 @@ function studentDetail(s, catalog) {
   if (!p || !p.cats) return '<p class="empty">Ayrıntılı ilerleme henüz gelmedi (öğrencinin uygulamayı güncel sürümle bir kez açması gerekiyor).</p>';
   const rows = Object.keys(p.cats).map((cid) => {
     const info = catalog[cid] || (cid === 'math_challenge' ? { title: 'Math Challenge (seviye)', total: 6 } : cid.startsWith('story_') ? { title: 'Macera Kitabı: ' + cid.slice(6), total: 1 } : { title: cid, total: '?' });
-    return `<li><b>${escapeHtml(info.title)}</b> — ${p.cats[cid].length}/${info.total} bölüm</li>`;
+    return `<li><b>${escapeHtml(info.title)}</b> — ${arr(p.cats[cid]).length}/${escapeHtml(info.total)} bölüm</li>`;
   }).join('');
-  const hard = (p.hard || []).map((h) => `<span class="chip">${escapeHtml(h[1])} <small>×${h[2]}</small></span>`).join(' ');
+  // Guvenlik (2026-10-05): progress istemciden gelir; her alan kacislanir ya
+  // da sayiya zorlanir (elle hazirlanmis istekle panele kod gomulmesin).
+  const hard = arr(p.hard).map((h) => `<span class="chip">${escapeHtml(arr(h)[1] ?? '')} <small>×${Number(arr(h)[2]) || 0}</small></span>`).join(' ');
   const les = Array.isArray(p.lessons) ? p.lessons.length : 0;
   return `<div class="detail"><div><b>Günlük dersler</b><p>📘 ${les ? les + ' ders bitirdi' : 'Henüz ders yapmadı'}</p><b>Bitirilen bölümler</b><ul>${rows || '<li>Henüz yok</li>'}</ul></div>
     <div><b>Zorlandığı kelimeler</b><div class="chips">${hard || '<span class="empty">Henüz yok 👍</span>'}</div></div></div>`;
@@ -279,8 +281,8 @@ function unitCategoryStats(cid, students, catalog) {
   let done = 0, started = 0;
   students.forEach((s) => {
     const p = s.progress; if (!p || !p.cats) return;
-    const skipped = new Set(p.skipped || []);
-    const n = (p.cats[cid] || []).length;
+    const skipped = new Set(arr(p.skipped));
+    const n = arr(p.cats[cid]).length;
     if (skipped.has(cid) || (info && n >= info.total)) done++;
     else if (n > 0) started++;
   });
@@ -396,8 +398,8 @@ function renderTaskEditor(box, classId, grade, students, catalog, draft) {
 function gradeStep(s, catalog) {
   const p = s.progress;
   if (!p || !p.cats) return { label: '—', pct: null };
-  const skipped = new Set(p.skipped || []);
-  const cleared = (id) => skipped.has(id) || (catalog[id] && (p.cats[id] || []).length >= catalog[id].total);
+  const skipped = new Set(arr(p.skipped));
+  const cleared = (id) => skipped.has(id) || (catalog[id] && arr(p.cats[id]).length >= catalog[id].total);
   for (const [label, ids] of GRADE_STEPS) {
     const known = ids.filter((id) => catalog[id]);
     const done = known.filter(cleared).length;
@@ -408,11 +410,11 @@ function gradeStep(s, catalog) {
 
 function exactWords(s, catalog) {
   const p = s.progress;
-  if (!p || !p.cats) return s.words_learned;
+  if (!p || !p.cats || typeof p.cats !== 'object') return Number(s.words_learned) || 0;
   let n = 0;
   Object.keys(p.cats).forEach((cid) => {
     const info = catalog[cid];
-    if (info) p.cats[cid].forEach((i) => { n += info.sizes[i] || 0; });
+    if (info) arr(p.cats[cid]).forEach((i) => { n += Number(info.sizes[i]) || 0; });
   });
   return n;
 }
@@ -443,7 +445,7 @@ async function renderRoster(classId) {
   if (!students.length) { el.innerHTML = '<p class="empty">Henüz bu sınıfa katılan öğrenci yok. Sınıf kodunu öğrencilerinle paylaş.</p>'; return; }
   const catalog = await loadCatalog();
   el.innerHTML = `<table><thead><tr><th>Öğrenci</th><th>Basamak</th><th>⭐</th><th>🔥</th><th>Kelime</th><th>Dakika</th><th>Son görülme</th><th></th></tr></thead><tbody>
-    ${students.map((s) => { const g = gradeStep(s, catalog); return `<tr class="srow" data-id="${s.id}"><td>${hasDetail ? '<span class="caret">▸</span> ' : ''}${escapeHtml(s.name)}</td><td>${escapeHtml(g.label)}${g.pct != null && g.pct < 100 ? ` <small>%${g.pct}</small>` : ''}</td><td>${s.stars}</td><td>${s.streak_days}</td><td>${exactWords(s, catalog)}</td><td>${s.minutes_total}</td><td>${timeAgo(s.updated_at)}</td>
+    ${students.map((s) => { const g = gradeStep(s, catalog); return `<tr class="srow" data-id="${s.id}"><td>${hasDetail ? '<span class="caret">▸</span> ' : ''}${escapeHtml(s.name)}</td><td>${escapeHtml(g.label)}${g.pct != null && g.pct < 100 ? ` <small>%${g.pct}</small>` : ''}</td><td>${Number(s.stars) || 0}</td><td>${Number(s.streak_days) || 0}</td><td>${exactWords(s, catalog)}</td><td>${Number(s.minutes_total) || 0}</td><td>${timeAgo(s.updated_at)}</td>
       <td><button type="button" class="del" data-id="${s.id}" data-name="${escapeHtml(s.name)}" title="Öğrenciyi sil" aria-label="Öğrenciyi sil">🗑</button></td></tr>
       ${hasDetail ? `<tr class="drow hidden" id="d-${s.id}"><td colspan="8">${studentDetail(s, catalog)}</td></tr>` : ''}`; }).join('')}
   </tbody></table>`;
@@ -490,6 +492,7 @@ async function createClass() {
   } catch (e) { setMsg(msgEl, e.message, 'err'); }
 }
 
+function arr(x) { return Array.isArray(x) ? x : []; }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
 function showDashboard() {
