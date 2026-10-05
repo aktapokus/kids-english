@@ -4,6 +4,8 @@
 
 **Ne?** 2.–6. sınıf öğrencileri için **ücretsiz** bir İngilizce kelime, dinleme ve konuşma uygulaması. Telefonda, tablette ve akıllı tahtada tarayıcıdan açılır; kurulum gerekmez.
 
+**Bağımsızlık notu:** Aktapokus Kids English bağımsız, gönüllü bir çalışmadır; Millî Eğitim Bakanlığının resmî materyali değildir ve Bakanlıkça onaylanmamıştır. Türkiye Yüzyılı Maarif Modeli İngilizce programı, içerik ve sıralama için kaynak olarak kullanılmıştır.
+
 **Kim yapıyor?** Bir şirket ya da kurum değil; uygulamayı gönüllü olarak, boş zamanlarımda geliştiriyorum. Satılan bir şey yok.
 
 **Neden?** Amacım fırsat eşitliği: iyi bir eğitim aracına ulaşmak ailenin bütçesine bağlı olmamalı. İngilizce ilk adım; ileride aynı anlayışla ilkokul fen, matematik ve kodlama için de ücretsiz araçlar geliştirip bir eğitim ekosistemi kurmak istiyorum.

@@ -3,10 +3,12 @@
 # Aktapokus Kids English: Kullanım Kılavuzu
 
 **Kimler için:** Öğretmenler, veliler ve (velisiyle birlikte) çocuklar
-**Sürüm:** 30 Eylül 2026
+**Sürüm:** 5 Ekim 2026
 **Uygulama:** https://aktapokus.github.io/kids-english/
 **Öğretmen paneli:** https://aktapokus.github.io/kids-english/teacher.html
 **Resimli rehber (nereye, nasıl tıklanır):** https://aktapokus.github.io/kids-english/rehber.html
+
+> **Bağımsızlık notu:** Aktapokus Kids English bağımsız, gönüllü bir çalışmadır; Millî Eğitim Bakanlığının resmî materyali değildir ve Bakanlıkça onaylanmamıştır. Türkiye Yüzyılı Maarif Modeli İngilizce programı, içerik ve sıralama için kaynak olarak kullanılmıştır.
 
 ---
 

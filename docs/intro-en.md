@@ -4,6 +4,8 @@
 
 **What?** A **free** English vocabulary, listening and speaking app for children in grades 2–6. It opens in the browser on phones, tablets and smart boards; nothing to install.
 
+**Independence note:** Aktapokus Kids English is an independent volunteer project. It is not official material of the Turkish Ministry of National Education (MEB) and has not been approved by it; the national English curriculum is used as a source for content and sequence.
+
 **Who makes it?** Not a company or an institution: I am developing the app as a volunteer, in my free time. Nothing is sold.
 
 **Why?** My aim is equal opportunity: access to a good learning tool should not depend on a family's budget. English is the first step; in the same spirit, I would like to build free tools for primary science, maths and coding too, and grow them into a learning ecosystem.

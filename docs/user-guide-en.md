@@ -3,9 +3,11 @@
 # Aktapokus Kids English: User Guide
 
 **For:** Teachers, parents and children (together with a parent)
-**Version:** 30 September 2026
+**Version:** 5 October 2026
 **App:** https://aktapokus.github.io/kids-english/
 **Teacher panel:** https://aktapokus.github.io/kids-english/teacher.html
+
+> **Independence note:** Aktapokus Kids English is an independent volunteer project. It is not official material of the Turkish Ministry of National Education (MEB) and has not been approved by it; the national English curriculum is used as a source for content and sequence.
 
 > **Language note:** The app itself can be switched between Turkish and English (tap Aktapokus > language). Button names below are the ones shown in the app's English mode. The teacher panel is currently in Turkish only, so its buttons are given in Turkish with the English meaning in brackets.
 
