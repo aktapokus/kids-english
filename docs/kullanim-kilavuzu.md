@@ -336,7 +336,7 @@ Maarif programına göre gün gün hazırlanmış dersler (tam yıl, 36 hafta: 2
 | Ne öğrendim? | Yalnızca tema sonu dersinde: "I can…" cümleleri, başparmakla öz değerlendirme |
 | Kapanış | Bugünün kelimeleri; ev görevi |
 
-- **Öğretmen ekranı:** Her adımın Türkçe yönergesi, tahtadaki kelimenin Türkçesi (yalnızca sizde), takım puanı ve Geri / Başlat / Duraklat / Sonraki adım / Tekrar söylet düğmeleri. Düğmeler tahta **aynı bilgisayarda** açıkken çalışır.
+- **Öğretmen ekranı:** Her adımın Türkçe yönergesi, tahtadaki kelimenin Türkçesi (yalnızca sizde), takım puanı ve Geri / Başlat / Duraklat / Sonraki / Tekrar söylet düğmeleri. Her adımın yanındaki **buraya git** tahtayı doğrudan o adıma götürür; listeden başka bir ders seçerseniz tahta da o derse geçer. Bu düğmeler tahta **aynı bilgisayarda** açıkken çalışır; tahta açık değilse soluk görünür.
 - **Tahtanın kendi kısayolları:** boşluk = duraklat, → = sonraki kart (son kartta sonraki adım), ← = önceki kart, S = tekrar söylet.
 - **İşlendi:** Ders bitince basın. Öğretmen paneline aynı bilgisayarda giriş yaptıysanız sınıfınızı seçin; ders sınıfa kaydedilir ve öğrencilerin uygulamasında aynı ders "Bugünün dersi" olarak öne gelir (derse gelemeyen çocuk evde yakalar). Sınıf seçilmezse kayıt yalnızca o bilgisayarda kalır.
 - **Basılı ders kartı:** Her adımın Türkçe yönergesi, kelimeler ve Türkçeleri; A4.

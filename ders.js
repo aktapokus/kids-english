@@ -184,8 +184,16 @@ function teacherNote(step, lesson, paper) {
 
 // ======================= TAHTA =======================
 function mountBoard(data) {
-  const lesson = lessonById(data, query('id') || nextLesson(data).id);
-  const steps = buildSteps(data, lesson);
+  let lesson = lessonById(data, query('id') || nextLesson(data).id);
+  let steps = buildSteps(data, lesson);
+  // Ogretmen ekraninda baska ders secildiyse tahta o derse yerinde gecer
+  // (sayfa yenilenmez; ses izni korunur). 2026-10-05: "buraya git calismiyor".
+  function switchLesson(id) {
+    if (!id || id === lesson.id) return;
+    const l = lessonById(data, id); if (!l || l.id !== id) return;
+    lesson = l; steps = buildSteps(data, lesson); S.lessonId = lesson.id; S.scores = { A: 0, B: 0 }; S.turn = 'A';
+    try { history.replaceState(null, '', '?id=' + lesson.id); } catch (e) { /* yok say */ }
+  }
   const bc = 'BroadcastChannel' in window ? new BroadcastChannel(CH) : null;
   const S = { lessonId: lesson.id, step: -1, item: 0, paused: false, scores: { A: 0, B: 0 }, turn: 'A', timerLeft: 0, answer: null, ended: false };
   let token = 0; // her adim degisiminde artar; eski dongu kendini durdurur
@@ -547,6 +555,8 @@ function mountBoard(data) {
     const m = ev.data || {};
     if (m.type === 'hello') post();
     else if (m.type === 'cmd') {
+      if ((m.cmd === 'start' || m.cmd === 'goto') && m.lessonId && m.lessonId !== lesson.id) { switchLesson(m.lessonId); go(m.cmd === 'goto' ? m.step : 0); return; }
+      if (m.cmd === 'load') { if (m.lessonId !== lesson.id) { stopSpeech(); token++; switchLesson(m.lessonId); titleScreen(); } return; }
       if (m.cmd === 'start') go(Math.max(0, S.step));
       else if (m.cmd === 'next') stepNav(1);
       else if (m.cmd === 'prev') stepNav(-1);
@@ -603,9 +613,11 @@ function mountTeacher(data) {
         <div class="done"><button id="tDone" class="pri">✅ İşlendi</button> <span>Ders bittiğinde basın. Öğrencilerin uygulamasında aynı ders "Bugünün dersi" olarak açılacak.</span></div>
       </section>`;
     app.querySelectorAll('.gtab').forEach((b) => { b.onclick = () => { try { localStorage.setItem(GRADE_KEY, b.dataset.grade); } catch (e) { /* yok say */ } location.href = 'ders-ogretmen.html?grade=' + b.dataset.grade; }; });
-    app.querySelectorAll('.li').forEach((b) => { b.onclick = () => { lesson = lessonById(data, b.dataset.id); history.replaceState(null, '', '?id=' + lesson.id); render(); }; });
-    app.querySelectorAll('[data-c]').forEach((b) => { b.disabled = !linked; b.onclick = () => send(b.dataset.c); });
-    app.querySelectorAll('[data-g]').forEach((b) => { b.onclick = () => send('goto', { step: Number(b.dataset.g) }); });
+    // Tahta bagliyken listeden secilen ders tahtaya da gider (yoksa tahtadan
+    // gelen durum mesaji ekrani eski derse geri cekiyordu).
+    app.querySelectorAll('.li').forEach((b) => { b.onclick = () => { lesson = lessonById(data, b.dataset.id); history.replaceState(null, '', '?id=' + lesson.id); if (Date.now() - lastSeen < 4000) send('load', { lessonId: lesson.id }); render(); }; });
+    app.querySelectorAll('[data-c]').forEach((b) => { b.disabled = !linked; b.onclick = () => send(b.dataset.c, { lessonId: lesson.id }); });
+    app.querySelectorAll('[data-g]').forEach((b) => { b.disabled = !linked; b.title = linked ? 'Tahtayı bu adıma götürür' : 'Önce Tahtayı aç: bu düğme tahta aynı bilgisayarda açıkken çalışır'; b.onclick = () => send('goto', { step: Number(b.dataset.g), lessonId: lesson.id }); });
     app.querySelectorAll('[data-s]').forEach((b) => { b.onclick = () => { const [team, d] = b.dataset.s.split(':'); send('score', { team, delta: Number(d) }); }; });
     $('#tOpen').onclick = async () => {
       const url = 'ders-tahta.html?id=' + lesson.id;
