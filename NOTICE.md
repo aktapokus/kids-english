@@ -5,9 +5,9 @@ Bunlar LICENSE-CODE.md ya da LICENSE-CONTENT.txt kapsamında DEĞİLDİR; kendi 
 
 - **Photos (`photos/`):** Most photos come from Pixabay and are used under the Pixabay Content License
   (https://pixabay.com/service/license-summary/). They may not be sold or redistributed on their own.
-  Our own drawings (file names containing `_draw`, and the drawn icons) are covered by LICENSE-CONTENT.txt.
+  The project's own drawings (file names containing `_draw`, and the drawn icons) are covered by LICENSE-CONTENT.txt.
   **Fotoğraflar:** Çoğu Pixabay'den alınmıştır ve Pixabay İçerik Lisansı ile kullanılır; tek başına satılamaz
-  ya da dağıtılamaz. Kendi çizimlerimiz (dosya adında `_draw` geçenler ve çizim simgeler) LICENSE-CONTENT.txt kapsamındadır.
+  ya da dağıtılamaz. Projenin kendi çizimleri (dosya adında `_draw` geçenler ve çizim simgeler) LICENSE-CONTENT.txt kapsamındadır.
 - **Fonts (`fonts/`):** Baloo 2, Fredoka, Nunito, Fredericka the Great, Chewy, Permanent Marker, Rock Salt —
   from Google Fonts. Fredoka, Nunito, Baloo 2 and Fredericka the Great: SIL Open Font License 1.1; Chewy, Permanent Marker
   and Rock Salt: Apache License 2.0. The full license texts and copyright notices are in `fonts/licenses/`.

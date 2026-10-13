@@ -11,7 +11,7 @@ Bunun için proje üç ayrı katmanda lisanslanır.
 | Layer / Katman | What / Ne | License / Lisans |
 |---|---|---|
 | Code / Kod | `*.js`, `*.html`, `*.css`, build scripts | PolyForm Noncommercial 1.0.0 — see [LICENSE-CODE.md](LICENSE-CODE.md) |
-| Content / İçerik | word lists, sentences, translations, definitions, lesson plans, stories, our own drawings (`data/`, `docs/`, `stories/` text, files named `*_draw*`) | CC BY-NC-SA 4.0 — see [LICENSE-CONTENT.txt](LICENSE-CONTENT.txt) |
+| Content / İçerik | word lists, sentences, translations, definitions, lesson plans, stories, the project's own drawings (`data/`, `docs/`, `stories/` text, files named `*_draw*`) | CC BY-NC-SA 4.0 — see [LICENSE-CONTENT.txt](LICENSE-CONTENT.txt) |
 | Brand / Marka | the name "Aktapokus", the logo and the Aktapokus character | All rights reserved — see [TRADEMARK.md](TRADEMARK.md) |
 
 Third-party material (photos, fonts) keeps its own license — see [NOTICE.md](NOTICE.md).

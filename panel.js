@@ -6039,7 +6039,7 @@ async function showParentArea(container, api, toolId, categories) {
     </div>
     <div class="ke-week-card ke-parent-card">
       <div class="ke-kpi-lbl">🧑‍🏫 ${L('İçerik denetimi (öğretmen)', 'Content review (teacher)')}</div>
-      <p class="ke-parent-p">${L('Açıkken kelime keşfinde dokunduğunuz kart için "⚑ Sorun bildir" düğmesi görünür. Hatalı görsel, cümle veya anlamı bize bildirirsiniz; ad ya da kişisel bilgi gönderilmez.', 'When on, a "⚑ Report" button appears for the card you tap in word discovery. Report a wrong picture, sentence or meaning; no name or personal data is sent.')}</p>
+      <p class="ke-parent-p">${L('Açıkken kelime keşfinde dokunduğunuz kart için "⚑ Sorun bildir" düğmesi görünür. Hatalı görsel, cümle veya anlamı bildirirsiniz; ad ya da kişisel bilgi gönderilmez.', 'When on, a "⚑ Report" button appears for the card you tap in word discovery. Report a wrong picture, sentence or meaning; no name or personal data is sent.')}</p>
       <div class="ke-pick-row" style="justify-content:flex-start;"><button type="button" class="ke-pick${ContentReport.enabled() ? ' ke-sel' : ''}" id="keReportToggle" aria-pressed="${ContentReport.enabled()}">${ContentReport.enabled() ? L('Açık ✓', 'On ✓') : L('Kapalı', 'Off')}</button></div>
     </div>`}
     ${window.KE_STATIC ? `<div class="ke-week-card ke-parent-card">
