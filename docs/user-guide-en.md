@@ -219,7 +219,7 @@ Short, frequent practice sticks better than long, rare practice. When your child
 ### 5.1 Account and sign-in
 
 - Panel address: https://aktapokus.github.io/kids-english/teacher.html
-- First time: enter an email and a password (at least 6 characters), press **Hesap Oluştur** (Create account), click the confirmation link in your email, then **Giriş Yap** (Sign in).
+- First time: enter an email and a password (at least 6 characters), press **Hesap Oluştur** (Create account), click the confirmation link in your email, then **Giriş Yap** (Sign in). The confirmation email comes from `aktapokusai@gmail.com`; if it does not arrive within a few minutes, check your **spam folder**.
 - If you forget your password, use **"Şifremi unuttum"** (Forgot password) to get a reset link.
 
 ### 5.2 Creating a class and adding students

@@ -127,7 +127,7 @@ async function signUp() {
   try {
     const data = await authFetch('/auth/v1/signup', { method: 'POST', body: JSON.stringify({ email, password }) });
     if (data.access_token) { saveSession(data); showDashboard(); }
-    else setMsg(msgEl, 'Hesap oluşturuldu. E-postanı onayladıktan sonra giriş yap.', 'ok');
+    else setMsg(msgEl, 'Hesap oluşturuldu. E-postana gelen onay bağlantısına tıkladıktan sonra giriş yap. Birkaç dakika içinde gelmezse spam (gereksiz) klasörüne bak; gönderen: aktapokusai@gmail.com.', 'ok');
   } catch (e) { setMsg(msgEl, e.message, 'err'); }
 }
 

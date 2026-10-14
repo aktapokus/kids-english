@@ -219,7 +219,7 @@ Kısa ve sık çalışma, uzun ve seyrek çalışmadan daha kalıcıdır. Çocu�
 ### 5.1 Hesap ve giriş
 
 - Panel adresi: https://aktapokus.github.io/kids-english/teacher.html
-- İlk kez: e-posta ve şifre (en az 6 karakter) yazın, **Hesap Oluştur**'a basın, e-postanızdaki onay linkine tıklayın, ardından **Giriş Yap**.
+- İlk kez: e-posta ve şifre (en az 6 karakter) yazın, **Hesap Oluştur**'a basın, e-postanızdaki onay linkine tıklayın, ardından **Giriş Yap**. Onay e-postası `aktapokusai@gmail.com` adresinden gelir; birkaç dakika içinde gelmezse **spam (gereksiz) klasörüne** bakın.
 - Şifrenizi unutursanız **"Şifremi unuttum"** ile sıfırlama linki alabilirsiniz.
 
 ### 5.2 Sınıf oluşturma ve öğrencileri katma
