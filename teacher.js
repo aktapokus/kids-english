@@ -73,15 +73,17 @@ async function sendRecoveryEmail() {
   if (!email) return;
   setMsg(msgEl, 'Gönderiliyor...');
   try {
+    // redirect_to SORGU parametresi olmali (2026-10-15): govdedeki
+    // options.redirect_to'yu GoTrue okumuyordu, link Site URL'e gidiyordu.
     const redirectTo = location.origin + location.pathname;
-    await fetch(SUPABASE_URL + '/auth/v1/recover', {
+    await fetch(SUPABASE_URL + '/auth/v1/recover?redirect_to=' + encodeURIComponent(redirectTo), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY },
-      body: JSON.stringify({ email, options: { redirect_to: redirectTo } }),
+      body: JSON.stringify({ email }),
     });
     // Supabase, hesap var mi yok mu sizmasin diye burada hep basariliymis
     // gibi davranir - gercekte kayitli bir e-postaysa link gider.
-    setMsg(msgEl, 'E-postan kayıtlıysa bir sıfırlama linki gönderildi. Gelen kutunu kontrol et.', 'ok');
+    setMsg(msgEl, 'E-postan kayıtlıysa bir sıfırlama linki gönderildi. Gelen kutunu kontrol et; birkaç dakika içinde gelmezse spam (gereksiz) klasörüne bak.', 'ok');
   } catch (e) { setMsg(msgEl, 'Bağlanılamadı, internetini kontrol et.', 'err'); }
 }
 
@@ -125,7 +127,8 @@ async function signUp() {
   if (password.length < 6) { setMsg(msgEl, 'Şifre en az 6 karakter olmalı.', 'err'); return; }
   setMsg(msgEl, 'Hesap oluşturuluyor...');
   try {
-    const data = await authFetch('/auth/v1/signup', { method: 'POST', body: JSON.stringify({ email, password }) });
+    const back = encodeURIComponent(location.origin + location.pathname);
+    const data = await authFetch('/auth/v1/signup?redirect_to=' + back, { method: 'POST', body: JSON.stringify({ email, password }) });
     if (data.access_token) { saveSession(data); showDashboard(); }
     else setMsg(msgEl, 'Hesap oluşturuldu. E-postana gelen onay bağlantısına tıkladıktan sonra giriş yap. Birkaç dakika içinde gelmezse spam (gereksiz) klasörüne bak; gönderen: aktapokusai@gmail.com.', 'ok');
   } catch (e) { setMsg(msgEl, e.message, 'err'); }
@@ -530,4 +533,14 @@ document.getElementById('loginForm').addEventListener('submit', (e) => { e.preve
 document.getElementById('recoverForm').addEventListener('submit', (e) => { e.preventDefault(); sendRecoveryEmail(); });
 document.getElementById('newPasswordForm').addEventListener('submit', (e) => e.preventDefault());
 
-if (!checkRecoveryLink() && loadSession()) showDashboard();
+// Onay e-postasindaki baglantiyla gelindiyse (#access_token=...&type=signup)
+// oturumu kaydet, adres cubugundaki jetonlari temizle ve dogrudan panele gir.
+function checkSignupLink() {
+  const hash = new URLSearchParams(location.hash.slice(1));
+  const t = hash.get('type');
+  if (!hash.get('access_token') || (t !== 'signup' && t !== 'magiclink' && t !== 'email')) return false;
+  saveSession({ access_token: hash.get('access_token'), refresh_token: hash.get('refresh_token'), expires_in: Number(hash.get('expires_in')) || 3600, token_type: 'bearer' });
+  try { history.replaceState(null, '', location.pathname); } catch (e) { /* yok say */ }
+  return true;
+}
+if (!checkRecoveryLink() && (checkSignupLink() || loadSession())) showDashboard();
