@@ -3149,6 +3149,8 @@ ${FONT_FACES}
   .ke-tr-dim{ opacity:.55; }
   .ke-tr-hint{ display:block; margin:0 auto; font:700 13px 'Fredoka','Baloo 2',sans-serif; color:#1A2233; background:#FFE9A8; border:2px solid #FFD75A; border-radius:10px; padding:3px 10px; cursor:pointer; max-width:92%; }
   .ke-tr-hint[hidden]{ display:none; }
+.ke-sent-replay{ display:block; margin:6px auto 0; font:700 14px 'Fredoka','Baloo 2',sans-serif; color:#1A2233; background:#DDF0FF; border:2px solid #7EC4FF; border-radius:12px; padding:6px 14px; min-height:44px; cursor:pointer; }
+.ke-sent-replay[hidden]{ display:none; }
   .ke-tr-hint:disabled{ cursor:default; opacity:1; background:#FFF6D6; }
   .ke-story-list{ display:flex; flex-direction:column; gap:14px; max-width:560px; margin:0 auto; position:relative; z-index:1; }
   .ke-story-card{
@@ -9962,9 +9964,21 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
     bubbleEl.after(hintBtn);
   }
   hintBtn.hidden = true;
+  // Cumleyi tekrar dinle (2026-10-22 geri bildirimi: "burada cumleyi
+  // tekrar edebilmeli"). Yalniz cumlenin zaten okundugu iskeleli turda.
+  let replayBtn = host.querySelector('#keSentReplay');
+  if (!replayBtn) {
+    replayBtn = document.createElement('button');
+    replayBtn.type = 'button';
+    replayBtn.id = 'keSentReplay';
+    replayBtn.className = 'ke-sent-replay';
+    progressEl.after(replayBtn);
+  }
+  replayBtn.hidden = true;
 
   function endSentenceRound() {
     if (hintBtn) hintBtn.hidden = true;
+    replayBtn.hidden = true;
     if (score && sentTotal) score.sent = { stars: sentStars, total: sentTotal };
     sEl.classList.remove('ke-show');
     mascotEl.classList.remove('ke-mascot-compact');
@@ -9981,6 +9995,7 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
   // Bosluk doldur -> Hatirla -> harf turu. Yapilar bolumu (2026-09-27).
   let extraAt = 0;
   function toLetters() {
+    replayBtn.hidden = true;
     const steps = [['pairs', startPairsRound], ['cloze', startClozeRound], ['review', startReviewRound], ['__tr', startTranslateRound]];
     while (extraAt < steps.length) {
       const [key, run] = steps[extraAt++];
@@ -10289,6 +10304,7 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
 
   function renderItem() {
     if (idx >= order.length) {
+      replayBtn.hidden = true;
       if (trMode) { toLetters(); return; }
       if (episode.dialogues && episode.dialogues.length) { startDialogueRound(); return; }
       if (episode.reverse && episode.reverse.length) { startReverseRound(); return; }
@@ -10328,6 +10344,9 @@ function startSentenceRound(host, container, episode, wordList, mascotEl, score,
       slotsEl.appendChild(slot);
     });
     if (scaffold) speakWord(obj.sentence, mascotEl);
+    replayBtn.hidden = !scaffold;
+    replayBtn.textContent = L('🔊 Cümleyi tekrar dinle', '🔊 Hear the sentence again');
+    replayBtn.onclick = () => speakWord(obj.sentence, mascotEl);
     actionsEl.style.display = 'none';
     checkBtn.disabled = true;
 
