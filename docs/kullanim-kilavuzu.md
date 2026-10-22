@@ -108,7 +108,7 @@ Her bölümde 4–6 kelime vardır. Aşamalar sırayla gelir; üstteki simgeler 
 | ❓ **Soru** | Sesi dinler, doğru resmi seçer. İlk yanlışta ikinci hak verilir. | Dinleyerek tanıma |
 | 🇹🇷 **Anlamı ne?** | (A1) Söylediği kelimenin Türkçe anlamını 3 seçenekten seçer. | Kelimeyi söylemekle anlamını bilmek aynı şey değil |
 | 🎤 **Konuş** | Kelimeyi söyler, uygulama dinler. İsterse **🔴 Sesimi kaydet** ile kendini kaydedip Aktapokus'la karşılaştırır. Puan yoktur. Mikrofon ya da ses çalışmıyorsa alttaki **🔇 bu adımı atla** bağlantısıyla Cümle aşamasına geçilir. | Telaffuz, özgüven |
-| 🧩 **Cümle** | Kelime taşlarını sıraya dizerek cümle kurar. | Kelimeyi cümle içinde kullanma |
+| 🧩 **Cümle** | Kelime taşlarını sıraya dizerek cümle kurar. Eksik kelimeli cümlelerde “🔊 Cümleyi tekrar dinle” düğmesiyle cümleyi istediği kadar dinler. | Kelimeyi cümle içinde kullanma |
 | 🔤 **Harf** | İlk harfler hazır; kalan harfleri tamamlar. | Yazılış |
 
 Aşamalar atlanamaz; üstteki simgelerle yalnızca geçilmiş bir aşamaya geri dönülebilir. Tek istisna, ses ya da mikrofon sorunu olduğunda Konuş aşamasıdır.
