@@ -3893,9 +3893,37 @@ let _backHandler = null;
 let _popstateHandler = null;
 let _fullscreenExitAt = 0;
 const FULLSCREEN_POPSTATE_IGNORE_MS = 500;
+// 2026-10-23 ("Android'de geri tusuna basinca direk uygulamadan cikiyor"):
+// Chrome (ve TWA), kullanici sayfaya HIC dokunmadan pushState ile eklenen
+// girdileri geri tusunda ATLIYOR (history manipulation intervention).
+// Uygulama acilinca resumeLastScreen dogrudan bolum/yolculuk ekranina
+// donup push ediyordu - dokunma olmadigi icin geri tusu bu girdiyi atlayip
+// uygulamayi kapatiyordu. Cozum: dokunma olmadiysa push'u ilk dokunusa
+// ertele. Ayrica ustte henuz tuketilmemis bir keNav girdisi varsa yenisini
+// ekleme, yalniz isleyiciyi degistir (bos "geri" basislari olmasin).
+let _pushDeferred = false;
+function pushNavEntry() {
+  if (history.state && history.state.keNav) return;
+  try { history.pushState({ keNav: true }, ''); } catch (e) { /* no-op */ }
+}
 function pushBackState(handler) {
   _backHandler = handler;
-  try { history.pushState({ keNav: true }, ''); } catch (e) { /* no-op */ }
+  const ua = navigator.userActivation;
+  if (ua && !ua.hasBeenActive) {
+    if (_pushDeferred) return;
+    _pushDeferred = true;
+    // Dokunmatikte etkinlesme pointerdown'da degil pointerup'ta oluyor.
+    const evs = ['pointerup', 'keydown', 'click'];
+    const go = () => {
+      if (!ua.hasBeenActive) return;
+      evs.forEach((t) => window.removeEventListener(t, go, true));
+      _pushDeferred = false;
+      if (_backHandler) pushNavEntry();
+    };
+    evs.forEach((t) => window.addEventListener(t, go, true));
+    return;
+  }
+  pushNavEntry();
 }
 
 // Geniş ekranda maskot etrafındaki dairesel keşif dizilimi korunuyor;
